@@ -1,9 +1,8 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Header from './components/header/header';
-import Home from './pages/home/home';
-import UserProfile from './pages/userprofile/UserProfile';
+import Header from './Components/header/header'; 
+import Home from './Pages/home/home'; 
+import UserProfile from './Pages/userprofile/UserProfile'; 
 
 const App = () => (
   <Router>
