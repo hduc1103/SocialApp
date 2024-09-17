@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Comment from './Comment';
+import Comment from '../comment/comment';
 
 const Post = ({ post, onLike, onComment }) => {
   const [showComments, setShowComments] = useState(false);
