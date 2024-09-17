@@ -1,5 +1,5 @@
 import React from 'react';
-import Feed from '../components/Feed';
+import Feed from '../../Components/feed/feed';
 
 const UserProfile = () => {
   const userPosts = [
