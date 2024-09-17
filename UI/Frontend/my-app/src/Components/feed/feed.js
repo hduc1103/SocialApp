@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Post from './Post';
+import Post from '../post/post';
 
 const Feed = ({ posts }) => {
   const [postsState, setPostsState] = useState(posts);
