@@ -1,11 +1,15 @@
 package com.SocialWeb.controller;
 
 import com.SocialWeb.entity.Post;
+import com.SocialWeb.entity.User;
 import com.SocialWeb.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @CrossOrigin("http://localhost:3000")
@@ -16,11 +20,29 @@ public class PostController {
     @Autowired
     private PostService postService;
 
+
     @PostMapping
     public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        Post createdPost = postService.createPost(post);
-        return ResponseEntity.ok(createdPost);
+        try {
+            User defaultUser = new User();
+            defaultUser.setId(1);
+            defaultUser.setUserName("defaultUser");
+            defaultUser.setEmail("default@example.com");
+            defaultUser.setPassword("defaultPass");
+
+            post.setUser(defaultUser);
+            post.setCreatedAt(LocalDateTime.now());
+            post.setUpdatedAt(LocalDateTime.now());
+
+            Post createdPost = postService.createPost(post);
+            return ResponseEntity.ok(createdPost);
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the error stack trace
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Post> getPostById(@PathVariable int id) {
