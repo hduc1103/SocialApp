@@ -1,47 +1,32 @@
 package com.SocialWeb.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Size;
-import java.time.LocalDate;
+import java.util.List;
 
 @Entity
-@Table(name = "user")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name="web_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
+    private Long id;
 
-    @Column(name = "user_name", nullable = false, unique = true)
-    private String userName;
-
-    @Setter
-    @Column(name = "email", nullable = false, unique = true)
+    private String username;
+    private String password;
     private String email;
 
-    @Column(name = "password", nullable = false)
-    @Size(min = 6, message = "Password must be at least 6 characters long")
-    private String password;
+    @ManyToMany
+    private List<User> friends;
 
-    @Column(name = "first_name")
-    private String firstName;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Post> posts;
 
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
-
-    @Column(name = "profile_picture_url")
-    private String profilePictureUrl;
-
-    @Column(name = "bio")
-    private String bio;
-
-    @Column(name = "roles") // Add this line
-    private String roles; // This should be a comma-separated string of roles (e.g., "ROLE_USER,ROLE_ADMIN")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Comment> comments;
 }

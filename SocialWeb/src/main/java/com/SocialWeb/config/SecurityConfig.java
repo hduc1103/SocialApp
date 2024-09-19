@@ -1,17 +1,12 @@
 package com.SocialWeb.config;
 
-import com.SocialWeb.filter.JwtAuthFilter;
-import com.SocialWeb.service.UserInfoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.SocialWeb.security.JwtRequestFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,52 +16,36 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JwtAuthFilter authFilter;
-    private final UserInfoService userInfoService;
+    private final JwtRequestFilter jwtRequestFilter;
 
-    @Autowired
-    public SecurityConfig(JwtAuthFilter authFilter, UserInfoService userInfoService) {
-        this.authFilter = authFilter;
-        this.userInfoService = userInfoService;
+    public SecurityConfig(JwtRequestFilter jwtRequestFilter) {
+        this.jwtRequestFilter = jwtRequestFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/welcome", "/auth/addNewUser", "/auth/generateToken").permitAll()
-                        .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
-                        .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
-                        .anyRequest().authenticated() // Protect all other endpoints
+                        .requestMatchers("/api/authenticate").permitAll() // Allow access to authenticate endpoint
+                        .anyRequest().authenticated() // Allow any authenticated request, without role-based restrictions
                 )
-                .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No sessions
-                )
-                .authenticationProvider(authenticationProvider()) // Custom authentication provider
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless JWT session
+
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter
 
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Password encoding
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userInfoService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }
