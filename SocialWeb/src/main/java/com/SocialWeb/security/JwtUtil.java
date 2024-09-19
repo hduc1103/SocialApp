@@ -14,10 +14,6 @@ import java.util.function.Function;
 public class JwtUtil {
     private String SECRET_KEY = "yGgZ2U+FDkgowwzvTAs5GZDX6WudFnp3Y6JtTD3fK/Y=";
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -36,9 +32,18 @@ public class JwtUtil {
     }
 
     public String generateToken(String username) {
+        System.out.println("Generating token for: " + username);
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        String token = createToken(claims, username);
+        System.out.println("Token generated: " + token);
+        return token;
     }
+
+    public String extractUsername(String token) {
+        System.out.println("Extracting username from token: " + token);
+        return extractClaim(token, Claims::getSubject);
+    }
+
 
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
