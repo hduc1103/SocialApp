@@ -21,7 +21,7 @@ public class Post {
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id") // Reference the renamed table
+    @JoinColumn(name = "user_id", referencedColumnName = "id") 
     private User user;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)

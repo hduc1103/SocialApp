@@ -43,7 +43,7 @@ public class UserService {
     public String likePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
-        // Implement logic to add a like (could involve adding a Like entity, if required)
+
         return "Post liked successfully";
     }
 }

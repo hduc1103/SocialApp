@@ -50,7 +50,7 @@ public class JwtRequestFilter extends OncePerRequestFilter implements Applicatio
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    System.out.println("User authenticated: " + username);  // LOGGING
+                    System.out.println("User authenticated: " + username);  
                 }
             }
         }
