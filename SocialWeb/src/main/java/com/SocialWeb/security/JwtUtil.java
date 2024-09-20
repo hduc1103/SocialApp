@@ -3,6 +3,7 @@ package com.SocialWeb.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -31,12 +32,12 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String username) {
-        System.out.println("Generating token for: " + username);
+    public String generateToken(UserDetails userDetails) {
+        System.out.println("Generating token for: " + userDetails.getUsername());
+
         Map<String, Object> claims = new HashMap<>();
-        String token = createToken(claims, username);
-        System.out.println("Token generated: " + token);
-        return token;
+        claims.put("role", userDetails.getAuthorities());
+        return createToken(claims, userDetails.getUsername());
     }
 
     public String extractUsername(String token) {
@@ -44,11 +45,14 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
-
     private String createToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
     }
 
     public Boolean validateToken(String token, String username) {

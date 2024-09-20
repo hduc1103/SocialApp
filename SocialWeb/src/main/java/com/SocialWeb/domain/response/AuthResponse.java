@@ -1,4 +1,4 @@
-package com.SocialWeb.controller;
+package com.SocialWeb.domain.response;
 
 public class AuthResponse {
     private final String jwt;
