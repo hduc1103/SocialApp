@@ -1,19 +1,12 @@
 import React from 'react';
-import Feed from '../../Components/feed/feed';
 
 const UserProfile = () => {
-  const userPosts = [
-    { id: 1, author: 'User', content: 'My first post', likes: 5, comments: [] },
-  ];
-
   return (
-    <div className="user-profile">
+    <div>
       <h1>User Profile</h1>
-      <Feed posts={userPosts} />
+      <p>Your profile details will appear here.</p>
     </div>
   );
 };
 
 export default UserProfile;
-
-
