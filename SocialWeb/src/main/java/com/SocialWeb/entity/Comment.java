@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="web_comment")
+@Table(name = "web_comment")
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,12 +21,12 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnore
+    @JsonBackReference("user-comments")
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id")
-    @JsonIgnore
-    @JsonBackReference
+    @JsonBackReference("post-comments")
     private Post post;
 }
+

@@ -5,6 +5,8 @@ import com.SocialWeb.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -45,5 +47,13 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow();
 
         return "Post liked successfully";
+    }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public void createUser(User user) {
+        userRepository.save(user); // Save the user entity to the database
     }
 }

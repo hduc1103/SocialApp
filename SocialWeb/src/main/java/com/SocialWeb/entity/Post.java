@@ -1,6 +1,6 @@
 package com.SocialWeb.entity;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="web_post")
+@Table(name = "web_post")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,10 +24,10 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnore
+    @JsonBackReference("user-posts")  // Reference the same unique name
     private User user;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("post-comments")  // Use a unique reference name for comments
     private List<Comment> comments;
 }

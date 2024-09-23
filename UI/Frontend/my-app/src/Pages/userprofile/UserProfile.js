@@ -15,10 +15,9 @@ const UserProfile = () => {
       navigate('/login');
     }
 
-    // Fetch user details
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/profile', {
+        const response = await fetch('http://localhost:8080/api/user/info', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
