@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Post from '../../components/post/Post';
 import './userprofile.scss';
 
 const UserProfile = () => {
@@ -73,10 +74,7 @@ const UserProfile = () => {
         {userPosts.length > 0 ? (
           <div className="post-list">
             {userPosts.map((post) => (
-              <div key={post.id} className="post-card">
-                <p>{post.content}</p>
-                <span>{new Date(post.createdAt).toLocaleString()}</span>
-              </div>
+              <Post key={post.id} post={post} />
             ))}
           </div>
         ) : (
