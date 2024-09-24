@@ -20,7 +20,7 @@ const PostComponent = ({ post }) => {
     console.log(token);
   
     try {
-      const response = await fetch(`${BASE_URL}/like/add_like?postId=${post.id}`, {
+      const response = await fetch(`${BASE_URL}/like/addLike?postId=${post.id}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -30,7 +30,7 @@ const PostComponent = ({ post }) => {
       if (response.status === 409) {
         console.log("User has already liked the post. Performing dislike...");
   
-        const dislikeResponse = await fetch(`${BASE_URL}/like/remove_like?postId=${post.id}`, {
+        const dislikeResponse = await fetch(`${BASE_URL}/like/removeLike?postId=${post.id}`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -60,7 +60,7 @@ const PostComponent = ({ post }) => {
       
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`${BASE_URL}/comment/add_comment?postId=${post.id}`, {
+        const response = await fetch(`${BASE_URL}/comment/addComment?postId=${post.id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

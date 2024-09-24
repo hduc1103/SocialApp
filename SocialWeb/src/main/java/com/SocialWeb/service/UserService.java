@@ -5,7 +5,11 @@ import com.SocialWeb.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
+
+import static com.SocialWeb.config.Message.*;
+import static com.SocialWeb.config.Message.UNEXPECTED_ERROR;
 
 @Service
 public class UserService {
@@ -19,12 +23,26 @@ public class UserService {
     @Autowired
     private CommentRepository commentRepository;
 
-    public String addFriend(Long userId, Long friendId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        User friend = userRepository.findById(friendId).orElseThrow();
-        user.getFriends().add(friend);
-        userRepository.save(user);
-        return "Friend added successfully";
+    public String addFriend(Long userId1, Long userId2) {
+        try {
+            System.out.println("bat dau");
+            User user1 = userRepository.findById(userId1).orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId1));
+            User user2 = userRepository.findById(userId2).orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId2));
+
+            user1.getFriends().add(user2);
+            user2.getFriends().add(user1);
+            userRepository.save(user1);
+            userRepository.save(user2);
+
+            return FRIEND_ADDED;
+
+        } catch (NoSuchElementException e) {
+            System.err.println(ERROR_MSG + e.getMessage());
+            return ERROR_MSG + e.getMessage();
+        } catch (Exception e) {
+            System.err.println(UNEXPECTED_ERROR + e.getMessage());
+            return UNEXPECTED_ERROR + e.getMessage();
+        }
     }
 
     public Optional<User> getUserByUsername(String username) {

@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
 
+import java.util.NoSuchElementException;
+
 import static com.SocialWeb.config.Message.*;
 
 @RestController
@@ -32,12 +34,6 @@ public class UserController {
 
     @Autowired
     private CustomUserDetailService customUserDetailService;
-
-    @PostMapping("/addFriend")
-    public String addFriend(@RequestParam Long userId, @RequestParam Long friendId) {
-
-        return userService.addFriend(userId, friendId);
-    }
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody User user) {
@@ -65,6 +61,20 @@ public class UserController {
         User user = userService.getUserByUsername(username).orElseThrow();
         UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail());
         return ResponseEntity.ok(userDTO);
+    }
+
+    @PostMapping("/addFriend")
+    public ResponseEntity<String> addFriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
+        String jwtToken = token.substring(7);
+        String username = jwtUtil.extractUsername(jwtToken);
+            User user = userService.getUserByUsername(username).orElseThrow();
+            Long userId1 = user.getId();
+
+            String response = userService.addFriend(userId1, userId2);
+            if (response.startsWith(ERROR_MSG)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }

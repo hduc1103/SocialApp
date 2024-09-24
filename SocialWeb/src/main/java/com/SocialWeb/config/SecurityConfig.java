@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/post/**").authenticated()
                         .requestMatchers("/api/user/create").permitAll()
                         .requestMatchers("/api/user/info").authenticated()
+                        .requestMatchers("/api/user/addFriend").authenticated()
                         .requestMatchers("/api/like/**").authenticated()
                         .requestMatchers("/api/comment/**").authenticated()
                 )

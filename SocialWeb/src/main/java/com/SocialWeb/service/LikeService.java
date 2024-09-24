@@ -30,12 +30,15 @@ public class LikeService {
     }
     public String dislikePost(String username, Long postId) {
         User user = userRepository.findByUsername(username).orElseThrow();
-        int alreadyLiked = postRepository.checkUserLikedPost(user.getId(), postId);
+        long user_id = Math.toIntExact(user.getId());
+        System.out.println(user_id);
+        System.out.println(postId);
+        int alreadyLiked = postRepository.checkUserLikedPost(user_id, postId);
         System.out.println("Already liked count: " + alreadyLiked);
-        if (alreadyLiked!=0) {
+        if (alreadyLiked == 0) {
             return N_LIKE;
         }
-        postRepository.removeLike(user.getId(), postId);
+        postRepository.removeLike(user_id, postId);
         return DISLIKE;
     }
 

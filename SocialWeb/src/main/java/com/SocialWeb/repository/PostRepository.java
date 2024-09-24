@@ -21,7 +21,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     void addLike(@Param("userId") Long userId, @Param("postId") Long postId);
 
     @Modifying
+    @Transactional
     @Query(value = "DELETE FROM web_likes WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
     void removeLike(@Param("userId") Long userId, @Param("postId") Long postId);
-
 }

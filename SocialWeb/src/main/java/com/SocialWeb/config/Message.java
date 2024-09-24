@@ -3,7 +3,7 @@ package com.SocialWeb.config;
 public class Message {
 
     //Error
-    public static final String UNEXPECTED_ERROR= "An unexpected error occurred: ";
+    public static final String UNEXPECTED_ERROR= "Error: An unexpected error occurred: ";
     public static final String ERROR_MSG ="Error: ";
 
     //Comment
@@ -23,5 +23,6 @@ public class Message {
     public static final String USER_NOT_FOUND = "User not found: ";
     public static final String INVALID_CREDENTIAL = "Invalid credentials";
     public static final String USERNAME_ALREADY_EXIST= "Username already exists";
+    public static final String FRIEND_ADDED = "Friend added successfully";
 
 }

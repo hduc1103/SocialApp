@@ -6,10 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import static com.SocialWeb.config.Message.*;
 
-@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/like")
 public class LikeController {
@@ -20,18 +18,18 @@ public class LikeController {
     @Autowired
     JwtUtil jwtUtil;
 
-    @PostMapping("/add_like")
+    @PostMapping("/addLike")
     public ResponseEntity<?> likePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
         String result = likeService.likePost(username, postId);
 
         if (result.equals(Y_LIKE)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(result); 
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
-    @PostMapping("/remove_like")
+    @PostMapping("/removeLike")
     public ResponseEntity<?> dislikePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
@@ -40,7 +38,6 @@ public class LikeController {
         if (result.equals(N_LIKE)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
-
 }
