@@ -27,33 +27,15 @@ public class UserService {
         return "Friend added successfully";
     }
 
-    public String createPost(Long userId, String content) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Post post = new Post(null, content, user, null);
-        postRepository.save(post);
-        return "Post created successfully";
-    }
-
-    public String addComment(Long postId, Long userId, String text) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Post post = postRepository.findById(postId).orElseThrow();
-        Comment comment = new Comment(null, text, user, post);
-        commentRepository.save(comment);
-        return "Comment added successfully";
-    }
-
-    public String likePost(Long postId, Long userId) {
-        Post post = postRepository.findById(postId).orElseThrow();
-        User user = userRepository.findById(userId).orElseThrow();
-
-        return "Post liked successfully";
-    }
-
     public Optional<User> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
     public void createUser(User user) {
-        userRepository.save(user); // Save the user entity to the database
+        userRepository.save(user);
+    }
+
+    public boolean existsByUsername(String username){
+        return  userRepository.existsByUsername(username);
     }
 }

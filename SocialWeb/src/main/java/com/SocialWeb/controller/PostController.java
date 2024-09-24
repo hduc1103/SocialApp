@@ -7,10 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api/post")
 public class PostController {
 
     @Autowired
@@ -24,5 +25,13 @@ public class PostController {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
         return postService.getPostsByUser(username);
+    }
+
+    @PostMapping("/create")
+    public  String createPost(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> postData){
+        String jwtToken = token.substring(7);
+        String username = jwtUtil.extractUsername(jwtToken);
+        String content = postData.get("content");
+        return postService.createPost(username, content);
     }
 }

@@ -11,7 +11,7 @@ const UserProfile = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
+    console.log(token)
     if (!token) {
       navigate('/login');
     }
@@ -35,11 +35,9 @@ const UserProfile = () => {
         setError(error.message);
       }
     };
-
-    // Fetch user's posts
     const fetchUserPosts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/posts/user', {
+        const response = await fetch('http://localhost:8080/api/post/user', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

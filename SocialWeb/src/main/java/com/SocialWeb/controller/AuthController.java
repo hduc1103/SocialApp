@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.SocialWeb.config.Message.INVALID_CREDENTIAL;
+
 @RestController
 @RequestMapping("/api")
 public class AuthController {
@@ -35,7 +38,7 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(INVALID_CREDENTIAL);
         }
 
         final UserDetails userDetails = customUserDetailService.loadUserByUsername(authRequest.getUsername());

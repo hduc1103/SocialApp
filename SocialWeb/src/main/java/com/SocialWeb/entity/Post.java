@@ -1,12 +1,14 @@
 package com.SocialWeb.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.SocialWeb.entity.Comment;
+import com.SocialWeb.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.util.List;
 
@@ -24,10 +26,21 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonBackReference("user-posts")  // Reference the same unique name
+    @JsonBackReference("user-posts")
     private User user;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    @JsonManagedReference("post-comments")  // Use a unique reference name for comments
+    @JsonManagedReference("post-comments")
     private List<Comment> comments;
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "likedPosts")
+    private List<User> likedByUsers;
+
+    // Timestamps for tracking post creation and updates (optional)
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date updateAt;
 }

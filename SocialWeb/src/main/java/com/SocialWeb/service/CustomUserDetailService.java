@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+import static com.SocialWeb.config.Message.USER_NOT_FOUND;
+
 @Service
 public class CustomUserDetailService implements UserDetailsService {
 
@@ -19,7 +21,7 @@ public class CustomUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND + username));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),

@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -28,5 +27,10 @@ public class Comment {
     @JoinColumn(name = "post_id", referencedColumnName = "id")
     @JsonBackReference("post-comments")
     private Post post;
-}
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date updatedAt;
+}
