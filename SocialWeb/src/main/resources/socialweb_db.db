@@ -1,0 +1,82 @@
+USE socialweb_db;
+
+SELECT * FROM web_user;
+
+SELECT * FROM web_post;
+
+CREATE TABLE web_user (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+--Them cot ID
+CREATE TABLE web_friends (
+    user_id1 BIGINT NOT NULL,
+    user_id2 BIGINT NOT NULL,
+    PRIMARY KEY (user_id1, user_id2),
+    FOREIGN KEY (user_id1) REFERENCES web_user(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id2) REFERENCES web_user(id) ON DELETE CASCADE
+);
+
+CREATE TABLE web_post (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    content TEXT NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES web_user(id)
+);
+
+CREATE TABLE web_comment (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    text TEXT NOT NULL,
+    post_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES web_post(id),
+    FOREIGN KEY (user_id) REFERENCES web_user(id)
+);
+
+CREATE TABLE web_likes (
+    user_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
+    PRIMARY KEY (user_id, post_id),
+    FOREIGN KEY (user_id) REFERENCES web_user(id),
+    FOREIGN KEY (post_id) REFERENCES web_post(id)
+);
+
+INSERT INTO web_user (username, password, email) VALUES
+('john_doe', 'password1', 'john.doe@example.com'),
+('jane_smith', 'password2', 'jane.smith@example.com'),
+('admin_user', 'adminpassword', 'admin@example.com');
+
+-- Insert friendships (Many-to-Many relationship between users)
+-- Assuming a join table `user_friends` has been auto-generated for the @ManyToMany relationship in User entity
+INSERT INTO web_friends (user_id1, user_id2) VALUES
+(1, 2),  -- John is friends with Jane
+(2, 1);  -- Jane is friends with John
+
+-- Insert sample posts
+INSERT INTO web_post (content, user_id) VALUES
+('This is John Doe\'s first post', 1),  -- Post by John Doe (user_id=1)
+('Jane Smith sharing her thoughts', 2), -- Post by Jane Smith (user_id=2)
+('Admin making an announcement', 3);    -- Post by Admin (user_id=3)
+
+-- Insert comments on posts
+INSERT INTO web_comment (text, user_id, post_id) VALUES
+('Nice post, John!', 2, 1),  -- Jane comments on John\'s post
+('Great insights, Jane!', 1, 2),  -- John comments on Jane\'s post
+('This is important information!', 2, 3);  -- Jane comments on Admin\'s post
+
+SELECT * FROM web_likes;
+DELETE FROM web_likes WHERE user_id =1;
+SELECT * FROM web_comment;
+SELECT * FROM web_user;
+SELECT * FROM web_friends;
+SELECT * FROM web_post;
+UPDATE web_user SET dtype = 'User' WHERE id IN (1, 2); -- For regular users
+UPDATE web_user SET dtype = 'Admin' WHERE id = 3;      -- For admin user

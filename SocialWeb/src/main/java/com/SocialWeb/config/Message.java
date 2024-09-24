@@ -24,5 +24,7 @@ public class Message {
     public static final String INVALID_CREDENTIAL = "Invalid credentials";
     public static final String USERNAME_ALREADY_EXIST= "Username already exists";
     public static final String FRIEND_ADDED = "Friend added successfully";
+    public static final String Y_FRIEND = "2 users are friends";
+    public static final String N_FRIEND = "2 users are not friends";
 
 }

@@ -4,6 +4,8 @@ import com.SocialWeb.entity.Post;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +28,10 @@ public class PostController {
     }
 
     @PostMapping("/create")
-    public  String createPost(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> postData){
+    public ResponseEntity<?> createPost(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> postData){
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
         String content = postData.get("content");
-        return postService.createPost(username, content);
+        return ResponseEntity.status(HttpStatus.OK).body(postService.createPost(username, content));
     }
 }

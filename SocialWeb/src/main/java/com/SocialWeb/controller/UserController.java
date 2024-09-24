@@ -77,4 +77,21 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/friendStat")
+    public ResponseEntity<String> checkFriendStatus(@RequestHeader("Authorization") String token, @RequestParam Long userId2){
+        String jwtToken = token.substring(7);
+        String username = jwtUtil.extractUsername(jwtToken);
+
+        User user = userService.getUserByUsername(username).orElseThrow();
+        Long userId1 = user.getId();
+
+        String response = userService.checkFriendStatus(userId1, userId2);
+
+        if(response.equals(Y_FRIEND)){
+            return ResponseEntity.status(HttpStatus.OK).body(Y_FRIEND);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(N_FRIEND);
+    }
 }
+
+
