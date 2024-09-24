@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Post from '../../components/post/Post';
+import FloatingButton from '../../components/floatingbutton/FloatingButton';
 import './userprofile.scss';
 
 const UserProfile = () => {
@@ -9,13 +10,15 @@ const UserProfile = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const handleNewPost = () => {
+    navigate('/new-post');
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log(token)
     if (!token) {
       navigate('/login');
     }
-
     const fetchUserProfile = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/user/info', {
@@ -35,6 +38,7 @@ const UserProfile = () => {
         setError(error.message);
       }
     };
+
     const fetchUserPosts = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/post/user', {
@@ -61,9 +65,19 @@ const UserProfile = () => {
 
   return (
     <div className="user-profile">
+      <FloatingButton onClick={handleNewPost} />
       <div className="profile-header">
-        <h1>{userDetails ? `${userDetails.username}'s Profile` : 'User Profile'}</h1>
-        <p>{userDetails ? `Email: ${userDetails.email}` : 'Loading user details...'}</p>
+        <div className="profile-details">
+          <img
+            src="https://via.placeholder.com/150"
+            alt="Profile"
+            className="profile-picture"
+          />
+          <div className="user-info">
+            <h1>{userDetails ? `${userDetails.username}'s Profile` : 'User Profile'}</h1>
+            <p>{userDetails ? `Email: ${userDetails.email}` : 'Loading user details...'}</p>
+          </div>
+        </div>
         {error && <p className="error">{error}</p>}
       </div>
 

@@ -28,7 +28,8 @@ public class PostController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createPost(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> postData){
+    public ResponseEntity<?> createPost(@RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> postData) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
         String content = postData.get("content");

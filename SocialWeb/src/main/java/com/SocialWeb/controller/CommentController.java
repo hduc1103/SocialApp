@@ -19,7 +19,8 @@ public class CommentController {
     CommentService commentService;
 
     @PostMapping("/addComment")
-    public ResponseEntity<?> addComment(@RequestHeader("Authorization") String token, @RequestParam Long postId, @RequestBody Map<String, String> text) {
+    public ResponseEntity<?> addComment(@RequestHeader("Authorization") String token, @RequestParam Long postId,
+            @RequestBody Map<String, String> text) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
         String content = text.get("text");
@@ -29,12 +30,14 @@ public class CommentController {
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    @PostMapping("deleteComment")
-    public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @RequestParam Long postId, @RequestParam Long cmtId){
+
+    @PostMapping("/deleteComment")
+    public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @RequestParam Long postId,
+            @RequestParam Long cmtId) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
-        String response = commentService.deleteComment(postId, username,  cmtId);
-        if(response.startsWith(ERROR_MSG)){
+        String response = commentService.deleteComment(postId, username, cmtId);
+        if (response.startsWith(ERROR_MSG)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);

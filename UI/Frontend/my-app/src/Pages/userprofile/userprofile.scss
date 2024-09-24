@@ -1,25 +1,98 @@
 .user-profile {
-  padding: 2rem;
-  background-color: #f4f4f4;
+  background-color: #121212;
+  color: #e0e0e0;
+  padding: 20px;
+  padding-top: 85px;
 
   .profile-header {
-    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    margin-bottom: 20px;
+
     h1 {
-      margin-bottom: 0.5rem;
+      color: #fff;
+      font-size: 24px;
     }
 
     p {
-      color: #666;
+      color: #b0b0b0;
     }
 
-    .error {
-      color: red;
+    .profile-actions {
+      display: flex;
+      gap: 10px;
+
+      button {
+        background-color: #333;
+        border: none;
+        padding: 10px 15px;
+        color: #fff;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: #555;
+        }
+      }
     }
   }
 
   .posts-section {
     h2 {
-      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .post-list {
+      .post-card {
+        background-color: #1e1e1e;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        color: #e0e0e0;
+
+        .post-actions {
+          display: flex;
+          gap: 10px;
+          margin-top: 10px;
+
+          button {
+            background-color: #333;
+            border: none;
+            padding: 8px 12px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+              background-color: #555;
+            }
+          }
+        }
+
+        .post-comments {
+          margin-top: 20px;
+
+          h4 {
+            color: #b0b0b0;
+          }
+
+          ul {
+            list-style: none;
+            padding: 0;
+
+            li {
+              margin: 5px 0;
+              color: #ccc;
+            }
+          }
+        }
+      }
     }
   }
 }

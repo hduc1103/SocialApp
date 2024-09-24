@@ -15,7 +15,6 @@ import java.util.NoSuchElementException;
 
 import static com.SocialWeb.config.Message.*;
 
-
 @Service
 public class CommentService {
 
@@ -38,16 +37,16 @@ public class CommentService {
             comment.setCreatedAt(new Date());
             commentRepository.save(comment);
             return CMT_ADD;
-        }catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             System.err.println(ERROR_MSG + e.getMessage());
             return ERROR_MSG + e.getMessage();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
             return UNEXPECTED_ERROR + e.getMessage();
         }
     }
 
-    public String deleteComment(Long postId, String username, Long cmtId){
+    public String deleteComment(Long postId, String username, Long cmtId) {
         System.out.println("Su dung delete cmt");
         try {
             User user = userRepository.findByUsername(username).orElseThrow();
@@ -56,10 +55,10 @@ public class CommentService {
 
             commentRepository.deleteById(cmtId);
             return CMT_DEL;
-        }catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             System.err.println(ERROR_MSG + e.getMessage());
             return ERROR_MSG + e.getMessage();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
             return UNEXPECTED_ERROR + e.getMessage();
         }

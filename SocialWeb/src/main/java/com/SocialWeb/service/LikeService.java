@@ -27,6 +27,7 @@ public class LikeService {
         postRepository.addLike(user.getId(), postId);
         return LIKE;
     }
+
     public String dislikePost(String username, Long postId) {
         User user = userRepository.findByUsername(username).orElseThrow();
         long user_id = Math.toIntExact(user.getId());
@@ -37,6 +38,5 @@ public class LikeService {
         postRepository.removeLike(user_id, postId);
         return DISLIKE;
     }
-
 
 }

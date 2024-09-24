@@ -44,8 +44,7 @@ public class UserController {
         userService.createUser(user);
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(INVALID_CREDENTIAL);
         }
@@ -67,18 +66,19 @@ public class UserController {
     public ResponseEntity<String> addFriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
-            User user = userService.getUserByUsername(username).orElseThrow();
-            Long userId1 = user.getId();
+        User user = userService.getUserByUsername(username).orElseThrow();
+        Long userId1 = user.getId();
 
-            String response = userService.addFriend(userId1, userId2);
-            if (response.startsWith(ERROR_MSG)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(response);
+        String response = userService.addFriend(userId1, userId2);
+        if (response.startsWith(ERROR_MSG)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/friendStat")
-    public ResponseEntity<String> checkFriendStatus(@RequestHeader("Authorization") String token, @RequestParam Long userId2){
+    public ResponseEntity<String> checkFriendStatus(@RequestHeader("Authorization") String token,
+            @RequestParam Long userId2) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
 
@@ -87,11 +87,9 @@ public class UserController {
 
         String response = userService.checkFriendStatus(userId1, userId2);
 
-        if(response.equals(Y_FRIEND)){
+        if (response.equals(Y_FRIEND)) {
             return ResponseEntity.status(HttpStatus.OK).body(Y_FRIEND);
         }
         return ResponseEntity.status(HttpStatus.OK).body(N_FRIEND);
     }
 }
-
-

@@ -29,7 +29,7 @@ public class PostService {
         return postRepository.findByUser(user);
     }
 
-    public String createPost(String username, String content){
+    public String createPost(String username, String content) {
         User user = userRepository.findByUsername(username).orElseThrow();
         Post post = new Post();
         post.setUser(user);

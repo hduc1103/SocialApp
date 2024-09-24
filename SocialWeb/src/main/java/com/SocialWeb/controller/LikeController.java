@@ -29,6 +29,7 @@ public class LikeController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
     @PostMapping("/removeLike")
     public ResponseEntity<?> dislikePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
         String jwtToken = token.substring(7);

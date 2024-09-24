@@ -24,4 +24,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Transactional
     @Query(value = "DELETE FROM web_likes WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
     void removeLike(@Param("userId") Long userId, @Param("postId") Long postId);
+
+    @Query("SELECT p FROM Post p WHERE p.content LIKE %:keyword%")
+    List<Post> searchPostsByContent(@Param("keyword") String keyword);
 }

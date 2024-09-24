@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { BASE_URL } from '../../service/config'
-import { useNavigate } from 'react-router-dom'; 
+import { BASE_URL } from '../../service/config';
+import { useNavigate } from 'react-router-dom';
+import './post.scss';
 
 const PostComponent = ({ post }) => {
   const [likes, setLikes] = useState(0);
@@ -10,15 +11,13 @@ const PostComponent = ({ post }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
     if (!token) {
       navigate('/login');
     }
-  }, [navigate]); 
+  }, [navigate]);
+
   const handleLike = async () => {
-    const token = localStorage.getItem('token'); 
-    console.log(token);
-  
+    const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${BASE_URL}/like/addLike?postId=${post.id}`, {
         method: 'POST',
@@ -26,21 +25,18 @@ const PostComponent = ({ post }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (response.status === 409) {
-        console.log("User has already liked the post. Performing dislike...");
-  
         const dislikeResponse = await fetch(`${BASE_URL}/like/removeLike?postId=${post.id}`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-  
+
         if (!dislikeResponse.ok) {
           throw new Error('Failed to dislike the post');
         }
-  
         setLikes(likes - 1);
       } else if (!response.ok) {
         throw new Error('Failed to like the post');
@@ -51,13 +47,10 @@ const PostComponent = ({ post }) => {
       console.error('Error handling like/dislike:', error);
     }
   };
+
   const handleComment = async (e) => {
     e.preventDefault();
     if (comment.trim()) {
-      const newComment = { text: comment };
-      setComments([...comments, newComment]);
-      setComment('');
-      
       const token = localStorage.getItem('token');
       try {
         const response = await fetch(`${BASE_URL}/comment/addComment?postId=${post.id}`, {
@@ -68,34 +61,38 @@ const PostComponent = ({ post }) => {
           },
           body: JSON.stringify({ text: comment }),
         });
-  
+
         if (!response.ok) {
           throw new Error('Failed to add comment');
         }
-  
-        const responseData = await response.json();
-        console.log('Comment added:', responseData);
+
+        setComments([...comments, { text: comment }]);
+        setComment('');
       } catch (error) {
         console.error('Error adding comment:', error);
       }
     }
   };
-  
-  return (
-    <div>
-      <p>{post.content}</p>
-      <button onClick={handleLike}>Like ({likes})</button>
-      <form onSubmit={handleComment}>
-        <input
-          type="text"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Add a comment"
-        />
-        <button type="submit">Comment</button>
-      </form>
 
-      <div>
+  return (
+    <div className="post-card">
+      <p className="post-content">{post.content}</p>
+      <div className="post-actions">
+        <button className="like-button" onClick={handleLike}>
+          Like ({likes})
+        </button>
+        <form className="comment-form" onSubmit={handleComment}>
+          <input
+            type="text"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Add a comment"
+            className="comment-input"
+          />
+          <button className="comment-button" type="submit">Comment</button>
+        </form>
+      </div>
+      <div className="post-comments">
         <h4>Comments:</h4>
         <ul>
           {comments.map((comment, index) => (

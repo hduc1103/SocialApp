@@ -21,42 +21,34 @@ import static com.SocialWeb.config.Message.UNEXPECTED_ERROR;
 @DiscriminatorValue("User")
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"friends"})
+@JsonIgnoreProperties({ "friends" })
 @Table(name = "web_user")
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    private String username;
-    private String password;
-    private String email;
+        private String username;
+        private String password;
+        private String email;
 
-    @ManyToMany
-    @JoinTable(
-            name = "web_friends",
-            joinColumns = @JoinColumn(name = "user_id1"),
-            inverseJoinColumns = @JoinColumn(name = "user_id2")
-    )
+        @ManyToMany
+        @JoinTable(name = "web_friends", joinColumns = @JoinColumn(name = "user_id1"), inverseJoinColumns = @JoinColumn(name = "user_id2"))
 
-    @JsonIgnoreProperties("friends")
-    @JsonIgnore
-    private List<User> friends;
+        @JsonIgnoreProperties("friends")
+        @JsonIgnore
+        private List<User> friends;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference("user-posts")
-    private List<Post> posts;
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+        @JsonManagedReference("user-posts")
+        private List<Post> posts;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference("user-comments")
-    private List<Comment> comments;
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+        @JsonManagedReference("user-comments")
+        private List<Comment> comments;
 
-    @ManyToMany
-    @JsonIgnore
-    @JoinTable(
-            name = "web_likes",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "post_id")
-    )
-    private List<Post> likedPosts;
+        @ManyToMany
+        @JsonIgnore
+        @JoinTable(name = "web_likes", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
+        private List<Post> likedPosts;
 }
