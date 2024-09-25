@@ -33,11 +33,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "SELECT COUNT(post_id) FROM web_likes WHERE post_id = :postId", nativeQuery = true)
     long LikeCount(@Param("postId") long postId);
 
-//
-//    @Transactional
-//    @Query(value = "SELECT * FROM web_post JOIN web_user ON web_post.user_id = web_user.id WHERE web_user.username = :userName;", nativeQuery = true)
-//    List<Post> getPostByUsername(@Param("userName") String userName);
-
     @Transactional
     @Query(value = "SELECT wp.id as post_id, wp.content, wp.created_at, wp.updated_at, COUNT(wl.user_id) as like_count " +
             "FROM web_post wp " +
@@ -45,5 +40,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE wp.user_id = (SELECT wu.id FROM web_user wu WHERE wu.username = :userName) " +
             "GROUP BY wp.id, wp.content, wp.created_at, wp.updated_at", nativeQuery = true)
     List<Object[]> getPostsWithLikeCountByUsername(@Param("userName") String userName);
-
 }

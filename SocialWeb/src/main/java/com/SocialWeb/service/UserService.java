@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static com.SocialWeb.config.Message.*;
-import static com.SocialWeb.config.Message.UNEXPECTED_ERROR;
+import static com.SocialWeb.Message.*;
+import static com.SocialWeb.Message.UNEXPECTED_ERROR;
 
 @Service
 public class UserService {
@@ -70,7 +70,7 @@ public class UserService {
     public void createUser(User user) {
         userRepository.save(user);
     }
-
+    public void deleteUser(User user){ userRepository.delete(user);}
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }

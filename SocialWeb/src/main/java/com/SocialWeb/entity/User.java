@@ -9,10 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-
-import static com.SocialWeb.config.Message.*;
-import static com.SocialWeb.config.Message.UNEXPECTED_ERROR;
 
 @Entity
 @Data
@@ -31,7 +27,10 @@ public class User {
         private String username;
         private String password;
         private String email;
-        
+
+//        private String img_url;
+//        private String bio;
+
         @ManyToMany
         @JoinTable(name = "web_friends", joinColumns = @JoinColumn(name = "user_id1"), inverseJoinColumns = @JoinColumn(name = "user_id2"))
 

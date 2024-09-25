@@ -1,11 +1,11 @@
-package com.SocialWeb.dto;
+package com.SocialWeb.domain.response;
 
 import lombok.Data;
 
 import java.sql.Timestamp;
 
 @Data
-public class PostDTO {
+public class PostResponse {
     private Long id;
     private String content;
     private Timestamp createdAt;

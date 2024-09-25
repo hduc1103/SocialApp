@@ -27,7 +27,7 @@ const Header = () => {
   const handleSearch = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}/search/result?keyword=${searchTerm}`, {
+      const response = await fetch(`${BASE_URL}/user/search/result?keyword=${searchTerm}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,

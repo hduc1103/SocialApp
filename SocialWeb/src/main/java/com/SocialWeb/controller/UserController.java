@@ -1,26 +1,32 @@
 package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.response.AuthResponse;
-import com.SocialWeb.dto.UserDTO;
+import com.SocialWeb.domain.response.UserResponse;
+import com.SocialWeb.entity.Post;
 import com.SocialWeb.entity.User;
-import com.SocialWeb.service.CustomUserDetailService;
+import com.SocialWeb.repository.PostRepository;
+import com.SocialWeb.repository.UserRepository;
+import com.SocialWeb.service.UserDetail;
 import com.SocialWeb.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
 
-import java.util.NoSuchElementException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static com.SocialWeb.config.Message.*;
+import static com.SocialWeb.Message.*;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
@@ -33,33 +39,51 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private CustomUserDetailService customUserDetailService;
+    private UserRepository userRepository;
 
-    @PostMapping("/create")
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserDetail userDetail;
+
+    @PostMapping("/createUser")
     public ResponseEntity<?> createUser(@RequestBody User user) {
         if (userService.existsByUsername(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         }
-
-        userService.createUser(user);
+        String rawPassword = user.getPassword();
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), rawPassword));  // Use rawPassword here
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(INVALID_CREDENTIAL);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-        final UserDetails userDetails = customUserDetailService.loadUserByUsername(user.getUsername());
+        final UserDetails userDetails = userDetail.loadUserByUsername(user.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
+    @PostMapping("/deleteUser")
+    public void deleteUser(@RequestHeader("Authorization") String token){
+        String jwtToken = token.substring(7);
+        String username = jwtUtil.extractUsername(jwtToken);
 
-    @GetMapping("/info")
-    public ResponseEntity<UserDTO> getUserInfo(@RequestHeader("Authorization") String token) {
+        User user = userService.getUserByUsername(username).orElseThrow();
+        userService.deleteUser(user);
+    }
+
+    @GetMapping("/getUserData")
+    public ResponseEntity<UserResponse> getUserInfo(@RequestHeader("Authorization") String token) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
         User user = userService.getUserByUsername(username).orElseThrow();
-        UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail());
-        return ResponseEntity.ok(userDTO);
+        UserResponse userResponse = new UserResponse(user.getId(), user.getUsername(), user.getEmail());
+        return ResponseEntity.ok(userResponse);
     }
 
     @PostMapping("/addFriend")
@@ -76,7 +100,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/friendStat")
+    @GetMapping("/checkFriendStatus")
     public ResponseEntity<String> checkFriendStatus(@RequestHeader("Authorization") String token,
             @RequestParam Long userId2) {
         String jwtToken = token.substring(7);
@@ -91,5 +115,17 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(Y_FRIEND);
         }
         return ResponseEntity.status(HttpStatus.OK).body(N_FRIEND);
+    }
+
+    @GetMapping("/search")
+    public Map<String, Object> searchCombined(@RequestParam("keyword") String keyword) {
+        List<User> userEntities = userRepository.searchUsersByUsername(keyword);
+        List<Post> postEntities = postRepository.searchPostsByContent(keyword);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("users", userEntities);
+        result.put("posts", postEntities);
+
+        return result;
     }
 }

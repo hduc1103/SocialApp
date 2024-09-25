@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
-import static com.SocialWeb.config.Message.USER_NOT_FOUND;
+import static com.SocialWeb.Message.USER_NOT_FOUND;
 
 @Service
-public class CustomUserDetailService implements UserDetailsService {
+public class UserDetail implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;

@@ -1,4 +1,4 @@
-package com.SocialWeb.config;
+package com.SocialWeb;
 
 public class Message {
 
@@ -18,6 +18,8 @@ public class Message {
 
     // Post
     public static final String Y_POST = "Post created successfully";
+    public static final String D_POST = "Post deleted";
+    public static final String U_POST = "Post updated";
 
     // User
     public static final String USER_NOT_FOUND = "User not found: ";

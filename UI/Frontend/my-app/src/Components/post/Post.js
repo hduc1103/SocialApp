@@ -19,7 +19,7 @@ const PostComponent = ({ post }) => {
   const handleLike = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/like/addLike?postId=${post.id}`, {
+      const response = await fetch(`${BASE_URL}/interact/like?postId=${post.id}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -27,7 +27,7 @@ const PostComponent = ({ post }) => {
       });
 
       if (response.status === 409) {
-        const dislikeResponse = await fetch(`${BASE_URL}/like/removeLike?postId=${post.id}`, {
+        const dislikeResponse = await fetch(`${BASE_URL}/interact/dislike?postId=${post.id}`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -53,7 +53,7 @@ const PostComponent = ({ post }) => {
     if (comment.trim()) {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`${BASE_URL}/comment/addComment?postId=${post.id}`, {
+        const response = await fetch(`${BASE_URL}/interact/addComment?postId=${post.id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

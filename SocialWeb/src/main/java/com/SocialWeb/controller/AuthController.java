@@ -3,7 +3,7 @@ package com.SocialWeb.controller;
 import com.SocialWeb.domain.request.AuthRequest;
 import com.SocialWeb.domain.response.AuthResponse;
 import com.SocialWeb.security.JwtUtil;
-import com.SocialWeb.service.CustomUserDetailService;
+import com.SocialWeb.service.UserDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,20 +13,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import static com.SocialWeb.config.Message.INVALID_CREDENTIAL;
+import static com.SocialWeb.Message.INVALID_CREDENTIAL;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/auth")
 public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private CustomUserDetailService customUserDetailService;
+    private UserDetail userDetail;
     @Autowired
     private JwtUtil jwtUtil;
 
-    @PostMapping("/authenticate")
+    @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestBody AuthRequest authRequest) throws Exception {
         try {
             authenticationManager.authenticate(
@@ -35,7 +35,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(INVALID_CREDENTIAL);
         }
 
-        final UserDetails userDetails = customUserDetailService.loadUserByUsername(authRequest.getUsername());
+        final UserDetails userDetails = userDetail.loadUserByUsername(authRequest.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthResponse(jwt));

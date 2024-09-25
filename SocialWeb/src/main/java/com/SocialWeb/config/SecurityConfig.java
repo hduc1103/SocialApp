@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -35,16 +36,19 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/authenticate").permitAll()
-                        .requestMatchers("/api/post/user").authenticated()
-                        .requestMatchers("/api/post/create").authenticated()
-                        .requestMatchers("/api/post/likeCount").permitAll()
-                        .requestMatchers("/api/user/create").permitAll()
-                        .requestMatchers("/api/user/info").authenticated()
-                        .requestMatchers("/api/user/addFriend").authenticated()
-                        .requestMatchers("/api/like/**").authenticated()
-                        .requestMatchers("/api/search/result").authenticated()
-                        .requestMatchers("/api/comment/**").authenticated())
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/interact/**").authenticated()
+                        .requestMatchers("/post/numberOfLikes").permitAll()
+                        .requestMatchers("/post/getUserPost").authenticated()
+                        .requestMatchers("/post/createPost").authenticated()
+                        .requestMatchers("/post/deletePost").authenticated()
+                        .requestMatchers("/post/updatePost").authenticated()
+                        .requestMatchers("/user/createUser").permitAll()
+                        .requestMatchers("/user/deleteUSer").permitAll()
+                        .requestMatchers("/user/search").permitAll()
+                        .requestMatchers("/user/getUserData").authenticated()
+                        .requestMatchers("/user/addFriend").authenticated()
+                        .requestMatchers("/user/checkFriendStatus").authenticated())
                 .cors(withDefaults())
                 .headers(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -68,7 +72,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 
     @Bean

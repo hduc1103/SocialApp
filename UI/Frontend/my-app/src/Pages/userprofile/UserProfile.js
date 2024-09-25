@@ -40,7 +40,7 @@ const UserProfile = () => {
 
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/user/info`, {
+        const response = await fetch(`${BASE_URL}/user/getUserData`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -60,7 +60,7 @@ const UserProfile = () => {
 
     const fetchUserPosts = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/post/user`, {
+        const response = await fetch(`${BASE_URL}/post/getUserPost`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ const UserProfile = () => {
       const updatedPosts = await Promise.all(
         posts.map(async (post) => {
           try {
-            const response = await fetch(`${BASE_URL}/post/likeCount?postId=${post.id}`, {
+            const response = await fetch(`${BASE_URL}/post/numberOfLikes?postId=${post.id}`, {
               method: 'GET',
               headers: {
                 Authorization: `Bearer ${token}`,

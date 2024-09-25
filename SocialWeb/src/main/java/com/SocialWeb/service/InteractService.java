@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.NoSuchElementException;
 
-import static com.SocialWeb.config.Message.*;
+import static com.SocialWeb.Message.*;
 
 @Service
-public class CommentService {
+public class InteractService {
 
     @Autowired
     UserRepository userRepository;
@@ -25,7 +25,6 @@ public class CommentService {
     CommentRepository commentRepository;
 
     public String addComment(Long postId, String username, String text) {
-        System.out.println("Su dung add comment");
         try {
             User user = userRepository.findByUsername(username).orElseThrow();
             Post post = postRepository.findById(postId).orElseThrow();
@@ -44,8 +43,14 @@ public class CommentService {
             return UNEXPECTED_ERROR + e.getMessage();
         }
     }
+    public void updateComment(Long commentId, String new_comment){
+        Comment comment = commentRepository.findById(commentId).orElseThrow();
+
+        comment.setText(new_comment);
+        comment.setUpdatedAt(new Date());
+        commentRepository.save(comment);
+    }
     public String deleteComment(Long postId, String username, Long cmtId) {
-        System.out.println("Su dung delete cmt");
         try {
             User user = userRepository.findByUsername(username).orElseThrow();
             Post post = postRepository.findById(postId).orElseThrow();
@@ -60,5 +65,25 @@ public class CommentService {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
             return UNEXPECTED_ERROR + e.getMessage();
         }
+    }
+    public String likePost(String username, Long postId) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+        int alreadyLiked = postRepository.checkUserLikedPost(user.getId(), postId);
+        if (alreadyLiked != 0) {
+            return Y_LIKE;
+        }
+        postRepository.addLike(user.getId(), postId);
+        return LIKE;
+    }
+
+    public String dislikePost(String username, Long postId) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+        long user_id = Math.toIntExact(user.getId());
+        int alreadyLiked = postRepository.checkUserLikedPost(user_id, postId);
+        if (alreadyLiked == 0) {
+            return N_LIKE;
+        }
+        postRepository.removeLike(user_id, postId);
+        return DISLIKE;
     }
 }
