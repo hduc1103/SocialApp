@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByUser(User user);
+
     @Query(value = "SELECT COUNT(*) > 0 FROM web_likes WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
     int checkUserLikedPost(@Param("userId") Long userId, @Param("postId") Long postId);
 
@@ -27,4 +28,22 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.content LIKE %:keyword%")
     List<Post> searchPostsByContent(@Param("keyword") String keyword);
+
+    @Transactional
+    @Query(value = "SELECT COUNT(post_id) FROM web_likes WHERE post_id = :postId", nativeQuery = true)
+    long LikeCount(@Param("postId") long postId);
+
+//
+//    @Transactional
+//    @Query(value = "SELECT * FROM web_post JOIN web_user ON web_post.user_id = web_user.id WHERE web_user.username = :userName;", nativeQuery = true)
+//    List<Post> getPostByUsername(@Param("userName") String userName);
+
+    @Transactional
+    @Query(value = "SELECT wp.id as post_id, wp.content, wp.created_at, wp.updated_at, COUNT(wl.user_id) as like_count " +
+            "FROM web_post wp " +
+            "LEFT JOIN web_likes wl ON wp.id = wl.post_id " +
+            "WHERE wp.user_id = (SELECT wu.id FROM web_user wu WHERE wu.username = :userName) " +
+            "GROUP BY wp.id, wp.content, wp.created_at, wp.updated_at", nativeQuery = true)
+    List<Object[]> getPostsWithLikeCountByUsername(@Param("userName") String userName);
+
 }

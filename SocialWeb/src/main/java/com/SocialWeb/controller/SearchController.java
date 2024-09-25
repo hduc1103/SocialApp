@@ -21,7 +21,7 @@ public class SearchController {
     @Autowired
     private PostRepository postRepository;
 
-    @GetMapping("/combined")
+    @GetMapping("/result")
     public Map<String, Object> searchCombined(@RequestParam("keyword") String keyword) {
         List<User> users = userRepository.searchUsersByUsername(keyword);
         List<Post> posts = postRepository.searchPostsByContent(keyword);

@@ -31,7 +31,7 @@ public class User {
         private String username;
         private String password;
         private String email;
-
+        
         @ManyToMany
         @JoinTable(name = "web_friends", joinColumns = @JoinColumn(name = "user_id1"), inverseJoinColumns = @JoinColumn(name = "user_id2"))
 

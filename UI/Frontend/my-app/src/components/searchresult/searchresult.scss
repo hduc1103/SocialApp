@@ -1,0 +1,54 @@
+.search-result-container {
+    background-color: #2e2e2e;
+    padding: 20px;
+    border-radius: 8px;
+    color: #fff;
+    margin-top: 20px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .result-section {
+    margin-bottom: 20px;
+  
+    h3 {
+      font-size: 1.5em;
+      color: #4caf50;
+      margin-bottom: 10px;
+    }
+  
+    ul {
+      list-style-type: none;
+      padding: 0;
+  
+      .result-item {
+        padding: 10px;
+        border-bottom: 1px solid #444;
+  
+        .result-name {
+          font-weight: bold;
+          color: #f1c40f;
+        }
+  
+        .result-email {
+          font-size: 0.9em;
+          color: #b3b3b3;
+        }
+  
+        .result-post-content {
+          font-size: 1.1em;
+          color: #e0e0e0;
+        }
+      }
+  
+      .result-item:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+  
+  .no-results {
+    text-align: center;
+    font-size: 1.2em;
+    color: #e74c3c;
+  }
+  

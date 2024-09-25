@@ -2,7 +2,6 @@
   background-color: #121212;
   color: #e0e0e0;
   padding: 20px;
-  padding-top: 85px;
 
   .profile-header {
     display: flex;
@@ -12,7 +11,9 @@
     background-color: #1e1e1e;
     border-radius: 10px;
     margin-bottom: 20px;
-
+    .profile-picture{
+      border-radius: 10px ;
+    }
     h1 {
       color: #fff;
       font-size: 24px;

@@ -36,11 +36,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/authenticate").permitAll()
-                        .requestMatchers("/api/post/**").authenticated()
+                        .requestMatchers("/api/post/user").authenticated()
+                        .requestMatchers("/api/post/create").authenticated()
+                        .requestMatchers("/api/post/likeCount").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
                         .requestMatchers("/api/user/info").authenticated()
                         .requestMatchers("/api/user/addFriend").authenticated()
                         .requestMatchers("/api/like/**").authenticated()
+                        .requestMatchers("/api/search/result").authenticated()
                         .requestMatchers("/api/comment/**").authenticated())
                 .cors(withDefaults())
                 .headers(AbstractHttpConfigurer::disable)
@@ -53,7 +56,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3001");
+        configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);

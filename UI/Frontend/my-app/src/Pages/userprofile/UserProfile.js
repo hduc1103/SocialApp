@@ -2,16 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Post from '../../components/post/Post';
 import FloatingButton from '../../components/floatingbutton/FloatingButton';
+import AddNewPost from '../../components/addpostmodal/AddNewPost';
+import { BASE_URL } from '../../service/config';
 import './userprofile.scss';
+import Footer from '../../components/footer/footer';
 
 const UserProfile = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
   const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const navigate = useNavigate();
 
-  const handleNewPost = () => {
-    navigate('/new-post');
+  const handleNewPost = (content) => {
+    const token = localStorage.getItem('token');
+    fetch(`${BASE_URL}/post/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        setUserPosts([...userPosts, { ...data, likeCount: 0 }]); 
+      })
+      .catch(err => console.error(err));
   };
 
   useEffect(() => {
@@ -19,9 +37,10 @@ const UserProfile = () => {
     if (!token) {
       navigate('/login');
     }
+
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/user/info', {
+        const response = await fetch(`${BASE_URL}/user/info`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -41,7 +60,7 @@ const UserProfile = () => {
 
     const fetchUserPosts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/post/user', {
+        const response = await fetch(`${BASE_URL}/post/user`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -52,11 +71,39 @@ const UserProfile = () => {
           throw new Error('Failed to fetch user posts');
         }
 
-        const data = await response.json();
-        setUserPosts(data);
+        const posts = await response.json();
+        const postsWithLikes = await fetchPostLikeCounts(posts);
+        setUserPosts(postsWithLikes);
       } catch (error) {
         setError(error.message);
       }
+    };
+
+    const fetchPostLikeCounts = async (posts) => {
+      const token = localStorage.getItem('token');
+      const updatedPosts = await Promise.all(
+        posts.map(async (post) => {
+          try {
+            const response = await fetch(`${BASE_URL}/post/likeCount?postId=${post.id}`, {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to fetch like count');
+            }
+
+            const likeCount = await response.json();
+            return { ...post, likeCount }; 
+          } catch (error) {
+            console.error(`Error fetching like count for post ${post.id}:`, error);
+            return { ...post, likeCount: 0 }; 
+          }
+        })
+      );
+      return updatedPosts;
     };
 
     fetchUserProfile();
@@ -65,7 +112,8 @@ const UserProfile = () => {
 
   return (
     <div className="user-profile">
-      <FloatingButton onClick={handleNewPost} />
+      <FloatingButton onClick={() => setIsModalOpen(true)} />
+      <AddNewPost isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleNewPost} />
       <div className="profile-header">
         <div className="profile-details">
           <img
@@ -74,7 +122,7 @@ const UserProfile = () => {
             className="profile-picture"
           />
           <div className="user-info">
-            <h1>{userDetails ? `${userDetails.username}'s Profile` : 'User Profile'}</h1>
+            <h1>{userDetails ? `${userDetails.username}` : 'User Profile'}</h1>
             <p>{userDetails ? `Email: ${userDetails.email}` : 'Loading user details...'}</p>
           </div>
         </div>
@@ -93,6 +141,7 @@ const UserProfile = () => {
           <p>No posts to display.</p>
         )}
       </div>
+      <Footer></Footer>
     </div>
   );
 };

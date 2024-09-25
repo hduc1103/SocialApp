@@ -8,7 +8,6 @@ import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.SocialWeb.config.Message;
 
 import java.util.Date;
 import java.util.NoSuchElementException;
@@ -45,7 +44,6 @@ public class CommentService {
             return UNEXPECTED_ERROR + e.getMessage();
         }
     }
-
     public String deleteComment(Long postId, String username, Long cmtId) {
         System.out.println("Su dung delete cmt");
         try {

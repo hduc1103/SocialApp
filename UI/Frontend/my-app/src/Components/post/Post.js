@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './post.scss';
 
 const PostComponent = ({ post }) => {
-  const [likes, setLikes] = useState(0);
+  const [likes, setLikes] = useState(post.likeCount || 0); 
   const [comments, setComments] = useState(post.comments || []);
   const [comment, setComment] = useState('');
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ const PostComponent = ({ post }) => {
       } else if (!response.ok) {
         throw new Error('Failed to like the post');
       } else {
-        setLikes(likes + 1);
+        setLikes(likes + 1); 
       }
     } catch (error) {
       console.error('Error handling like/dislike:', error);
@@ -66,7 +66,7 @@ const PostComponent = ({ post }) => {
           throw new Error('Failed to add comment');
         }
 
-        setComments([...comments, { text: comment }]);
+        setComments([...comments, { text: comment }]); 
         setComment('');
       } catch (error) {
         console.error('Error adding comment:', error);
@@ -79,7 +79,7 @@ const PostComponent = ({ post }) => {
       <p className="post-content">{post.content}</p>
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
-          Like ({likes})
+          Like ({likes}) {/* Use the likes state here */}
         </button>
         <form className="comment-form" onSubmit={handleComment}>
           <input

@@ -26,7 +26,7 @@ const Login = () => {
       const data = await response.json();
       localStorage.setItem('token', data.jwt); 
       console.log('Token stored:', localStorage.getItem('token')); 
-      navigate('/dashboard'); 
+      navigate('/'); 
     } catch (error) {
       setError('Invalid credentials');
       console.error('Login error:', error);
