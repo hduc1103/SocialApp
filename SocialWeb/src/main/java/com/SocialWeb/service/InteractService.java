@@ -1,8 +1,8 @@
 package com.SocialWeb.service;
 
-import com.SocialWeb.entity.Comment;
-import com.SocialWeb.entity.Post;
-import com.SocialWeb.entity.User;
+import com.SocialWeb.entity.CommentEntity;
+import com.SocialWeb.entity.PostEntity;
+import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.CommentRepository;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
@@ -26,14 +26,14 @@ public class InteractService {
 
     public String addComment(Long postId, String username, String text) {
         try {
-            User user = userRepository.findByUsername(username).orElseThrow();
-            Post post = postRepository.findById(postId).orElseThrow();
-            Comment comment = new Comment();
-            comment.setUser(user);
-            comment.setPost(post);
-            comment.setText(text);
-            comment.setCreatedAt(new Date());
-            commentRepository.save(comment);
+            UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
+            PostEntity postEntity = postRepository.findById(postId).orElseThrow();
+            CommentEntity commentEntity = new CommentEntity();
+            commentEntity.setUser(userEntity);
+            commentEntity.setPost(postEntity);
+            commentEntity.setText(text);
+            commentEntity.setCreatedAt(new Date());
+            commentRepository.save(commentEntity);
             return CMT_ADD;
         } catch (NoSuchElementException e) {
             System.err.println(ERROR_MSG + e.getMessage());
@@ -44,17 +44,17 @@ public class InteractService {
         }
     }
     public void updateComment(Long commentId, String new_comment){
-        Comment comment = commentRepository.findById(commentId).orElseThrow();
+        CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow();
 
-        comment.setText(new_comment);
-        comment.setUpdatedAt(new Date());
-        commentRepository.save(comment);
+        commentEntity.setText(new_comment);
+        commentEntity.setUpdatedAt(new Date());
+        commentRepository.save(commentEntity);
     }
     public String deleteComment(Long postId, String username, Long cmtId) {
         try {
-            User user = userRepository.findByUsername(username).orElseThrow();
-            Post post = postRepository.findById(postId).orElseThrow();
-            Comment comment = commentRepository.findById(cmtId).orElseThrow();
+            UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
+            PostEntity postEntity = postRepository.findById(postId).orElseThrow();
+            CommentEntity commentEntity = commentRepository.findById(cmtId).orElseThrow();
 
             commentRepository.deleteById(cmtId);
             return CMT_DEL;
@@ -67,18 +67,18 @@ public class InteractService {
         }
     }
     public String likePost(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow();
-        int alreadyLiked = postRepository.checkUserLikedPost(user.getId(), postId);
+        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
+        int alreadyLiked = postRepository.checkUserLikedPost(userEntity.getId(), postId);
         if (alreadyLiked != 0) {
             return Y_LIKE;
         }
-        postRepository.addLike(user.getId(), postId);
+        postRepository.addLike(userEntity.getId(), postId);
         return LIKE;
     }
 
     public String dislikePost(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow();
-        long user_id = Math.toIntExact(user.getId());
+        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
+        long user_id = Math.toIntExact(userEntity.getId());
         int alreadyLiked = postRepository.checkUserLikedPost(user_id, postId);
         if (alreadyLiked == 0) {
             return N_LIKE;

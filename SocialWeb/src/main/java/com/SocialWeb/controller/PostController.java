@@ -1,6 +1,6 @@
 package com.SocialWeb.controller;
 
-import com.SocialWeb.entity.Post;
+import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class PostController {
     private JwtUtil jwtUtil;
 
     @GetMapping("/getUserPost")
-    public List<Post> getUserPosts(@RequestHeader("Authorization") String token) {
+    public List<PostEntity> getUserPosts(@RequestHeader("Authorization") String token) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
         return postService.getPostsByUser(username);

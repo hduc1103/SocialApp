@@ -1,7 +1,7 @@
 package com.SocialWeb.repository;
 
-import com.SocialWeb.entity.Comment;
+import com.SocialWeb.entity.CommentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CommentRepository extends JpaRepository<Comment, Long> {
+public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 }

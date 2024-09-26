@@ -1,7 +1,7 @@
 package com.SocialWeb.service;
 
-import com.SocialWeb.entity.Post;
-import com.SocialWeb.entity.User;
+import com.SocialWeb.entity.PostEntity;
+import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +22,19 @@ public class PostService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Post> getPostsByUser(String username) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        User user = userOptional.orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + username));
-        return postRepository.findByUser(user);
+    public List<PostEntity> getPostsByUser(String username) {
+        Optional<UserEntity> userOptional = userRepository.findByUsername(username);
+        UserEntity userEntity = userOptional.orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + username));
+        return postRepository.findByUser(userEntity);
     }
 
     public String createPost(String username, String content) {
-        User user = userRepository.findByUsername(username).orElseThrow();
-        Post post = new Post();
-        post.setUser(user);
-        post.setContent(content);
-        post.setCreatedAt(new Date());
-        postRepository.save(post);
+        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
+        PostEntity postEntity = new PostEntity();
+        postEntity.setUser(userEntity);
+        postEntity.setContent(content);
+        postEntity.setCreatedAt(new Date());
+        postRepository.save(postEntity);
         return Y_POST;
     }
 
@@ -43,11 +43,11 @@ public class PostService {
     }
 
     public String updatePost(long postId, String newContent){
-        Post post = postRepository.findById(postId).orElseThrow();
+        PostEntity postEntity = postRepository.findById(postId).orElseThrow();
 
-        post.setContent(newContent);
-        post.setUpdateAt(new Date());
-        postRepository.save(post);
+        postEntity.setContent(newContent);
+        postEntity.setUpdatedAt(new Date());
+        postRepository.save(postEntity);
         return U_POST;
     }
 

@@ -2,8 +2,8 @@ package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.response.AuthResponse;
 import com.SocialWeb.domain.response.UserResponse;
-import com.SocialWeb.entity.Post;
-import com.SocialWeb.entity.User;
+import com.SocialWeb.entity.PostEntity;
+import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.service.UserDetail;
@@ -51,38 +51,41 @@ public class UserController {
     private UserDetail userDetail;
 
     @PostMapping("/createUser")
-    public ResponseEntity<?> createUser(@RequestBody User user) {
-        if (userService.existsByUsername(user.getUsername())) {
+    public ResponseEntity<?> createUser(@RequestBody UserEntity userEntity) {
+        if (userService.existsByUsername(userEntity.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         }
-        String rawPassword = user.getPassword();
-        user.setPassword(passwordEncoder.encode(rawPassword));
-        userRepository.save(user);
+        String rawPassword = userEntity.getPassword();
+        userEntity.setPassword(passwordEncoder.encode(rawPassword));
+        System.out.println(userEntity.getPassword());
+        userRepository.save(userEntity);
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), rawPassword));  // Use rawPassword here
+                    new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-        final UserDetails userDetails = userDetail.loadUserByUsername(user.getUsername());
+        final UserDetails userDetails = userDetail.loadUserByUsername(userEntity.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
+        System.out.println(jwt);
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
+
     @PostMapping("/deleteUser")
     public void deleteUser(@RequestHeader("Authorization") String token){
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
 
-        User user = userService.getUserByUsername(username).orElseThrow();
-        userService.deleteUser(user);
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        userService.deleteUser(userEntity);
     }
 
     @GetMapping("/getUserData")
     public ResponseEntity<UserResponse> getUserInfo(@RequestHeader("Authorization") String token) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
-        User user = userService.getUserByUsername(username).orElseThrow();
-        UserResponse userResponse = new UserResponse(user.getId(), user.getUsername(), user.getEmail());
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        UserResponse userResponse = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getEmail());
         return ResponseEntity.ok(userResponse);
     }
 
@@ -90,8 +93,8 @@ public class UserController {
     public ResponseEntity<String> addFriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
-        User user = userService.getUserByUsername(username).orElseThrow();
-        Long userId1 = user.getId();
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        Long userId1 = userEntity.getId();
 
         String response = userService.addFriend(userId1, userId2);
         if (response.startsWith(ERROR_MSG)) {
@@ -106,8 +109,8 @@ public class UserController {
         String jwtToken = token.substring(7);
         String username = jwtUtil.extractUsername(jwtToken);
 
-        User user = userService.getUserByUsername(username).orElseThrow();
-        Long userId1 = user.getId();
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        Long userId1 = userEntity.getId();
 
         String response = userService.checkFriendStatus(userId1, userId2);
 
@@ -119,12 +122,12 @@ public class UserController {
 
     @GetMapping("/search")
     public Map<String, Object> searchCombined(@RequestParam("keyword") String keyword) {
-        List<User> userEntities = userRepository.searchUsersByUsername(keyword);
-        List<Post> postEntities = postRepository.searchPostsByContent(keyword);
+        List<UserEntity> userEntityEntities = userRepository.searchUsersByUsername(keyword);
+        List<PostEntity> postEntityEntities = postRepository.searchPostsByContent(keyword);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("users", userEntities);
-        result.put("posts", postEntities);
+        result.put("users", userEntityEntities);
+        result.put("posts", postEntityEntities);
 
         return result;
     }

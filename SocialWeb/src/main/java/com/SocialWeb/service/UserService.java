@@ -25,14 +25,14 @@ public class UserService {
 
     public String addFriend(Long userId1, Long userId2) {
         try {
-            User user1 = userRepository.findById(userId1)
+            UserEntity userEntity1 = userRepository.findById(userId1)
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId1));
-            User user2 = userRepository.findById(userId2)
+            UserEntity userEntity2 = userRepository.findById(userId2)
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId2));
-            user1.getFriends().add(user2);
-            user2.getFriends().add(user1);
-            userRepository.save(user1);
-            userRepository.save(user2);
+            userEntity1.getFriends().add(userEntity2);
+            userEntity2.getFriends().add(userEntity1);
+            userRepository.save(userEntity1);
+            userRepository.save(userEntity2);
             return FRIEND_ADDED;
         } catch (NoSuchElementException e) {
             System.err.println(ERROR_MSG + e.getMessage());
@@ -45,12 +45,12 @@ public class UserService {
 
     public String checkFriendStatus(Long userId1, Long userId2) {
         try {
-            User user1 = userRepository.findById(userId1)
+            UserEntity userEntity1 = userRepository.findById(userId1)
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId1));
-            User user2 = userRepository.findById(userId1)
+            UserEntity userEntity2 = userRepository.findById(userId1)
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId2));
 
-            if (user1.getFriends().contains(user2)) {
+            if (userEntity1.getFriends().contains(userEntity2)) {
                 return Y_FRIEND;
             }
         } catch (NoSuchElementException e) {
@@ -63,14 +63,14 @@ public class UserService {
         return N_FRIEND;
     }
 
-    public Optional<User> getUserByUsername(String username) {
+    public Optional<UserEntity> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    public void createUser(User user) {
-        userRepository.save(user);
+    public void createUser(UserEntity userEntity) {
+        userRepository.save(userEntity);
     }
-    public void deleteUser(User user){ userRepository.delete(user);}
+    public void deleteUser(UserEntity userEntity){ userRepository.delete(userEntity);}
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }

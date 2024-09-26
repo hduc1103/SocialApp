@@ -6,12 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "web_comment")
-public class Comment {
+public class CommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,16 +23,13 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonBackReference("user-comments")
-    private User user;
+    private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id")
     @JsonBackReference("post-comments")
-    private Post post;
+    private PostEntity post;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date createdAt;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date updatedAt;
+    private Date createdAt;
+    private Date updatedAt;
 }

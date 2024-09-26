@@ -14,12 +14,12 @@ import java.util.List;
 @Data
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "dtype")
-@DiscriminatorValue("User")
+@DiscriminatorValue("UserEntity")
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({ "friends" })
 @Table(name = "web_user")
-public class User {
+public class UserEntity {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
@@ -28,26 +28,22 @@ public class User {
         private String password;
         private String email;
 
-//        private String img_url;
-//        private String bio;
-
         @ManyToMany
         @JoinTable(name = "web_friends", joinColumns = @JoinColumn(name = "user_id1"), inverseJoinColumns = @JoinColumn(name = "user_id2"))
-
         @JsonIgnoreProperties("friends")
         @JsonIgnore
-        private List<User> friends;
+        private List<UserEntity> friends;
 
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
         @JsonManagedReference("user-posts")
-        private List<Post> posts;
+        private List<PostEntity> posts;
 
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
         @JsonManagedReference("user-comments")
-        private List<Comment> comments;
+        private List<CommentEntity> comments;
 
         @ManyToMany
         @JsonIgnore
         @JoinTable(name = "web_likes", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
-        private List<Post> likedPosts;
+        private List<PostEntity> likedPosts;
 }

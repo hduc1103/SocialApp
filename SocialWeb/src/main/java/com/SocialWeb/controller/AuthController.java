@@ -29,16 +29,19 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestBody AuthRequest authRequest) throws Exception {
         try {
+            System.out.println("flag1");
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            System.out.println("flag2");
         } catch (BadCredentialsException e) {
+            System.out.println("flag3");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(INVALID_CREDENTIAL);
         }
 
         final UserDetails userDetails = userDetail.loadUserByUsername(authRequest.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
-
+        System.out.println(jwt);
+        System.out.println(new AuthResponse(jwt));
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
-
 }
