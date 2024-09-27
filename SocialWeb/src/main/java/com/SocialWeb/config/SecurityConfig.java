@@ -1,20 +1,15 @@
 package com.SocialWeb.config;
 
 import com.SocialWeb.security.JwtRequestFilter;
-import com.SocialWeb.service.UserDetail;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -49,9 +44,14 @@ public class SecurityConfig {
                         .requestMatchers("/user/createUser").permitAll()
                         .requestMatchers("/user/deleteUSer").permitAll()
                         .requestMatchers("/user/search").permitAll()
+                        .requestMatchers("/user/createUser").permitAll()
                         .requestMatchers("/user/getUserData").authenticated()
                         .requestMatchers("/user/addFriend").authenticated()
-                        .requestMatchers("/user/checkFriendStatus").authenticated())
+                        .requestMatchers("/user/checkFriendStatus").authenticated()
+                        .requestMatchers("user/updateUser").authenticated()
+                        .requestMatchers("user/createSupportTicket").authenticated()
+                        .requestMatchers("user/updateSupportTicket").authenticated()
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN"))
                 .cors(withDefaults())
                 .headers(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

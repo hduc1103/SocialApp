@@ -25,8 +25,15 @@ public class Message {
     public static final String USER_NOT_FOUND = "User not found: ";
     public static final String INVALID_CREDENTIAL = "Invalid credentials";
     public static final String USERNAME_ALREADY_EXIST = "Username already exists";
+    public static final String EMAIL_ALREADY_EXIST = "Email already exists";
     public static final String FRIEND_ADDED = "Friend added successfully";
     public static final String Y_FRIEND = "2 users are friends";
     public static final String N_FRIEND = "2 users are not friends";
+    public static final String Y_UPDATE = "User information was updated";
+    public static final String D_USER ="User deleted";
 
+    //Support ticket
+    public static final String Y_SUPPORT_TICKET = "Support ticket created";
+    public static final String U_SUPPORT_TICKET = "Support ticket updated";
+    public static final String DENIED_ACCESS_TICKET = "User has no access to this ticket";
 }

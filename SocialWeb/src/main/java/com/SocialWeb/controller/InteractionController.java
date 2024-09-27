@@ -18,11 +18,15 @@ public class InteractionController {
     @Autowired
     InteractService interactService;
 
+    private String extractUsername(String token){
+        String jwtToken = token.substring(7);
+        return jwtUtil.extractUsername(jwtToken);
+    }
+
     @PostMapping("/addComment")
     public ResponseEntity<?> addComment(@RequestHeader("Authorization") String token, @RequestParam Long postId,
             @RequestBody Map<String, String> text) {
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         String content = text.get("text");
         String response = interactService.addComment(postId, username, content);
         if (response.startsWith(ERROR_MSG)) {
@@ -34,8 +38,7 @@ public class InteractionController {
     @PostMapping("/deleteComment")
     public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @RequestParam Long postId,
             @RequestParam Long cmtId) {
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         String response = interactService.deleteComment(postId, username, cmtId);
         if (response.startsWith(ERROR_MSG)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -45,14 +48,12 @@ public class InteractionController {
 
     @PostMapping("/updateComment")
     public void updateComment(@RequestHeader("Authorization") String token, @RequestParam Long commentId, @RequestBody String new_comment){
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         interactService.updateComment(commentId, new_comment);
     }
     @PostMapping("/like")
     public ResponseEntity<?> likePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         String result = interactService.likePost(username, postId);
 
         if (result.equals(Y_LIKE)) {
@@ -62,8 +63,7 @@ public class InteractionController {
     }
     @PostMapping("/dislike")
     public ResponseEntity<?> dislikePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         String result = interactService.dislikePost(username, postId);
 
         if (result.equals(N_LIKE)) {

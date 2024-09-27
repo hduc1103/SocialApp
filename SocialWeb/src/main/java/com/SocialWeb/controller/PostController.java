@@ -21,10 +21,14 @@ public class PostController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    private String extractUsername(String token){
+        String jwtToken = token.substring(7);
+        return jwtUtil.extractUsername(jwtToken);
+    }
+
     @GetMapping("/getUserPost")
     public List<PostEntity> getUserPosts(@RequestHeader("Authorization") String token) {
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         return postService.getPostsByUser(username);
     }
 
@@ -36,23 +40,20 @@ public class PostController {
     @PostMapping("/createPost")
     public ResponseEntity<?> createPost(@RequestHeader("Authorization") String token,
             @RequestBody Map<String, String> postData) {
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         String content = postData.get("content");
         return ResponseEntity.status(HttpStatus.OK).body(postService.createPost(username, content));
     }
 
     @PostMapping("/deletePost")
     public ResponseEntity<?> deletePost(@RequestHeader("Authorization") String token, @RequestParam("postId") long postId){
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         return ResponseEntity.status(HttpStatus.OK).body(postService.deletePost(postId));
     }
 
     @PostMapping("/updatePost")
     public ResponseEntity<?> updatePost(@RequestHeader("Authorization") String token, @RequestParam("postId") long postId, @RequestBody String newContent) {
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+        String username = extractUsername(token);
         return ResponseEntity.status(HttpStatus.OK).body(postService.updatePost(postId, newContent));
     }
 }

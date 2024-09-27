@@ -1,10 +1,11 @@
 package com.SocialWeb.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,12 +13,9 @@ import java.util.List;
 
 @Entity
 @Data
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "dtype")
-@DiscriminatorValue("UserEntity")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({ "friends" })
 @Table(name = "web_user")
 public class UserEntity {
         @Id
@@ -27,10 +25,12 @@ public class UserEntity {
         private String username;
         private String password;
         private String email;
+        private String img_url;
+        private String bio;
+        private String address;
 
         @ManyToMany
         @JoinTable(name = "web_friends", joinColumns = @JoinColumn(name = "user_id1"), inverseJoinColumns = @JoinColumn(name = "user_id2"))
-        @JsonIgnoreProperties("friends")
         @JsonIgnore
         private List<UserEntity> friends;
 
@@ -46,4 +46,12 @@ public class UserEntity {
         @JsonIgnore
         @JoinTable(name = "web_likes", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
         private List<PostEntity> likedPosts;
+
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+        private List<SupportTicketEntity> supportTickets;
+
+        @ElementCollection(fetch = FetchType.EAGER)
+        @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+        @Column(name = "role")
+        private List<String> roles;
 }

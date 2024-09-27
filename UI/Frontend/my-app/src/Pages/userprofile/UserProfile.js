@@ -57,6 +57,19 @@ const UserProfile = () => {
         setError(error.message);
       }
     };
+    
+    // const updateUserInfo = async ()=>{
+    //   try {
+    //     const response = await fetch(`${BASE_URL}/user/updateUser`, {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type' : 'application/json',
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //       body: JSON.stringify({updateData}),
+    //     });
+    //   }
+    // };
 
     const fetchUserPosts = async () => {
       try {

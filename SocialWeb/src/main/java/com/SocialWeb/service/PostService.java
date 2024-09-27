@@ -56,4 +56,7 @@ public class PostService {
         return D_POST;
     }
 
+    public List<PostEntity> searchPostsByKeyWord(String keyword){
+        return postRepository.searchPostsByContent(keyword);
+    }
 }
