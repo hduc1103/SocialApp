@@ -54,7 +54,7 @@ public class AdminController {
 //                ))
 //                .collect(Collectors.toList());
 //    }
-    @GetMapping("allUsers")
+    @GetMapping("/allUsers")
     public List<UserResponse> getAllUsers(){
         List<UserResponse> result = new ArrayList<>();
         List<UserEntity> userEntities =userService.getAllUsers();
@@ -75,13 +75,14 @@ public class AdminController {
         UserResponse response = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @PostMapping("/deleteUser")
+    @DeleteMapping("/deleteUser")
     public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId){
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
         userService.deleteUser(userEntity);
         return ResponseEntity.ok(D_USER);
     }
-    @PostMapping("/updateUser")
+    
+    @PutMapping("/updateUser")
     public ResponseEntity<String> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData){
         if(userService.existsByUsername(updateData.get("new_username"))){
             return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);

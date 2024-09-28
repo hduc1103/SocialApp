@@ -4,7 +4,7 @@ import Login from './pages/login/login';
 import Dashboard from './pages/dashboard/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import Header from './components/header/header'; 
-import Home from './pages/home/home';  
+import AdminPanel from './pages/adminpanel/AdminPanel';  
 import UserProfile from './pages/userprofile/UserProfile'; 
 
 const App = () => {
@@ -13,6 +13,7 @@ const App = () => {
       <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/adminpanel" element={<AdminPanel/>}/>
         <Route path="/dashboard" element={
           <PrivateRoute>
             <Dashboard />

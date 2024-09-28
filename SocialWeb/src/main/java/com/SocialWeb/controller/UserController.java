@@ -61,6 +61,13 @@ public class UserController {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
     }
+
+    @GetMapping("/getUserId")
+    public long getUserId(@RequestHeader("Authorization") String token){
+        String username = extractUsername(token);
+        return userService.getUserId(username);
+    }
+
     @PostMapping("/createUser")
     public ResponseEntity<?> createUser(@RequestBody Map<String, String> new_account) {
         if (userService.existsByUsername(new_account.get("username"))) {
@@ -99,7 +106,7 @@ public class UserController {
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
 
-    @PostMapping("/updateUser")
+    @PutMapping("/updateUser")
     public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> updateData) {
         String username = extractUsername(token);
         if (userService.existsByUsername(updateData.get("new_username"))) {
@@ -110,7 +117,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(userId, updateData));
     }
 
-    @PostMapping("/deleteUser")
+    @DeleteMapping("/deleteUser")
     public void deleteUser(@RequestHeader("Authorization") String token){
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();

@@ -1,5 +1,7 @@
 package com.SocialWeb.controller;
 
+import com.SocialWeb.domain.response.CommentResponse;
+import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.PostService;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
@@ -27,9 +30,27 @@ public class PostController {
     }
 
     @GetMapping("/getUserPost")
-    public List<PostEntity> getUserPosts(@RequestHeader("Authorization") String token) {
+    public List<PostResponse> getUserPosts(@RequestHeader("Authorization") String token) {
         String username = extractUsername(token);
-        return postService.getPostsByUser(username);
+        List<PostEntity> postEntities = postService.getPostsByUser(username);
+        return postEntities.stream()
+                .map(postEntity -> PostResponse.builder()
+                        .id(postEntity.getId())
+                        .content(postEntity.getContent())
+                        .createdAt(postEntity.getCreatedAt())
+                        .updatedAt(postEntity.getUpdatedAt())
+                        .user_id(postEntity.getUser().getId())
+                        .comments(postEntity.getComments().stream()
+                                .map(commentEntity -> CommentResponse.builder()
+                                        .id(commentEntity.getId())
+                                        .user_id(commentEntity.getUser().getId())
+                                        .text(commentEntity.getText())
+                                        .createdAt(commentEntity.getCreatedAt())
+                                        .updatedAt(commentEntity.getUpdatedAt())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/numberOfLikes")
@@ -45,15 +66,13 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(postService.createPost(username, content));
     }
 
-    @PostMapping("/deletePost")
+    @DeleteMapping ("/deletePost")
     public ResponseEntity<?> deletePost(@RequestHeader("Authorization") String token, @RequestParam("postId") long postId){
-        String username = extractUsername(token);
         return ResponseEntity.status(HttpStatus.OK).body(postService.deletePost(postId));
     }
 
-    @PostMapping("/updatePost")
-    public ResponseEntity<?> updatePost(@RequestHeader("Authorization") String token, @RequestParam("postId") long postId, @RequestBody String newContent) {
-        String username = extractUsername(token);
+    @PutMapping("/updatePost")
+    public ResponseEntity<?> updatePost(@RequestParam("postId") long postId, @RequestBody String newContent) {
         return ResponseEntity.status(HttpStatus.OK).body(postService.updatePost(postId, newContent));
     }
 }

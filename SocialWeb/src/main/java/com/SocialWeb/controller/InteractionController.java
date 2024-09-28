@@ -35,27 +35,23 @@ public class InteractionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/deleteComment")
-    public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @RequestParam Long postId,
-            @RequestParam Long cmtId) {
-        String username = extractUsername(token);
-        String response = interactService.deleteComment(postId, username, cmtId);
+    @DeleteMapping("/deleteComment")
+    public ResponseEntity<?> deleteComment(@RequestParam Long cmtId) {
+        String response = interactService.deleteComment(cmtId);
         if (response.startsWith(ERROR_MSG)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/updateComment")
-    public void updateComment(@RequestHeader("Authorization") String token, @RequestParam Long commentId, @RequestBody String new_comment){
-        String username = extractUsername(token);
+    @PutMapping("/updateComment")
+    public void updateComment(@RequestParam Long commentId, @RequestBody String new_comment){
         interactService.updateComment(commentId, new_comment);
     }
     @PostMapping("/like")
     public ResponseEntity<?> likePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
         String username = extractUsername(token);
         String result = interactService.likePost(username, postId);
-
         if (result.equals(Y_LIKE)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }

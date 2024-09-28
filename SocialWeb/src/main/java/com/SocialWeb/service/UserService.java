@@ -26,6 +26,10 @@ public class UserService {
     @Autowired
     private CommentRepository commentRepository;
 
+    public long getUserId(String username){
+        UserEntity userEntity= userRepository.findByUsername(username).orElseThrow();
+        return userEntity.getId();
+    }
     public String addFriend(Long userId1, Long userId2) {
         try {
             UserEntity userEntity1 = userRepository.findById(userId1)

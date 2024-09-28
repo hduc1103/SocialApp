@@ -4,16 +4,13 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.List;
 
-
-@Builder
 @Data
-public class PostResponse {
+@Builder
+public class CommentResponse {
     private Long id;
-    private String content;
-    private List<CommentResponse> comments;
+    private Long user_id;
+    private String text;
     private Date createdAt;
     private Date updatedAt;
-    private Long user_id;
 }

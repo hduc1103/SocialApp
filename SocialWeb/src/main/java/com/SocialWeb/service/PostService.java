@@ -23,8 +23,7 @@ public class PostService {
     private UserRepository userRepository;
 
     public List<PostEntity> getPostsByUser(String username) {
-        Optional<UserEntity> userOptional = userRepository.findByUsername(username);
-        UserEntity userEntity = userOptional.orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + username));
+        UserEntity userEntity =userRepository.findByUsername(username).orElseThrow(()-> new RuntimeException(USER_NOT_FOUND + username));
         return postRepository.findByUser(userEntity);
     }
 

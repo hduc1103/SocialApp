@@ -12,22 +12,38 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${BASE_URL}/auth/login`, {
+      const loginResponse = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
       });
-  
-      if (!response.ok) {
+
+      if (!loginResponse.ok) {
         throw new Error('Invalid credentials');
       }
-  
-      const data = await response.json();
-      localStorage.setItem('token', data.jwt); 
+
+      const loginData = await loginResponse.json();
+      const token = loginData.jwt;
+      localStorage.setItem('token', token);
+            const userIdResponse = await fetch(`${BASE_URL}/user/getUserId`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!userIdResponse.ok) {
+        throw new Error('Failed to fetch user ID');
+      }
+
+      const userId = await userIdResponse.json();
+      localStorage.setItem('userId', userId);
+
       console.log('Token stored:', localStorage.getItem('token')); 
-      navigate('/'); 
+      console.log('User ID stored:', localStorage.getItem('userId'));
+      navigate('/');
     } catch (error) {
       setError('Invalid credentials');
       console.error('Login error:', error);

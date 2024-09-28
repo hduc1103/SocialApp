@@ -50,12 +50,8 @@ public class InteractService {
         commentEntity.setUpdatedAt(new Date());
         commentRepository.save(commentEntity);
     }
-    public String deleteComment(Long postId, String username, Long cmtId) {
+    public String deleteComment(Long cmtId) {
         try {
-            UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
-            PostEntity postEntity = postRepository.findById(postId).orElseThrow();
-            CommentEntity commentEntity = commentRepository.findById(cmtId).orElseThrow();
-
             commentRepository.deleteById(cmtId);
             return CMT_DEL;
         } catch (NoSuchElementException e) {

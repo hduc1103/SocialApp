@@ -4,17 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import './post.scss';
 
 const PostComponent = ({ post }) => {
-  const [likes, setLikes] = useState(post.likeCount || 0); 
+  const [likes, setLikes] = useState(post.likeCount || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [comment, setComment] = useState('');
   const navigate = useNavigate();
 
+  const userId = localStorage.getItem('userId');
+  console.log(userId)
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/login');
+      navigate('/login');  
     }
   }, [navigate]);
+
+  console.log('Post user_id:', post.user_id); 
 
   const handleLike = async () => {
     const token = localStorage.getItem('token');
@@ -41,7 +45,7 @@ const PostComponent = ({ post }) => {
       } else if (!response.ok) {
         throw new Error('Failed to like the post');
       } else {
-        setLikes(likes + 1); 
+        setLikes(likes + 1);
       }
     } catch (error) {
       console.error('Error handling like/dislike:', error);
@@ -66,7 +70,8 @@ const PostComponent = ({ post }) => {
           throw new Error('Failed to add comment');
         }
 
-        setComments([...comments, { text: comment }]); 
+        const newComment = await response.json();
+        setComments([...comments, newComment]);
         setComment('');
       } catch (error) {
         console.error('Error adding comment:', error);
@@ -74,12 +79,77 @@ const PostComponent = ({ post }) => {
     }
   };
 
+  const handleDeletePost = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/post/deletePost?postId=${post.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete post');
+      }
+      console.log('Post deleted');
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/interact/deleteComment?cmtId=${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete comment');
+      }
+      setComments(comments.filter((c) => c.id !== commentId));
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+  const handleUpdateComment = async (commentId, comment) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/interact/updateComment?cmtId=${commentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ comment }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+  
+      const result = await response.json();
+      console.log('Comment updated successfully:', result);
+    } catch (error) {
+      console.error('Failed to update comment:', error);
+    }
+  };
+  
   return (
     <div className="post-card">
       <p className="post-content">{post.content}</p>
+      {post.user_id === parseInt(userId) && (
+        <button className="delete-post-button" onClick={handleDeletePost}>
+          Delete Post
+        </button>
+      )}
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
-          Like ({likes}) {/* Use the likes state here */}
+          Like ({likes})
         </button>
         <form className="comment-form" onSubmit={handleComment}>
           <input
@@ -95,9 +165,28 @@ const PostComponent = ({ post }) => {
       <div className="post-comments">
         <h4>Comments:</h4>
         <ul>
-          {comments.map((comment, index) => (
-            <li key={index}>{comment.text}</li>
-          ))}
+        {comments.map((comment) => (
+  <li key={comment.id}>
+    {comment.user_id === parseInt(userId) && ( 
+      <button
+        className="delete-comment-button"
+        onClick={() => handleDeleteComment(comment.id)}  
+      >
+        Delete Comment
+      </button>
+    )}
+    {comment.user_id === parseInt(userId) && ( 
+      <button
+        className="delete-comment-button"
+        onClick={() => handleUpdateComment(comment.id)}  
+      >
+      Update Comment
+      </button>
+    )}
+    {comment.text}
+  </li>
+))}
+
         </ul>
       </div>
     </div>
