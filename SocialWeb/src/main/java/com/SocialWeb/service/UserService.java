@@ -46,7 +46,9 @@ public class UserService {
             return UNEXPECTED_ERROR + e.getMessage();
         }
     }
-
+    public UserEntity findUserbyUsername(String username){
+        return userRepository.findByUsername(username).orElseThrow();
+    }
     public String updateUser(Long userId, Map<String, String> updateData){
         UserEntity userEntity= userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
         if (updateData.containsKey("new_username")) {

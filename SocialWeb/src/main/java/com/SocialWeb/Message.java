@@ -31,7 +31,7 @@ public class Message {
     public static final String N_FRIEND = "2 users are not friends";
     public static final String Y_UPDATE = "User information was updated";
     public static final String D_USER ="User deleted";
-
+    public static final String USER_CREATED="User created";
     //Support ticket
     public static final String Y_SUPPORT_TICKET = "Support ticket created";
     public static final String U_SUPPORT_TICKET = "Support ticket updated";

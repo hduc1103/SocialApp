@@ -1,19 +1,16 @@
 package com.SocialWeb.controller;
 
+import com.SocialWeb.domain.request.AuthRequest;
 import com.SocialWeb.domain.response.AuthResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.entity.PostEntity;
+import com.SocialWeb.entity.SupportTicketEntity;
+import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
-import com.SocialWeb.repository.PostRepository;
-import com.SocialWeb.repository.SupportTicketRepository;
 import com.SocialWeb.service.PostService;
-import io.jsonwebtoken.Claims;
-import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.service.SupportTicketService;
 import com.SocialWeb.service.UserDetail;
 import com.SocialWeb.service.UserService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,10 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.SocialWeb.Message.*;
 
@@ -62,10 +56,31 @@ public class UserController {
         return jwtUtil.extractUsername(jwtToken);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> authenticate(@RequestBody AuthRequest authRequest) throws Exception {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(INVALID_CREDENTIAL);
+        }
+        final UserDetails userDetails = userDetail.loadUserByUsername(authRequest.getUsername());
+        final String jwt = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthResponse(jwt));
+    }
+
     @GetMapping("/getUserId")
     public long getUserId(@RequestHeader("Authorization") String token){
         String username = extractUsername(token);
         return userService.getUserId(username);
+    }
+
+    @GetMapping("/getUserRole")
+    public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
+        String username = extractUsername(token);
+        UserEntity user = userService.getUserByUsername(username).orElseThrow();
+        String role = user.getRoles().getFirst();
+        return ResponseEntity.ok(role);
     }
 
     @PostMapping("/createUser")
@@ -86,13 +101,6 @@ public class UserController {
                 .img_url(new_account.get("img_url"))
                 .roles(new ArrayList<>(List.of("USER")))
                 .build();
-//        userEntity.setPassword(passwordEncoder.encode(rawPassword));
-//        userEntity.setUsername(new_account.get("username"));
-//        userEntity.setEmail(new_account.get("email"));
-//        userEntity.setBio(new_account.get("bio"));
-//        userEntity.setAddress(new_account.get("address"));
-//        userEntity.setImg_url(new_account.get("img_url"));
-//        userEntity.setRoles(new ArrayList<>(List.of("USER")));
         userService.createUser(userEntity);
         try {
             authenticationManager.authenticate(
@@ -173,7 +181,14 @@ public class UserController {
     @PostMapping("/createSupportTicket")
     public ResponseEntity<String> createSupportTicket(@RequestHeader("Authorization") String token, @RequestBody List<String> content){
         String username = extractUsername(token);
-        return ResponseEntity.status(HttpStatus.OK).body(supportTicketService.createTicket(username, content));
+        UserEntity userEntity = userService.findUserbyUsername(username);
+        SupportTicketEntity supportTicketEntity= SupportTicketEntity.builder()
+                .user(userEntity)
+                .content(content)
+                .status("In progress")
+                .createdAt(new Date())
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(supportTicketService.createTicket(supportTicketEntity));
     }
 
     @PutMapping("/updateSupportTicket")
@@ -188,13 +203,28 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/getUserRole")
-    public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
+    @PostMapping("/addTicketComment")
+    public void addTicketComment (@RequestHeader("Authorization")String token, @RequestParam Long ticket_id ,@RequestBody String text){
         String username = extractUsername(token);
-        UserEntity user = userService.getUserByUsername(username).orElseThrow();
-        String role = user.getRoles().getFirst();
-        return ResponseEntity.ok(role);
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        SupportTicketEntity supportTicketEntity = supportTicketService.findSupportTicket(ticket_id);
+        TicketCommentEntity ticketCommentEntity = TicketCommentEntity.builder()
+                .text(text)
+                .user(userEntity)
+                .supportTicketEntity(supportTicketEntity)
+                .createdAt(new Date())
+                .build();
+        supportTicketService.addTicketComment(ticketCommentEntity);
     }
 
+    @PutMapping("/updateTicketComment")
+    public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text){
+        supportTicketService.updateTicketComment(comment_id, text);
+    }
+
+    @DeleteMapping("/deleteTicketComment")
+    public void deleteTicketComment(@RequestParam Long comment_id){
+        supportTicketService.deleteTicketComment(comment_id);
+    }
 }
 

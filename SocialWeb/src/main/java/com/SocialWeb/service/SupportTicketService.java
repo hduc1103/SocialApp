@@ -1,8 +1,8 @@
 package com.SocialWeb.service;
 
-import com.SocialWeb.entity.SupportTicketEntity;
-import com.SocialWeb.entity.UserEntity;
+import com.SocialWeb.entity.*;
 import com.SocialWeb.repository.SupportTicketRepository;
+import com.SocialWeb.repository.TicketCommentRepository;
 import com.SocialWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,18 +18,16 @@ public class SupportTicketService {
     SupportTicketRepository supportTicketRepository;
     @Autowired
     UserRepository userRepository;
-
-    public String createTicket(String username, List<String> content ){
-        SupportTicketEntity supportTicketEntity= new SupportTicketEntity();
-        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
-        supportTicketEntity.setUser(userEntity);
-        supportTicketEntity.setContent(content);
-        supportTicketEntity.setCreatedAt(new Date());
+    @Autowired
+    TicketCommentRepository ticketCommentRepository;
+    public String createTicket(SupportTicketEntity supportTicketEntity){
         supportTicketRepository.save(supportTicketEntity);
-
         return Y_SUPPORT_TICKET;
     }
 
+    public SupportTicketEntity findSupportTicket(Long ticket_id){
+        return supportTicketRepository.findById(ticket_id).orElseThrow();
+    }
     public String updateTicket(Long userId, List<String> content, Long id){
         if(supportTicketRepository.checkUserTicket(userId)!=id){
             return DENIED_ACCESS_TICKET;
@@ -38,5 +36,17 @@ public class SupportTicketService {
         supportTicketEntity.setContent(content);
         supportTicketRepository.save(supportTicketEntity);
         return U_SUPPORT_TICKET;
+    }
+    public void addTicketComment(TicketCommentEntity ticketCommentEntity){
+        ticketCommentRepository.save(ticketCommentEntity);
+    }
+    public void updateTicketComment(Long comment_id, String new_content){
+        TicketCommentEntity ticketCommentEntity= ticketCommentRepository.findById(comment_id).orElseThrow();
+        ticketCommentEntity.setText(new_content);
+        ticketCommentRepository.save(ticketCommentEntity);
+    }
+    public void deleteTicketComment(Long comment_id){
+        TicketCommentEntity ticketCommentEntity= ticketCommentRepository.findById(comment_id).orElseThrow();
+        ticketCommentRepository.delete(ticketCommentEntity);
     }
 }

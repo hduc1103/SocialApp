@@ -42,6 +42,10 @@ public class UserEntity {
         @JsonManagedReference("user-comments")
         private List<CommentEntity> comments;
 
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+        @JsonManagedReference("user-ticket_comments")
+        private List<TicketCommentEntity> ticketComments;
+
         @ManyToMany
         @JsonIgnore
         @JoinTable(name = "web_likes", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))

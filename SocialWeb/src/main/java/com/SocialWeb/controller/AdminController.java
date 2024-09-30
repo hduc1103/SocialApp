@@ -1,23 +1,23 @@
 package com.SocialWeb.controller;
-
-import com.SocialWeb.domain.response.AuthResponse;
 import com.SocialWeb.domain.response.UserResponse;
+import com.SocialWeb.entity.SupportTicketEntity;
+import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.security.JwtUtil;
+import com.SocialWeb.service.SupportTicketService;
 import com.SocialWeb.service.UserDetail;
 import com.SocialWeb.service.UserService;
-import jdk.jfr.Relational;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +25,7 @@ import static com.SocialWeb.Message.*;
 
 @RestController
 @RequestMapping("/admin")
-public class AdminController {
+public class AdminController{
     @Autowired
     UserService userService;
 
@@ -37,6 +37,9 @@ public class AdminController {
 
     @Autowired
     JwtUtil jwtUtil;
+
+    @Autowired
+    SupportTicketService supportTicketService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -67,7 +70,7 @@ public class AdminController {
         userService.deleteUser(userEntity);
         return ResponseEntity.ok(D_USER);
     }
-    
+
     @PutMapping("/updateUser")
     public ResponseEntity<String> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData){
         if(userService.existsByUsername(updateData.get("new_username"))){
@@ -94,13 +97,6 @@ public class AdminController {
                 .img_url(new_account.get("img_url"))
                 .roles(new ArrayList<>(List.of("USER")))
                 .build();
-//        UserEntity userEntity = new UserEntity();
-//        userEntity.setPassword(passwordEncoder.encode(rawPassword));
-//        userEntity.setEmail(new_account.get("email"));
-//        userEntity.setBio(new_account.get("bio"));
-//        userEntity.setAddress(new_account.get("address"));
-//        userEntity.setImg_url(new_account.get("img_url"));
-//        userEntity.setRoles(new ArrayList<>(List.of("USER")));
         userService.createUser(userEntity);
         try {
             authenticationManager.authenticate(
@@ -108,11 +104,29 @@ public class AdminController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-
-        final UserDetails userDetails = userDetail.loadUserByUsername(userEntity.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        System.out.println(jwt);
-        return ResponseEntity.ok(new AuthResponse(jwt));
-
+        return ResponseEntity.ok(USER_CREATED);
     }
+    @PostMapping("/addTicketComment")
+    public void addTicketComment (@RequestHeader("Authorization")String token, @RequestParam Long ticket_id ,@RequestBody String text){
+        String jwtToken = token.substring(7);
+        String username= jwtUtil.extractUsername(jwtToken);
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        SupportTicketEntity supportTicketEntity = supportTicketService.findSupportTicket(ticket_id);
+        TicketCommentEntity ticketCommentEntity = TicketCommentEntity.builder()
+                .text(text)
+                .user(userEntity)
+                .supportTicketEntity(supportTicketEntity)
+                .createdAt(new Date())
+                .build();
+        supportTicketService.addTicketComment(ticketCommentEntity);
+    }
+    @PutMapping("/updateTicketComment")
+    public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text){
+        supportTicketService.updateTicketComment(comment_id, text);
+    }
+    @DeleteMapping("/deleteTicketComment")
+    public void deleteTicketComment(@RequestParam Long comment_id){
+        supportTicketService.deleteTicketComment(comment_id);
+    }
+
 }
