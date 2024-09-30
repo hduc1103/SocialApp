@@ -4,6 +4,7 @@ import Post from '../../components/post/Post';
 import FloatingButton from '../../components/floatingbutton/FloatingButton';
 import AddNewPost from '../../components/addpostmodal/AddNewPost';
 import UpdateProfileModal from '../../components/updateprofilemodal/UpdateProfileModal';
+import { LiaUserEditSolid } from "react-icons/lia";
 import { BASE_URL } from '../../service/config';
 import './userprofile.scss';
 import Footer from '../../components/footer/footer';
@@ -202,7 +203,7 @@ const UserProfile = () => {
           </div>
         </div>
         <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
-          Update Profile
+        <LiaUserEditSolid size = {30}/>
         </button>
         {error && <p className="error">{error}</p>}
       </div>

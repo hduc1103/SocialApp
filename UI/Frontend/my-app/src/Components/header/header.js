@@ -66,62 +66,64 @@ const Header = () => {
 
   return (
     <>
-      <header className="header">
-        <div className="header-container">
-          <div className="header-logo" onClick={() => navigate('/home')}>
-            Thread
-          </div>
-          <nav className="header-nav">
-            <div className="nav-item" onClick={() => navigate('/home')}>
-              <FaHome size={24} />
-              <span>Home</span>
-            </div>
-            <div className="nav-item" onClick={() => navigate('/notifications')}>
-              <FaBell size={24} />
-              <span>Notifications</span>
-            </div>
-            <div className="nav-item" onClick={() => navigate('/profile')}>
-              <FaUserCircle size={24} />
-              <span>Profile</span>
-            </div>
-            {isAdmin && (
-              <div className="nav-item" onClick={() => navigate('/admin')}>
-                <RiAdminFill size={24} />
-                <span>Admin</span>
-              </div>
-            )}
-          </nav>
-          <div className="search-bar">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search"
-            />
-            <div className="nav-item search-nav">
-              <button onClick={() => {
-                navigate('/search');
-                handleSearch();
-              }}>
-                <FaSearch size={24} /> Search
-              </button>
-            </div>
-          </div>
-          <div className="nav-item" onClick={isLoggedin ? handleLogout : () => navigate('/login')}>
-            {isLoggedin ? (
-              <>
-                <IoIosLogOut size={24} />
-                <span>Log out</span>
-              </>
-            ) : (
-              <>
-                <IoIosLogIn size={24} />
-                <span>Log in</span>
-              </>
-            )}
-          </div>
+<header className="header">
+  <div className="header-container">
+    <div className="header-logo" onClick={() => navigate('/')}>
+      Thread
+    </div>
+    <nav className="header-nav">
+      <div className="nav-item nav-home" onClick={() => navigate('/')}>
+        <FaHome size={24} />
+        <span>Home</span>
+      </div>
+      <div className="nav-item nav-notifications" onClick={() => navigate('/notifications')}>
+        <FaBell size={24} />
+        <span>Notifications</span>
+      </div>
+      <div className="nav-item nav-profile" onClick={() => navigate('/')}>
+        <FaUserCircle size={24} />
+        <span>Profile</span>
+      </div>
+      {isAdmin && (
+        <div className="nav-item nav-admin" onClick={() => navigate('/admin')}>
+          <RiAdminFill size={24} />
+          <span>Admin</span>
         </div>
-      </header>
+      )}
+    </nav>
+    <div className="search-bar nav-search">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search"
+      />
+      <div className="nav-item search-nav">
+        <button
+          onClick={() => {
+            navigate('/search');
+            handleSearch();
+          }}
+        >
+          <FaSearch size={24} /> Search
+        </button>
+      </div>
+    </div>
+    <div className="nav-item nav-logout" onClick={isLoggedin ? handleLogout : () => navigate('/login')}>
+      {isLoggedin ? (
+        <>
+          <IoIosLogOut size={24} />
+          <span>Log out</span>
+        </>
+      ) : (
+        <>
+          <IoIosLogIn size={24} />
+          <span>Log in</span>
+        </>
+      )}
+    </div>
+  </div>
+</header>
       {searchPerformed && (
         <SearchResult userResults={userResults} postResults={postResults} />
       )}

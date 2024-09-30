@@ -12,7 +12,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const loginResponse = await fetch(`${BASE_URL}/auth/login`, {
+      const loginResponse = await fetch(`${BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ const Login = () => {
         navigate('/adminpanel');
       } else {
         localStorage.setItem('role', role)
-        navigate('/user');
+        navigate('/');
       }
     } catch (error) {
       setError('Invalid credentials');

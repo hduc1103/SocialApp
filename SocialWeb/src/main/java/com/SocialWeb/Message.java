@@ -37,3 +37,4 @@ public class Message {
     public static final String U_SUPPORT_TICKET = "Support ticket updated";
     public static final String DENIED_ACCESS_TICKET = "User has no access to this ticket";
 }
+

@@ -124,9 +124,5 @@ public class AdminController{
     public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text){
         supportTicketService.updateTicketComment(comment_id, text);
     }
-    @DeleteMapping("/deleteTicketComment")
-    public void deleteTicketComment(@RequestParam Long comment_id){
-        supportTicketService.deleteTicketComment(comment_id);
-    }
-
+    
 }
