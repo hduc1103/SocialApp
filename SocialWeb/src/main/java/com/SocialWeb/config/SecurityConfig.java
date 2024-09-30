@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/createSupportTicket").authenticated()
                         .requestMatchers("/user/updateSupportTicket").authenticated()
                         .requestMatchers("/user/getUserId").authenticated()
+                        .requestMatchers("/user/getUserRole").authenticated()
                         .requestMatchers("/admin/**").hasAuthority("ADMIN"))
                 .cors(withDefaults())
                 .headers(AbstractHttpConfigurer::disable)

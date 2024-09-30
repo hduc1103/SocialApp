@@ -168,7 +168,6 @@ public class UserController {
         Map<String, Object> result = new HashMap<>();
         result.put("users", userEntityEntities);
         result.put("posts", postEntityEntities);
-
         return result;
     }
     @PostMapping("/createSupportTicket")
@@ -177,7 +176,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(supportTicketService.createTicket(username, content));
     }
 
-    @PostMapping("/updateSupportTicket")
+    @PutMapping("/updateSupportTicket")
     public ResponseEntity<String> updateSupportTicket(@RequestHeader("Authorization") String token,@RequestBody List<String> content, @RequestParam Long t_id){
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
@@ -188,5 +187,14 @@ public class UserController {
         }
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/getUserRole")
+    public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
+        String username = extractUsername(token);
+        UserEntity user = userService.getUserByUsername(username).orElseThrow();
+        String role = user.getRoles().getFirst();
+        return ResponseEntity.ok(role);
+    }
+
 }
 

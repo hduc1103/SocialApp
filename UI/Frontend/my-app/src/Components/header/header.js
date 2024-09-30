@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHome, FaSearch, FaBell, FaUserCircle } from 'react-icons/fa';
+import { RiAdminFill } from 'react-icons/ri'; // Importing the admin icon
 import { BASE_URL } from '../../service/config';
 import { IoIosLogOut, IoIosLogIn } from "react-icons/io";
 import SearchResult from '../../components/searchresult/SearchResult';
-
 import './header.scss';
 
 const Header = () => {
@@ -12,15 +12,24 @@ const Header = () => {
   const [userResults, setUserResults] = useState([]);
   const [postResults, setPostResults] = useState([]);
   const [isLoggedin, setIsLoggedin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [searchPerformed, setSearchPerformed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
     if (token) {
       setIsLoggedin(true);
+      if (role === 'ADMIN') {
+        setIsAdmin(true); 
+      } else {
+        setIsAdmin(false);
+      }
     } else {
       setIsLoggedin(false);
+      setIsAdmin(false);
     }
   }, []);
 
@@ -47,9 +56,11 @@ const Header = () => {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role'); 
     setIsLoggedin(false);
+    setIsAdmin(false);
     navigate('/login');
   }
 
@@ -69,10 +80,16 @@ const Header = () => {
               <FaBell size={24} />
               <span>Notifications</span>
             </div>
-            <div className="nav-item" onClick={() => navigate('/')}>
+            <div className="nav-item" onClick={() => navigate('/profile')}>
               <FaUserCircle size={24} />
               <span>Profile</span>
             </div>
+            {isAdmin && (
+              <div className="nav-item" onClick={() => navigate('/admin')}>
+                <RiAdminFill size={24} />
+                <span>Admin</span>
+              </div>
+            )}
           </nav>
           <div className="search-bar">
             <input
@@ -89,7 +106,6 @@ const Header = () => {
                 <FaSearch size={24} /> Search
               </button>
             </div>
-
           </div>
           <div className="nav-item" onClick={isLoggedin ? handleLogout : () => navigate('/login')}>
             {isLoggedin ? (

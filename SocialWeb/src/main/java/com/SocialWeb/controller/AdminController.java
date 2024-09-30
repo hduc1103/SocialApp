@@ -40,20 +40,6 @@ public class AdminController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-//    @GetMapping("/allUsers")
-//    public List<UserResponse> getAllUsers() {
-//        List<UserEntity> userEntities = userService.getAllUsers();
-//        return userEntities.stream()
-//                .map(userEntity -> new UserResponse(
-//                        userEntity.getId(),
-//                        userEntity.getUsername(),
-//                        userEntity.getEmail(),
-//                        userEntity.getImg_url(),
-//                        userEntity.getBio(),
-//                        userEntity.getAddress()
-//                ))
-//                .collect(Collectors.toList());
-//    }
     @GetMapping("/allUsers")
     public List<UserResponse> getAllUsers(){
         List<UserResponse> result = new ArrayList<>();

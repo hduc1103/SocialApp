@@ -19,31 +19,34 @@ const Login = () => {
         },
         body: JSON.stringify({ username, password }),
       });
-
+  
       if (!loginResponse.ok) {
         throw new Error('Invalid credentials');
       }
-
+  
       const loginData = await loginResponse.json();
       const token = loginData.jwt;
       localStorage.setItem('token', token);
-            const userIdResponse = await fetch(`${BASE_URL}/user/getUserId`, {
+  
+      const roleResponse = await fetch(`${BASE_URL}/user/getUserRole`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (!userIdResponse.ok) {
-        throw new Error('Failed to fetch user ID');
+  
+      if (!roleResponse.ok) {
+        throw new Error('Failed to fetch user role');
       }
-
-      const userId = await userIdResponse.json();
-      localStorage.setItem('userId', userId);
-
-      console.log('Token stored:', localStorage.getItem('token')); 
-      console.log('User ID stored:', localStorage.getItem('userId'));
-      navigate('/');
+  
+      const role = await roleResponse.text();
+        if (role === 'ADMIN') {
+          localStorage.setItem('role', 'ADMIN')
+        navigate('/adminpanel');
+      } else {
+        localStorage.setItem('role', role)
+        navigate('/user');
+      }
     } catch (error) {
       setError('Invalid credentials');
       console.error('Login error:', error);
