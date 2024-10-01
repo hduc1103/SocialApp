@@ -1,8 +1,7 @@
 package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.request.AuthRequest;
-import com.SocialWeb.domain.response.AuthResponse;
-import com.SocialWeb.domain.response.UserResponse;
+import com.SocialWeb.domain.response.*;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.SupportTicketEntity;
 import com.SocialWeb.entity.TicketCommentEntity;
@@ -23,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.SocialWeb.Message.*;
 
@@ -133,10 +133,9 @@ public class UserController {
     }
 
     @GetMapping("/getUserData")
-    public ResponseEntity<UserResponse> getUserInfo(@RequestHeader("Authorization") String token) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        UserResponse userResponse = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
+    public ResponseEntity<UserResponse> getUserInfo(@RequestParam("userId") long userId) {
+        UserEntity userEntity = userService.getUserById(userId).orElseThrow();
+        UserResponse userResponse = new UserResponse(userEntity.getId(), userEntity.getUsername(),userEntity.getName() ,userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
         return ResponseEntity.ok(userResponse);
     }
 
@@ -170,14 +169,33 @@ public class UserController {
 
     @GetMapping("/search")
     public Map<String, Object> searchCombined(@RequestParam("keyword") String keyword) {
-        List<UserEntity> userEntityEntities = userService.searchUserByName(keyword);
-        List<PostEntity> postEntityEntities = postService.searchPostsByKeyWord(keyword);
+        System.out.println("Searching for keyword: " + keyword);
+
+        List<UserEntity> userEntities = userService.searchUserByName(keyword);
+        List<PostEntity> postEntities = postService.searchPostsByKeyWord(keyword);
+
+        List<UserSummaryResponse> userSummaryResponses = userEntities.stream()
+                .map(user -> UserSummaryResponse.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<PostSummaryResponse> postResponses = postEntities.stream()
+                .map(post -> PostSummaryResponse.builder()
+                        .id(post.getId())
+                        .content(post.getContent())
+                        .build())
+                .collect(Collectors.toList());
 
         Map<String, Object> result = new HashMap<>();
-        result.put("users", userEntityEntities);
-        result.put("posts", postEntityEntities);
+        result.put("users", userSummaryResponses);
+        result.put("posts", postResponses);
+
         return result;
     }
+
     @PostMapping("/createSupportTicket")
     public ResponseEntity<String> createSupportTicket(@RequestHeader("Authorization") String token, @RequestBody List<String> content){
         String username = extractUsername(token);

@@ -50,6 +50,7 @@ public class AdminController{
         for(UserEntity userEntity : userEntities){
             result.add(new UserResponse(userEntity.getId(),
                     userEntity.getUsername(),
+                    userEntity.getName(),
                     userEntity.getEmail(),
                     userEntity.getImg_url(),
                     userEntity.getBio(),
@@ -61,7 +62,7 @@ public class AdminController{
     @GetMapping("/oneUser")
     public ResponseEntity<UserResponse> getOneUser(@RequestParam("userId") Long userId){
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
-        UserResponse response = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
+        UserResponse response = new UserResponse(userEntity.getId(), userEntity.getUsername(),userEntity.getName() ,userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @DeleteMapping("/deleteUser")

@@ -40,12 +40,23 @@ const Login = () => {
       }
   
       const role = await roleResponse.text();
+      console.log(role)
         if (role === 'ADMIN') {
           localStorage.setItem('role', 'ADMIN')
         navigate('/adminpanel');
       } else {
         localStorage.setItem('role', role)
-        navigate('/');
+        console.log(token)
+        const userIdResponse = await fetch(`${BASE_URL}/user/getUserId`,{
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }); 
+        const userId = await userIdResponse.text();
+        console.log(localStorage.getItem('userId'))
+        localStorage.setItem('userId', userId)
+        navigate(`/userprofile/${userId}`);
       }
     } catch (error) {
       setError('Invalid credentials');

@@ -1,24 +1,27 @@
 import { useState, useEffect } from 'react';
 import { BASE_URL } from '../../service/config';
 import { useNavigate } from 'react-router-dom';
+import { FaEllipsisH } from 'react-icons/fa'; 
+import { BiSolidLike } from "react-icons/bi";
+
 import './post.scss';
 
 const PostComponent = ({ post }) => {
   const [likes, setLikes] = useState(post.likeCount || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [comment, setComment] = useState('');
-  const navigate = useNavigate();
+  const [showPostOptions, setShowPostOptions] = useState(false);
+  const [commentOptions, setCommentOptions] = useState({});
 
+  const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
-  console.log(userId)
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/login');  
+      navigate('/login');
     }
   }, [navigate]);
-
-  console.log('Post user_id:', post.user_id); 
 
   const handleLike = async () => {
     const token = localStorage.getItem('token');
@@ -116,6 +119,7 @@ const PostComponent = ({ post }) => {
       console.error('Error deleting comment:', error);
     }
   };
+
   const handleUpdateComment = async (commentId, comment) => {
     const token = localStorage.getItem('token');
     try {
@@ -127,29 +131,38 @@ const PostComponent = ({ post }) => {
         },
         body: JSON.stringify({ comment }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
-  
+
       const result = await response.json();
       console.log('Comment updated successfully:', result);
     } catch (error) {
       console.error('Failed to update comment:', error);
     }
   };
-  
+
   return (
     <div className="post-card">
       <p className="post-content">{post.content}</p>
+
       {post.user_id === parseInt(userId) && (
-        <button className="delete-post-button" onClick={handleDeletePost}>
-          Delete Post
-        </button>
+        <div className="post-options">
+          <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
+            <FaEllipsisH />
+          </button>
+          {showPostOptions && (
+            <div className="dropdown-menu">
+              <button onClick={handleDeletePost}>Delete Post</button>
+            </div>
+          )}
+        </div>
       )}
+
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
-          Like ({likes})
+        <BiSolidLike /> {likes}
         </button>
         <form className="comment-form" onSubmit={handleComment}>
           <input
@@ -162,31 +175,36 @@ const PostComponent = ({ post }) => {
           <button className="comment-button" type="submit">Comment</button>
         </form>
       </div>
+
       <div className="post-comments">
         <h4>Comments:</h4>
         <ul>
-        {comments.map((comment) => (
-  <li key={comment.id}>
-    {comment.user_id === parseInt(userId) && ( 
-      <button
-        className="delete-comment-button"
-        onClick={() => handleDeleteComment(comment.id)}  
-      >
-        Delete Comment
-      </button>
-    )}
-    {comment.user_id === parseInt(userId) && ( 
-      <button
-        className="delete-comment-button"
-        onClick={() => handleUpdateComment(comment.id)}  
-      >
-      Update Comment
-      </button>
-    )}
-    {comment.text}
-  </li>
-))}
-
+          {comments.map((comment) => (
+            <li key={comment.id}>
+              {comment.text}
+              {comment.user_id === parseInt(userId) && (
+                <div className="comment-options">
+                  <button
+                    className="three-dot-button"
+                    onClick={() =>
+                      setCommentOptions((prev) => ({
+                        ...prev,
+                        [comment.id]: !prev[comment.id],
+                      }))
+                    }
+                  >
+                    <FaEllipsisH />
+                  </button>
+                  {commentOptions[comment.id] && (
+                    <div className="dropdown-menu">
+                      <button onClick={() => handleDeleteComment(comment.id)}>Delete Comment</button>
+                      <button onClick={() => handleUpdateComment(comment.id)}>Update Comment</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
         </ul>
       </div>
     </div>

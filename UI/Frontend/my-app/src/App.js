@@ -14,16 +14,7 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/adminpanel" element={<AdminPanel/>}/>
-        <Route path="/dashboard" element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        } />
-        <Route path="/" element={
-          <PrivateRoute>
-            <UserProfile />
-          </PrivateRoute>
-        } />
+        <Route path="/userprofile/:userId" element={<UserProfile />} />
       </Routes>
     </Router>
   );

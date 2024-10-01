@@ -29,10 +29,13 @@ public class PostController {
         return jwtUtil.extractUsername(jwtToken);
     }
 
+    @GetMapping("/getPostById")
+    public PostEntity getPostById (@RequestParam("postId") long postId){
+        return postService.getPostById(postId);
+    }
     @GetMapping("/getUserPost")
-    public List<PostResponse> getUserPosts(@RequestHeader("Authorization") String token) {
-        String username = extractUsername(token);
-        List<PostEntity> postEntities = postService.getPostsByUser(username);
+    public List<PostResponse> getUserPosts(@RequestParam("userId") long userId) {
+        List<PostEntity> postEntities = postService.getPostsByUser(userId);
         return postEntities.stream()
                 .map(postEntity -> PostResponse.builder()
                         .id(postEntity.getId())

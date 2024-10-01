@@ -20,7 +20,7 @@ public class Message {
     public static final String Y_POST = "Post created successfully";
     public static final String D_POST = "Post deleted";
     public static final String U_POST = "Post updated";
-
+    public static final String POST_NOT_FOUND = "Post not found";
     // User
     public static final String USER_NOT_FOUND = "User not found: ";
     public static final String INVALID_CREDENTIAL = "Invalid credentials";

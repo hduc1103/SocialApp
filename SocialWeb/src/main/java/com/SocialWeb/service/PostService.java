@@ -22,11 +22,13 @@ public class PostService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<PostEntity> getPostsByUser(String username) {
-        UserEntity userEntity =userRepository.findByUsername(username).orElseThrow(()-> new RuntimeException(USER_NOT_FOUND + username));
+    public List<PostEntity> getPostsByUser(long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(()-> new RuntimeException(USER_NOT_FOUND + userId));
         return postRepository.findByUser(userEntity);
     }
-
+    public PostEntity getPostById(long postId){
+        return postRepository.findById(postId).orElseThrow(() -> new RuntimeException(POST_NOT_FOUND));
+    }
     public String createPost(String username, String content) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         PostEntity postEntity = new PostEntity();

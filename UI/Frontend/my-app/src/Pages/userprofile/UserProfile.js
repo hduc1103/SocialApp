@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Post from '../../components/post/Post';
 import FloatingButton from '../../components/floatingbutton/FloatingButton';
 import AddNewPost from '../../components/addpostmodal/AddNewPost';
@@ -22,6 +22,8 @@ const UserProfile = () => {
   });
 
   const navigate = useNavigate();
+  const { userId } = useParams(); 
+  const loggedInUserId = localStorage.getItem('userId');
 
   const handleNewPost = (content) => {
     const token = localStorage.getItem('token');
@@ -50,7 +52,7 @@ const UserProfile = () => {
       if (updatedDetails.profilePicture) {
         formData.append('profilePicture', updatedDetails.profilePicture);
       }
-  
+
       const response = await fetch(`${BASE_URL}/user/updateUser`, {
         method: 'PUT',
         headers: {
@@ -58,11 +60,11 @@ const UserProfile = () => {
         },
         body: formData,
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update profile');
       }
-  
+
       const data = await response.json();
       setUserDetails(data);
       setIsUpdateModalOpen(false);
@@ -70,17 +72,17 @@ const UserProfile = () => {
       setError(error.message);
     }
   };
-  
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
+      return;
     }
 
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/user/getUserData`, {
+        const response = await fetch(`${BASE_URL}/user/getUserData?userId=${userId}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -102,39 +104,10 @@ const UserProfile = () => {
         setError(error.message);
       }
     };
-    const handleUpdateProfile = async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const formData = new FormData();
-        formData.append('email', updatedDetails.email);
-        formData.append('address', updatedDetails.address);
-        formData.append('bio', updatedDetails.bio);
-        if (updatedDetails.profilePicture) {
-          formData.append('profilePicture', updatedDetails.profilePicture);
-        }
-  
-        const response = await fetch(`${BASE_URL}/user/updateUser`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to update profile');
-        }
-  
-        const data = await response.json();
-        setUserDetails(data);
-        setIsUpdateModalOpen(false);
-      } catch (error) {
-        setError(error.message);
-      }
-    };
+
     const fetchUserPosts = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/post/getUserPost`, {
+        const response = await fetch(`${BASE_URL}/post/getUserPost?userId=${userId}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -181,13 +154,15 @@ const UserProfile = () => {
 
     fetchUserProfile();
     fetchUserPosts();
-  }, [navigate]);
+  }, [navigate, userId]);
 
   return (
     <div className="user-profile">
-      <FloatingButton onClick={() => setIsModalOpen(true)} />
+      {userId === loggedInUserId && (
+        <FloatingButton onClick={() => setIsModalOpen(true)} />
+      )}
       <AddNewPost isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleNewPost} />
-      
+
       <div className="profile-header">
         <div className="profile-details">
           <img
@@ -196,28 +171,30 @@ const UserProfile = () => {
             className="profile-picture"
           />
           <div className="user-info">
-            <h1>{userDetails ? `${userDetails.username}` : 'User Profile'}</h1>
+            <h1>{userDetails ? `${userDetails.name}` : 'User Profile'}</h1>
             <p>{userDetails ? `Email: ${userDetails.email}` : 'Loading user details...'}</p>
             <p>{userDetails ? `Address: ${userDetails.address}` : 'Loading user details...'}</p>
             <p>{userDetails ? `Bio: ${userDetails.bio}` : 'Loading user details...'}</p>
           </div>
         </div>
-        <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
-        <LiaUserEditSolid size = {30}/>
-        </button>
+        {userId === loggedInUserId && (
+          <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
+            <LiaUserEditSolid size={30} />
+          </button>
+        )}
         {error && <p className="error">{error}</p>}
       </div>
 
       {isUpdateModalOpen && (
-  <UpdateProfileModal
-    isOpen={isUpdateModalOpen}
-    onClose={() => setIsUpdateModalOpen(false)}
-    onSubmit={handleUpdateProfile}
-    currentDetails={userDetails}
-  />
-)}
+        <UpdateProfileModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          onSubmit={handleUpdateProfile}
+          currentDetails={userDetails}
+        />
+      )}
       <div className="posts-section">
-        <h2>Your Posts</h2>
+        <h2>{userId === loggedInUserId ? 'Your Posts' : `${userDetails?.username}'s Posts`}</h2>
         {userPosts.length > 0 ? (
           <div className="post-list">
             {userPosts.map((post) => (
