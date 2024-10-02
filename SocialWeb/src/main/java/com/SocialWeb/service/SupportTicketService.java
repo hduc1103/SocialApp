@@ -7,7 +7,6 @@ import com.SocialWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 
 import static com.SocialWeb.Message.*;
@@ -20,9 +19,8 @@ public class SupportTicketService {
     UserRepository userRepository;
     @Autowired
     TicketCommentRepository ticketCommentRepository;
-    public String createTicket(SupportTicketEntity supportTicketEntity){
+    public void createTicket(SupportTicketEntity supportTicketEntity){
         supportTicketRepository.save(supportTicketEntity);
-        return Y_SUPPORT_TICKET;
     }
 
     public SupportTicketEntity findSupportTicket(Long ticket_id){
@@ -49,4 +47,9 @@ public class SupportTicketService {
         TicketCommentEntity ticketCommentEntity= ticketCommentRepository.findById(comment_id).orElseThrow();
         ticketCommentRepository.delete(ticketCommentEntity);
     }
-}
+    public List<SupportTicketEntity> getAllTicketsByUserId(Long userId) {
+            return supportTicketRepository.findByUserId(userId);
+        }
+    }
+
+

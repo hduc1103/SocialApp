@@ -20,6 +20,7 @@ public class SupportTicketEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String title;
     private List<String> content;
     private Date createdAt;
     private Date endAt;

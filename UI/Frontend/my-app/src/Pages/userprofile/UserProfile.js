@@ -179,7 +179,7 @@ const UserProfile = () => {
         </div>
         {userId === loggedInUserId && (
           <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
-            <LiaUserEditSolid size={30} />
+            <LiaUserEditSolid size={20} />
           </button>
         )}
         {error && <p className="error">{error}</p>}

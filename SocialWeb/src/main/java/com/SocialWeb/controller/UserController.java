@@ -51,7 +51,7 @@ public class UserController {
     @Autowired
     private PostService postService;
 
-    private String extractUsername(String token){
+    private String extractUsername(String token) {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
     }
@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @GetMapping("/getUserId")
-    public long getUserId(@RequestHeader("Authorization") String token){
+    public long getUserId(@RequestHeader("Authorization") String token) {
         String username = extractUsername(token);
         return userService.getUserId(username);
     }
@@ -88,7 +88,7 @@ public class UserController {
         if (userService.existsByUsername(new_account.get("username"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
         }
-        if(userService.existByEmail(new_account.get("email"))){
+        if (userService.existByEmail(new_account.get("email"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(EMAIL_ALREADY_EXIST);
         }
         String rawPassword = new_account.get("password");
@@ -126,7 +126,7 @@ public class UserController {
     }
 
     @DeleteMapping("/deleteUser")
-    public void deleteUser(@RequestHeader("Authorization") String token){
+    public void deleteUser(@RequestHeader("Authorization") String token) {
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         userService.deleteUser(userEntity);
@@ -135,7 +135,7 @@ public class UserController {
     @GetMapping("/getUserData")
     public ResponseEntity<UserResponse> getUserInfo(@RequestParam("userId") long userId) {
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
-        UserResponse userResponse = new UserResponse(userEntity.getId(), userEntity.getUsername(),userEntity.getName() ,userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
+        UserResponse userResponse = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getName(), userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
         return ResponseEntity.ok(userResponse);
     }
 
@@ -154,7 +154,7 @@ public class UserController {
 
     @GetMapping("/checkFriendStatus")
     public ResponseEntity<String> checkFriendStatus(@RequestHeader("Authorization") String token,
-            @RequestParam Long userId2) {
+                                                    @RequestParam Long userId2) {
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         Long userId1 = userEntity.getId();
@@ -195,34 +195,48 @@ public class UserController {
 
         return result;
     }
-
     @PostMapping("/createSupportTicket")
-    public ResponseEntity<String> createSupportTicket(@RequestHeader("Authorization") String token, @RequestBody List<String> content){
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.findUserbyUsername(username);
-        SupportTicketEntity supportTicketEntity= SupportTicketEntity.builder()
-                .user(userEntity)
-                .content(content)
-                .status("In progress")
-                .createdAt(new Date())
-                .build();
-        return ResponseEntity.status(HttpStatus.OK).body(supportTicketService.createTicket(supportTicketEntity));
+    public ResponseEntity<Void> createSupportTicket(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, Object> requestBody) {
+        try {
+            String title = (String) requestBody.get("title");
+            List<?> contentList = (List<?>) requestBody.get("content");
+            List<String> content = new ArrayList<>();
+            for (Object item : contentList) {
+                content.add((String) item);
+            }
+            String username = extractUsername(token);
+            UserEntity userEntity = userService.findUserbyUsername(username);
+            SupportTicketEntity supportTicketEntity = SupportTicketEntity.builder()
+                    .user(userEntity)
+                    .title(title)
+                    .content(content)
+                    .status("In progress")
+                    .createdAt(new Date())
+                    .build();
+            supportTicketService.createTicket(supportTicketEntity);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build();
+        }
     }
 
     @PutMapping("/updateSupportTicket")
-    public ResponseEntity<String> updateSupportTicket(@RequestHeader("Authorization") String token,@RequestBody List<String> content, @RequestParam Long t_id){
+    public ResponseEntity<String> updateSupportTicket(@RequestHeader("Authorization") String token, @RequestBody List<String> content, @RequestParam Long t_id) {
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         Long userId = userEntity.getId();
         String response = supportTicketService.updateTicket(userId, content, t_id);
-        if (response.equals(DENIED_ACCESS_TICKET)){
+        if (response.equals(DENIED_ACCESS_TICKET)) {
             ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(DENIED_ACCESS_TICKET);
         }
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/addTicketComment")
-    public void addTicketComment (@RequestHeader("Authorization")String token, @RequestParam Long ticket_id ,@RequestBody String text){
+    public void addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         SupportTicketEntity supportTicketEntity = supportTicketService.findSupportTicket(ticket_id);
@@ -236,13 +250,22 @@ public class UserController {
     }
 
     @PutMapping("/updateTicketComment")
-    public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text){
+    public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text) {
         supportTicketService.updateTicketComment(comment_id, text);
     }
 
     @DeleteMapping("/deleteTicketComment")
-    public void deleteTicketComment(@RequestParam Long comment_id){
+    public void deleteTicketComment(@RequestParam Long comment_id) {
         supportTicketService.deleteTicketComment(comment_id);
     }
+
+    @GetMapping("/getAllUserTicket")
+    public List<SupportTicketEntity> getAllUserTicket(@RequestHeader("Authorization") String token) {
+       String username = extractUsername(token);
+        UserEntity userEntity = userService.getUserByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return supportTicketService.getAllTicketsByUserId(userEntity.getId());
+    }
+
 }
 

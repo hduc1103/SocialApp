@@ -96,7 +96,7 @@ const Header = () => {
               <FaUserCircle size={24} />
               <span>Profile</span>
             </div>
-            <div className = "nav-item" onClick={() => navigate(`/`)} >
+            <div className = "nav-item" onClick={() => navigate(`/ticketsupport`)} >
             <MdSupportAgent size = {24}/>
             <span>Support</span>
             </div>
