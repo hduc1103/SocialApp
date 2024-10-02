@@ -93,11 +93,7 @@ const Header = () => {
           <nav className="header-nav">
             <div className="nav-item" onClick={() => navigate('/')}>
               <FaHome size={24} />
-              <span>Home</span>
-            </div>
-            <div className="nav-item" onClick={() => navigate('/notifications')}>
-              <FaBell size={24} />
-              <span>Notifications</span>
+              <span>Dashboard</span>
             </div>
             <div className="nav-item" onClick={() => navigate(`/userprofile/${userId}`)}>
               <FaUserCircle size={24} />

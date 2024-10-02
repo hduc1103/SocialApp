@@ -11,7 +11,13 @@ const UpdateUser = ({ updateData, setUpdateData, updateUser }) => (
     />
     <input
       type="text"
-      placeholder="New Username"
+      placeholder="Name"
+      value={updateData.new_name}
+      onChange={(e) => setUpdateData({ ...updateData, new_username: e.target.value })}
+    />
+    <input
+      type="text"
+      placeholder="Username"
       value={updateData.new_username}
       onChange={(e) => setUpdateData({ ...updateData, new_username: e.target.value })}
     />

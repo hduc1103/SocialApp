@@ -94,6 +94,7 @@ public class UserController {
         String rawPassword = new_account.get("password");
         UserEntity userEntity = UserEntity.builder()
                 .password(passwordEncoder.encode(rawPassword))
+                .name(new_account.get("name"))
                 .username(new_account.get("username"))
                 .email(new_account.get("email"))
                 .bio(new_account.get("bio"))
@@ -146,7 +147,7 @@ public class UserController {
         Long userId1 = userEntity.getId();
 
         String response = userService.addFriend(userId1, userId2);
-        if (response.startsWith(ERROR_MSG)) {
+        if (response.startsWith("ERROR")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);

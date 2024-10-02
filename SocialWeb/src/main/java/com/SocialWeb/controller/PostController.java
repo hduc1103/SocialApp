@@ -3,6 +3,7 @@ package com.SocialWeb.controller;
 import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
+import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class PostController {
                         .content(postEntity.getContent())
                         .createdAt(postEntity.getCreatedAt())
                         .updatedAt(postEntity.getUpdatedAt())
-                        .user_id(postEntity.getUser().getId())
+                        .userId(postEntity.getUser().getId())
                         .comments(postEntity.getComments().stream()
                                 .map(commentEntity -> CommentResponse.builder()
                                         .id(commentEntity.getId())
@@ -55,7 +56,6 @@ public class PostController {
                         .build())
                 .collect(Collectors.toList());
     }
-
     @GetMapping("/numberOfLikes")
     public long getLikeCount(@RequestParam("postId") long postId){
         return postService.numberOfLikes(postId);
@@ -68,9 +68,8 @@ public class PostController {
         String content = postData.get("content");
         return ResponseEntity.status(HttpStatus.OK).body(postService.createPost(username, content));
     }
-
     @DeleteMapping ("/deletePost")
-    public ResponseEntity<?> deletePost(@RequestHeader("Authorization") String token, @RequestParam("postId") long postId){
+    public ResponseEntity<?> deletePost(@RequestParam("postId") long postId){
         return ResponseEntity.status(HttpStatus.OK).body(postService.deletePost(postId));
     }
 
@@ -78,6 +77,31 @@ public class PostController {
     public ResponseEntity<?> updatePost(@RequestParam("postId") long postId, @RequestBody String newContent) {
         return ResponseEntity.status(HttpStatus.OK).body(postService.updatePost(postId, newContent));
     }
+
+    @GetMapping("/retrieveFriendsPosts")
+    public ResponseEntity<List<PostResponse>> retrieveFriendsPosts(@RequestParam("userId") long userId) {
+        List<PostEntity> postEntities = postService.retrieveRecentFriendPosts(userId);
+        List<PostResponse> postResponses = postEntities.stream()
+                .map(postEntity -> PostResponse.builder()
+                        .id(postEntity.getId())
+                        .content(postEntity.getContent())
+                        .createdAt(postEntity.getCreatedAt())
+                        .updatedAt(postEntity.getUpdatedAt())
+                        .userId(postEntity.getUser().getId())
+                        .comments(postEntity.getComments().stream()
+                                .map(commentEntity -> CommentResponse.builder()
+                                        .id(commentEntity.getId())
+                                        .user_id(commentEntity.getUser().getId())
+                                        .text(commentEntity.getText())
+                                        .createdAt(commentEntity.getCreatedAt())
+                                        .updatedAt(commentEntity.getUpdatedAt())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(postResponses);
+    }
+
 }
 
 

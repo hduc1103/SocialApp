@@ -96,6 +96,7 @@ public class AdminController{
         }
         String rawPassword = new_account.get("password");
         UserEntity userEntity = UserEntity.builder()
+                .name(new_account.get("name"))
                 .password(passwordEncoder.encode(rawPassword))
                 .username(new_account.get("username"))
                 .email(new_account.get("email"))

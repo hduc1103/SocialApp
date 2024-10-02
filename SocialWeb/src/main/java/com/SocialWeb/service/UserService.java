@@ -4,6 +4,8 @@ import com.SocialWeb.entity.*;
 import com.SocialWeb.repository.*;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,6 +53,9 @@ public class UserService {
     }
     public String updateUser(Long userId, Map<String, String> updateData){
         UserEntity userEntity= userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
+        if (updateData.containsKey("new_name")) {
+            userEntity.setUsername(updateData.get("new_name"));
+        }
         if (updateData.containsKey("new_username")) {
             userEntity.setUsername(updateData.get("new_username"));
         }
@@ -112,3 +117,5 @@ public class UserService {
         return userEntity.getName();
     }
 }
+
+

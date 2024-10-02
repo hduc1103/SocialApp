@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { BASE_URL } from '../../service/config';
 import './supportticketpage.scss';
 
@@ -10,9 +11,9 @@ const SupportTicketPage = ({ userId }) => {
   const [error, setError] = useState('');
   const [usernames, setUsernames] = useState({});
   const [showCommentBox, setShowCommentBox] = useState({});
-
+  const navigate = useNavigate();
   const token = localStorage.getItem('token');
-
+  
   const ticketOptions = [
     'Cannot Change Password',
     'Delete My Account',
@@ -22,6 +23,11 @@ const SupportTicketPage = ({ userId }) => {
   ];
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     getAllUserTicket();
   }, []);
 

@@ -16,7 +16,7 @@ public class PostResponse {
     private Date createdAt;
 
     private Date updatedAt;
-    private Long user_id;
+    private Long userId;
 
     public PostResponse(Long id, String content, List<CommentResponse> comments, Date createdAt, Date updatedAt, Long userId) {
         this.id = id;
@@ -24,6 +24,6 @@ public class PostResponse {
         this.comments = comments;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.user_id = user_id;
+        this.userId = userId;
     }
 }

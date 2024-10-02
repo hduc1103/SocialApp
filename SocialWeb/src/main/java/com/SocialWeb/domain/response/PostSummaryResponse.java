@@ -15,3 +15,4 @@ public class PostSummaryResponse {
         this.content = content;
     }
 }
+

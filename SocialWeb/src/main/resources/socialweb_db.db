@@ -13,7 +13,6 @@ CREATE TABLE web_user (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
---Them cot ID
 CREATE TABLE web_friends (
     user_id1 BIGINT NOT NULL,
     user_id2 BIGINT NOT NULL,
@@ -48,6 +47,16 @@ CREATE TABLE web_likes (
     FOREIGN KEY (user_id) REFERENCES web_user(id),
     FOREIGN KEY (post_id) REFERENCES web_post(id)
 );
+CREATE TABLE ticket_support (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    content TEXT,
+    created_at TIMESTAMP NOT NULL,
+    end_at TIMESTAMP,
+    user_id BIGINT NOT NULL,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES web_user(id)
+);
+INSERT INTO ticket_support (content, created_at, end_at, user_id, status)
+VALUES ('["Issue with login", "Unable to reset password"]', NOW(), NULL, 1, 'In Progress');
 
 INSERT INTO web_user (username, password, email) VALUES
 ('john_doe', 'password1', 'john.doe@example.com'),
@@ -73,10 +82,124 @@ INSERT INTO web_comment (text, user_id, post_id) VALUES
 ('This is important information!', 2, 3);  -- Jane comments on Admin\'s post
 
 SELECT * FROM web_likes;
-DELETE FROM web_likes WHERE user_id =1;
 SELECT * FROM web_comment;
 SELECT * FROM web_user;
 SELECT * FROM web_friends;
-SELECT * FROM web_post;
-UPDATE web_user SET dtype = 'User' WHERE id IN (1, 2); -- For regular users
-UPDATE web_user SET dtype = 'Admin' WHERE id = 3;      -- For admin user
+SELECT * FROM ticket_support;
+SELECT * FROM user_roles;
+SELECT * FROM ticket_comment;
+SELECT * FROM web_user u WHERE u.username LIKE '%john_doe%';
+ALTER TABLE web_friends DROP COLUMN status2;
+
+SELECT * FROM web_post
+JOIN web_user ON web_post.user_id = web_user.id
+WHERE web_user.username = 'John_doe';
+
+UPDATE web_user
+SET address = 'Ha Noi', bio = 'I\'m funny', img_url = 'url'
+WHERE id = 1;
+
+ALTER TABLE web_user DROP COLUMN role;
+SELECT * FROM user_roles;
+
+UPDATE web_user
+SET password = '$2a$12$tDVu2MOxdPHeaE9/pk8Slug4zrfUfGkwckPnBOPBqs/3PQmW1MzBW' WHERE id =3;
+
+INSERT INTO web_likes (user_id, post_id) VALUES
+(4,2);
+SELECT COUNT(post_id) FROM web_likes WHERE post_id = 1;
+
+SET SQL_SAFE_UPDATES = 1;
+
+UPDATE web_user
+SET name = 'Ho va Ten'
+WHERE name IS NULL;
+
+select ste1_0.id,ste1_0.content,ste1_0.created_at,ste1_0.end_at,ste1_0.status,ste1_0.title,ste1_0.user_id from ticket_support ste1_0 where ste1_0.user_id=1;
+
+ALTER TABLE ticket_support
+MODIFY content TEXT;
+
+INSERT INTO ticket_support (title, content, created_at, end_at, user_id, status)
+VALUES ('Cannot Change Password', 'Cannot change password due to security reasons; Cannot delete account', '2024-10-02 09:00:00', NULL, 1, 'In Progress');
+
+SELECT name FROM web_user wu JOIN web_comment wc ON wu.id=wc.user_id
+WHERE wc.id = 1;
+
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 5);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (5, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 6);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (6, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 7);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (7, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 8);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (8, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 9);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (9, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 10);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (10, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 11);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (11, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 12);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (12, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 13);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (13, 24);
+
+INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 14);
+INSERT INTO web_friends (user_id1, user_id2) VALUES (14, 24);
+
+-- Posts for user ID 24 (Total: 8 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Exploring the city today!', 24, '2024-10-02 17:00:00', '2024-10-02 17:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Loving the new features on this app.', 24, '2024-10-02 18:00:00', '2024-10-02 18:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Reading an amazing book about architecture.', 24, '2024-10-02 22:00:00', '2024-10-02 22:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Morning workout done! Feeling fresh.', 24, '2024-10-03 06:00:00', '2024-10-03 06:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Finished an interesting coding project.', 24, '2024-10-03 12:00:00', '2024-10-03 12:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Enjoying some time with friends.', 24, '2024-10-03 16:00:00', '2024-10-03 16:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Starting a new series on TV.', 24, '2024-10-04 09:00:00', '2024-10-04 09:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Went for a walk at the park.', 24, '2024-10-04 20:00:00', '2024-10-04 20:00:00');
+
+-- Posts for friend user ID 5 (Total: 4 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Back to the gym after a long time.', 5, '2024-10-02 10:00:00', '2024-10-02 10:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Exploring the outdoors.', 5, '2024-10-02 15:00:00', '2024-10-02 15:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Cooking a delicious dinner tonight!', 5, '2024-10-03 18:00:00', '2024-10-03 18:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Spending time with family.', 5, '2024-10-04 08:00:00', '2024-10-04 08:00:00');
+
+-- Posts for friend user ID 6 (Total: 3 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('A perfect day for a hike.', 6, '2024-10-02 11:00:00', '2024-10-02 11:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Starting a new book.', 6, '2024-10-03 10:00:00', '2024-10-03 10:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Going for a bike ride later.', 6, '2024-10-04 15:00:00', '2024-10-04 15:00:00');
+
+-- Posts for friend user ID 7 (Total: 3 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Work-life balance is key!', 7, '2024-10-02 13:00:00', '2024-10-02 13:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Got a promotion at work!', 7, '2024-10-03 17:00:00', '2024-10-03 17:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Enjoying some yoga sessions.', 7, '2024-10-04 07:00:00', '2024-10-04 07:00:00');
+
+-- Posts for friend user ID 8 (Total: 3 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Visiting my hometown.', 8, '2024-10-03 09:00:00', '2024-10-03 09:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Starting a new hobby!', 8, '2024-10-04 10:00:00', '2024-10-04 10:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Went swimming today!', 8, '2024-10-04 19:00:00', '2024-10-04 19:00:00');
+
+-- Posts for friend user ID 9 (Total: 3 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Just got a new dog!', 9, '2024-10-02 19:00:00', '2024-10-02 19:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Trying out a new recipe today.', 9, '2024-10-02 23:00:00', '2024-10-02 23:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Listening to some great music.', 9, '2024-10-04 21:00:00', '2024-10-04 21:00:00');
+
+-- Posts for friend user ID 10 (Total: 3 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('A sunny day calls for a picnic!', 10, '2024-10-02 20:00:00', '2024-10-02 20:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Enjoying the autumn leaves.', 10, '2024-10-03 07:00:00', '2024-10-03 07:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Trying a new coffee shop.', 10, '2024-10-04 13:00:00', '2024-10-04 13:00:00');
+
+-- Posts for friend user ID 11 (Total: 3 posts)
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Watching a great movie tonight.', 11, '2024-10-03 08:00:00', '2024-10-03 08:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Learning about blockchain technology.', 11, '2024-10-04 11:00:00', '2024-10-04 11:00:00');
+INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Went for a run at sunset.', 11, '2024-10-04 18:00:00', '2024-10-04 18:00:00');
+

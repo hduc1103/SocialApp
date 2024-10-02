@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/post/deletePost").authenticated()
                         .requestMatchers("/post/updatePost").authenticated()
                         .requestMatchers("/post/getPostById").authenticated()
+                        .requestMatchers("/post/retrieveFriendsPosts").authenticated()
                         .requestMatchers("/user/createUser").permitAll()
                         .requestMatchers("/user/deleteUSer").permitAll()
                         .requestMatchers("/user/search").permitAll()

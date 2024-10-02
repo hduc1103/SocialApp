@@ -11,8 +11,11 @@ const Post = ({ post }) => {
   const [comments, setComments] = useState(post.comments || []);
   const [comment, setComment] = useState('');
   const [commentUsernames, setCommentUsernames] = useState({});
+  const [author, setAuthor] = useState('');
   const [showPostOptions, setShowPostOptions] = useState(false);
   const [commentOptions, setCommentOptions] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedContent, setUpdatedContent] = useState(post.content);
 
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
@@ -22,24 +25,46 @@ const Post = ({ post }) => {
     if (!token) {
       navigate('/login');
     } else {
+      fetchPostAuthor(post.userId);
       fetchUsernamesForComments(comments);
     }
   }, [navigate, comments]);
+
+  const fetchPostAuthor = async (userId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/user/getUsername?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch post author');
+      }
+
+      const data = await response.json();
+      setAuthor(data.username);
+    } catch (error) {
+      console.error('Error fetching post author:', error);
+    }
+  };
 
   const fetchUsernamesForComments = async (comments) => {
     const token = localStorage.getItem('token');
     try {
       const usernames = {};
       for (const comment of comments) {
-        const response = await fetch(`${BASE_URL}/interact/getCommentUser/${comment.id}`, {
+        const response = await fetch(`${BASE_URL}/user/getUsername?userId=${comment.user_id}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         if (response.ok) {
-          const username = await response.text();
-          usernames[comment.id] = username;
+          const data = await response.json();
+          usernames[comment.id] = data.username;
         }
       }
       setCommentUsernames(usernames);
@@ -47,7 +72,48 @@ const Post = ({ post }) => {
       console.error('Error fetching usernames:', error);
     }
   };
+  
+  const handleDeleteComment = async (commentId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/interact/deleteComment?cmtId=${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
+      if (!response.ok) {
+        throw new Error('Failed to delete comment');
+      }
+      setComments(comments.filter((c) => c.id !== commentId));
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  const handleUpdateComment = async (commentId, comment) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/interact/updateComment?cmtId=${commentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ comment }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Comment updated successfully:', result);
+    } catch (error) {
+      console.error('Failed to update comment:', error);
+    }
+  };
   const handleLike = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -99,8 +165,24 @@ const Post = ({ post }) => {
         }
 
         const newComment = await response.json();
-        setComments([...comments, newComment]);
+        const updatedComments = [...comments, newComment];
+        setComments(updatedComments);
         setComment('');
+
+        const responseUsername = await fetch(`${BASE_URL}/user/getUsername?userId=${newComment.user_id}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (responseUsername.ok) {
+          const usernameData = await responseUsername.json();
+          setCommentUsernames((prevUsernames) => ({
+            ...prevUsernames,
+            [newComment.id]: usernameData.username,
+          }));
+        }
       } catch (error) {
         console.error('Error adding comment:', error);
       }
@@ -126,64 +208,60 @@ const Post = ({ post }) => {
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
+  const handleUpdatePost = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/interact/deleteComment?cmtId=${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete comment');
-      }
-      setComments(comments.filter((c) => c.id !== commentId));
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-    }
-  };
-
-  const handleUpdateComment = async (commentId, comment) => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${BASE_URL}/interact/updateComment?cmtId=${commentId}`, {
+      const response = await fetch(`${BASE_URL}/post/updatePost?postId=${post.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ comment }),
+        body: JSON.stringify(updatedContent), 
       });
-
+  
       if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        throw new Error('Failed to update post');
       }
-
-      const result = await response.json();
-      console.log('Comment updated successfully:', result);
+  
+      setIsEditing(false);
+      console.log('Post updated successfully');
     } catch (error) {
-      console.error('Failed to update comment:', error);
+      console.error('Error updating post:', error);
     }
   };
+  
 
   return (
     <div className="post-card">
-      <p className="post-content">{post.content}</p>
-
-      {post.user_id === parseInt(userId) && (
-        <div className="post-options">
-          <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
-            <FaEllipsisH />
-          </button>
-          {showPostOptions && (
-            <div className="dropdown-menu">
-              <button onClick={handleDeletePost}>Delete Post</button>
-            </div>
-          )}
+      <h3 className="post-author"> {author}</h3>
+      {isEditing ? (
+        <div className="edit-post-container">
+          <textarea
+            value={updatedContent}
+            onChange={(e) => setUpdatedContent(e.target.value)}
+            className="edit-post-input"
+          />
+          <button className="save-post-button" onClick={handleUpdatePost}>Save</button>
+          <button className="cancel-edit-button" onClick={() => setIsEditing(false)}>Cancel</button>
         </div>
+      ) : (
+        <p className="post-content">{post.content}</p>
       )}
+      {post.userId === parseInt(userId) && (
+  <div className="post-options">
+    <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
+      <FaEllipsisH />
+    </button>
+    {showPostOptions && (
+      <div className="dropdown-menu">
+        <button onClick={handleDeletePost}>Delete Post</button>
+        <button onClick={() => setIsEditing(true)}>Update Post</button>
+      </div>
+    )}
+  </div>
+)}
+
 
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>

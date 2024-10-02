@@ -45,7 +45,7 @@ public class PostService {
 
     public String updatePost(long postId, String newContent){
         PostEntity postEntity = postRepository.findById(postId).orElseThrow();
-
+        newContent = newContent.replaceAll("\"", "");
         postEntity.setContent(newContent);
         postEntity.setUpdatedAt(new Date());
         postRepository.save(postEntity);
@@ -59,5 +59,9 @@ public class PostService {
 
     public List<PostEntity> searchPostsByKeyWord(String keyword){
         return postRepository.searchPostsByContent(keyword);
+    }
+
+    public List<PostEntity> retrieveRecentFriendPosts(Long userId){
+        return postRepository.retrieveRecentFriendPosts(userId);
     }
 }

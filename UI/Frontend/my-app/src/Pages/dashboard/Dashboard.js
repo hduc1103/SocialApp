@@ -1,77 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Dashboard.scss';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { BASE_URL } from '../../service/config';
+import Post from '../../components/post/Post';
+import './dashboard.scss';
 
 const Dashboard = () => {
-  const [posts, setPosts] = useState([]);
-  const [error, setError] = useState(null);
-  const [friendsPosts, setFriendsPosts] = useState([]);
-  const navigate = useNavigate();
-
+  const [friendPosts, setFriendPosts] = useState([]);
+  const [error, setError] = useState('');
+  const navigate=useNavigate();
+  const token = localStorage.getItem('token');
+  const userId =localStorage.getItem('userId')
+  console.log(userId)
   useEffect(() => {
     const token = localStorage.getItem('token');
-
-    console.log("token ne    " + token);
-
     if (!token) {
-      setError('No token found');
+      navigate('/login');
       return;
     }
-
-    fetch('http://localhost:8080/api/posts/user', {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Failed to fetch posts, status: ' + response.status);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      setPosts(data);
-      setError(null); 
-    })
-    .catch((error) => {
-      console.error('Error fetching posts:', error);
-      setError(error.message);
-    });
+    retrieveFriendsPosts();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  const retrieveFriendsPosts = async () => {
+    try {
+      if (!token) {
+        throw new Error('User not logged in');
+      }
+
+      const response = await fetch(`${BASE_URL}/post/retrieveFriendsPosts?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to retrieve friends posts');
+      }
+
+      const posts = await response.json();
+      setFriendPosts(posts);
+    } catch (error) {
+      console.error('Error fetching friends posts:', error);
+      setError('Failed to fetch posts. Please try again later.');
+    }
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Welcome to your Dashboard!</h1>
-        <button className="logout-button" onClick={handleLogout}>Logout</button>
-      </div>
-
-      <div className="posts-section">
-        <div className="your-posts">
-          <h2>Your Posts</h2>
-          {posts.map((post) => (
-            <div className="post-card" key={post.id}>
-              <p>{post.content}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="friends-posts">
-          <h2>Friends' Latest Posts</h2>
-          {friendsPosts.map((post) => (
-            <div className="post-card" key={post.id} onClick={() => navigate(`/profile/${post.userId}`)}>
-              <p><strong>{post.user.username}'s Post:</strong></p>
-              <p>{post.content}</p>
-            </div>
-          ))}
-        </div>
+    <div className="dashboard">
+      <h2>Friends' Recent Posts</h2>
+      {error && <p className="error-message">{error}</p>}
+      <div className="posts-container">
+        {friendPosts.length > 0 ? (
+          friendPosts.map((post) => (
+            <Post key={post.id} post={post} /> 
+          ))
+        ) : (
+          <p>No recent posts from friends.</p>
+        )}
       </div>
     </div>
   );

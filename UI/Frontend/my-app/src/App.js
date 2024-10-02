@@ -6,6 +6,7 @@ import AdminPanel from './pages/adminpanel/AdminPanel';
 import UserProfile from './pages/userprofile/UserProfile'; 
 import SupportTicketPage from './pages/supportticketpage/SupportTicketPage';
 import AdminSupportTicketPage from './pages/adminsupportticket/AdminTicketPage';
+import Dashboard from './pages/dashboard/Dashboard';
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
       <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path='/' element={< Dashboard />}/>
         <Route path="/adminpanel" element={<AdminPanel/>}/>
         <Route path="/userprofile/:userId" element={<UserProfile />} />
         <Route path="/ticketsupport" element={<SupportTicketPage/>} />
@@ -23,3 +25,4 @@ const App = () => {
 };
 
 export default App;
+
