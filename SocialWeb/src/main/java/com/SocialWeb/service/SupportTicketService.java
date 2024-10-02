@@ -26,7 +26,7 @@ public class SupportTicketService {
     public SupportTicketEntity findSupportTicket(Long ticket_id){
         return supportTicketRepository.findById(ticket_id).orElseThrow();
     }
-    public String updateTicket(Long userId, List<String> content, Long id){
+    public String updateTicket(Long userId, String content, Long id){
         if(supportTicketRepository.checkUserTicket(userId)!=id){
             return DENIED_ACCESS_TICKET;
         }
@@ -48,8 +48,15 @@ public class SupportTicketService {
         ticketCommentRepository.delete(ticketCommentEntity);
     }
     public List<SupportTicketEntity> getAllTicketsByUserId(Long userId) {
-            return supportTicketRepository.findByUserId(userId);
-        }
+        return supportTicketRepository.findByUserId(userId);
+    }
+
+    public void deleteSupportTicket(Long ticketId){
+        supportTicketRepository.delete(supportTicketRepository.findById(ticketId).orElseThrow());
+    }
+    public List<SupportTicketEntity> getAllSupportTickets(){
+        return supportTicketRepository.findAll();
+    }
     }
 
 

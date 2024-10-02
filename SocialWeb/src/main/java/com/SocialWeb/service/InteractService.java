@@ -82,4 +82,7 @@ public class InteractService {
         postRepository.removeLike(user_id, postId);
         return DISLIKE;
     }
+    public String getCommentAuthor(long commentId){
+        return commentRepository.getCommentUser(commentId);
+    }
 }

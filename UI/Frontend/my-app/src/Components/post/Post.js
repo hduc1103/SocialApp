@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { BASE_URL } from '../../service/config';
 import { useNavigate } from 'react-router-dom';
-import { FaEllipsisH } from 'react-icons/fa'; 
+import { FaEllipsisH } from 'react-icons/fa';
 import { BiSolidLike } from "react-icons/bi";
 
 import './post.scss';
 
-const PostComponent = ({ post }) => {
+const Post = ({ post }) => {
   const [likes, setLikes] = useState(post.likeCount || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [comment, setComment] = useState('');
+  const [commentUsernames, setCommentUsernames] = useState({});
   const [showPostOptions, setShowPostOptions] = useState(false);
   const [commentOptions, setCommentOptions] = useState({});
 
@@ -20,8 +21,32 @@ const PostComponent = ({ post }) => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
+    } else {
+      fetchUsernamesForComments(comments);
     }
-  }, [navigate]);
+  }, [navigate, comments]);
+
+  const fetchUsernamesForComments = async (comments) => {
+    const token = localStorage.getItem('token');
+    try {
+      const usernames = {};
+      for (const comment of comments) {
+        const response = await fetch(`${BASE_URL}/interact/getCommentUser/${comment.id}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const username = await response.text();
+          usernames[comment.id] = username;
+        }
+      }
+      setCommentUsernames(usernames);
+    } catch (error) {
+      console.error('Error fetching usernames:', error);
+    }
+  };
 
   const handleLike = async () => {
     const token = localStorage.getItem('token');
@@ -162,7 +187,7 @@ const PostComponent = ({ post }) => {
 
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
-        <BiSolidLike /> {likes}
+          <BiSolidLike /> {likes}
         </button>
         <form className="comment-form" onSubmit={handleComment}>
           <input
@@ -180,8 +205,9 @@ const PostComponent = ({ post }) => {
         <h4>Comments:</h4>
         <ul>
           {comments.map((comment) => (
-            <li key={comment.id}>
-              {comment.text}
+            <li key={comment.id} className="comment-item-post">
+              <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
+              <span className="comment-text">{comment.text}</span>
               {comment.user_id === parseInt(userId) && (
                 <div className="comment-options">
                   <button
@@ -211,4 +237,4 @@ const PostComponent = ({ post }) => {
   );
 };
 
-export default PostComponent;
+export default Post;

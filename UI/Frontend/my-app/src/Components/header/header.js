@@ -38,7 +38,13 @@ const Header = () => {
     setUserResults([]);
     setPostResults([]);
   }, [navigate]);
-
+  const handleSupportNavigation = () => {
+    if (isAdmin) {
+      navigate('/admin/ticketsupport');
+    } else {
+      navigate('/ticketsupport');
+    }
+  }
   const handleSearch = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -65,6 +71,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('userId')
     setIsLoggedin(false);
     setIsAdmin(false);
     navigate('/login');
@@ -96,12 +103,12 @@ const Header = () => {
               <FaUserCircle size={24} />
               <span>Profile</span>
             </div>
-            <div className = "nav-item" onClick={() => navigate(`/ticketsupport`)} >
-            <MdSupportAgent size = {24}/>
-            <span>Support</span>
-            </div>
+            <div className="nav-item" onClick={handleSupportNavigation}>
+        <MdSupportAgent size={24} />
+        <span>Support</span>
+      </div>
             {isAdmin && (
-              <div className="nav-item" onClick={() => navigate('/admin')}>
+              <div className="nav-item" onClick={() => navigate('/adminpanel')}>
                 <RiAdminFill size={24} />
                 <span>Admin</span>
               </div>

@@ -20,8 +20,11 @@ public class SupportTicketEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String title;
-    private List<String> content;
+
+    private String content;
+
     private Date createdAt;
     private Date endAt;
 
@@ -29,7 +32,7 @@ public class SupportTicketEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @OneToMany(mappedBy = "supportTicketEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "supportTicketEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("support_ticket-ticket_comments")
     private List<TicketCommentEntity> ticketCommentEntities;
 

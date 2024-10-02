@@ -57,6 +57,9 @@ public class SecurityConfig {
                         .requestMatchers("/user/addTicketComment").authenticated()
                         .requestMatchers("/user/createSupportTicket").authenticated()
                         .requestMatchers("/user/getAllUserTicket").authenticated()
+                        .requestMatchers("/user/addTicketComment").authenticated()
+                        .requestMatchers("/user/getUsername").authenticated()
+                        .requestMatchers("/user/*/close").authenticated()
                         .requestMatchers("/admin/**").hasAuthority("ADMIN"))
                 .cors(withDefaults())
                 .headers(AbstractHttpConfigurer::disable)
@@ -69,7 +72,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3001");
+        configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);

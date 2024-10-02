@@ -107,4 +107,8 @@ public class UserService {
     public List<UserEntity> searchUserByName(String keyword){
         return userRepository.searchUsersByUsername(keyword);
     }
+    public String getUserName(long userId){
+        UserEntity userEntity= userRepository.findById(userId).orElseThrow();
+        return userEntity.getName();
+    }
 }

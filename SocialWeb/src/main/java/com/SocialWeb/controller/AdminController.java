@@ -1,4 +1,6 @@
 package com.SocialWeb.controller;
+import com.SocialWeb.domain.response.SupportTicketResponse;
+import com.SocialWeb.domain.response.TicketCommentResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.entity.SupportTicketEntity;
 import com.SocialWeb.entity.TicketCommentEntity;
@@ -16,10 +18,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.SocialWeb.Message.*;
 
@@ -43,6 +43,12 @@ public class AdminController{
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    private String extractUsername(String token) {
+        String jwtToken = token.substring(7);
+        return jwtUtil.extractUsername(jwtToken);
+    }
+
     @GetMapping("/allUsers")
     public List<UserResponse> getAllUsers(){
         List<UserResponse> result = new ArrayList<>();
@@ -107,10 +113,40 @@ public class AdminController{
         }
         return ResponseEntity.ok(USER_CREATED);
     }
+
+    @GetMapping("/getAllSupportTicket")
+    public ResponseEntity<List<SupportTicketResponse>> getAllSupportTicket() {
+        try {
+            List<SupportTicketEntity> supportTickets = supportTicketService.getAllSupportTickets();
+            List<SupportTicketResponse> supportTicketResponses = supportTickets.stream()
+                    .map(ticket -> SupportTicketResponse.builder()
+                            .id(ticket.getId())
+                            .title(ticket.getTitle())
+                            .content(ticket.getContent())
+                            .status(ticket.getStatus())
+                            .createdAt(ticket.getCreatedAt())
+                            .endAt(ticket.getEndAt())
+                            .userId(ticket.getUser().getId())
+                            .comments(ticket.getTicketCommentEntities().stream()
+                                    .map(comment -> TicketCommentResponse.builder()
+                                            .id(comment.getId())
+                                            .text(comment.getText())
+                                            .createdAt(comment.getCreatedAt())
+                                            .updatedAt(comment.getUpdatedAt())
+                                            .userId(comment.getUser().getId())
+                                            .build())
+                                    .collect(Collectors.toList()))
+                            .build())
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(supportTicketResponses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     @PostMapping("/addTicketComment")
-    public void addTicketComment (@RequestHeader("Authorization")String token, @RequestParam Long ticket_id ,@RequestBody String text){
-        String jwtToken = token.substring(7);
-        String username= jwtUtil.extractUsername(jwtToken);
+    public void addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
+        String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         SupportTicketEntity supportTicketEntity = supportTicketService.findSupportTicket(ticket_id);
         TicketCommentEntity ticketCommentEntity = TicketCommentEntity.builder()
@@ -121,9 +157,12 @@ public class AdminController{
                 .build();
         supportTicketService.addTicketComment(ticketCommentEntity);
     }
-    @PutMapping("/updateTicketComment")
-    public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text){
-        supportTicketService.updateTicketComment(comment_id, text);
+
+    @GetMapping("/AdmingetUsername")
+    public ResponseEntity<String> getUsername(@RequestParam Long userId) {
+        String username = userService.getUserName(userId);
+        return ResponseEntity.ok(username);
     }
-    
+
 }
+

@@ -43,6 +43,15 @@ const Login = () => {
       console.log(role)
         if (role === 'ADMIN') {
           localStorage.setItem('role', 'ADMIN')
+          const userIdResponse = await fetch(`${BASE_URL}/user/getUserId`,{
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }); 
+          const userId = await userIdResponse.text();
+          console.log(localStorage.getItem('userId'))
+          localStorage.setItem('userId', userId)
         navigate('/adminpanel');
       } else {
         localStorage.setItem('role', role)

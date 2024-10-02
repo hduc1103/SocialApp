@@ -28,10 +28,11 @@ public class TicketCommentEntity {
     private UserEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "ticket_id", referencedColumnName = "id")
+    @JoinColumn(name = "ticket_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference("support_ticket-ticket_comments")
     private SupportTicketEntity supportTicketEntity;
 
     private Date createdAt;
     private Date updatedAt;
 }
+

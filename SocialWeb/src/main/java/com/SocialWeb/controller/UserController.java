@@ -201,13 +201,10 @@ public class UserController {
             @RequestBody Map<String, Object> requestBody) {
         try {
             String title = (String) requestBody.get("title");
-            List<?> contentList = (List<?>) requestBody.get("content");
-            List<String> content = new ArrayList<>();
-            for (Object item : contentList) {
-                content.add((String) item);
-            }
+            String content = (String) requestBody.get("content");
             String username = extractUsername(token);
             UserEntity userEntity = userService.findUserbyUsername(username);
+
             SupportTicketEntity supportTicketEntity = SupportTicketEntity.builder()
                     .user(userEntity)
                     .title(title)
@@ -215,24 +212,37 @@ public class UserController {
                     .status("In progress")
                     .createdAt(new Date())
                     .build();
+
             supportTicketService.createTicket(supportTicketEntity);
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PutMapping("/updateSupportTicket")
-    public ResponseEntity<String> updateSupportTicket(@RequestHeader("Authorization") String token, @RequestBody List<String> content, @RequestParam Long t_id) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        Long userId = userEntity.getId();
-        String response = supportTicketService.updateTicket(userId, content, t_id);
-        if (response.equals(DENIED_ACCESS_TICKET)) {
-            ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(DENIED_ACCESS_TICKET);
+    public ResponseEntity<Void> updateSupportTicket(
+            @RequestHeader("Authorization") String token,
+            @RequestBody String content,
+            @RequestParam Long t_id) {
+        try {
+            String username = extractUsername(token);
+            UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+            Long userId = userEntity.getId();
+            String response = supportTicketService.updateTicket(userId, content, t_id);
+            if (response.equals(DENIED_ACCESS_TICKET)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{ticketId}/close")
+    public ResponseEntity<Void> closeSupportTicket(@PathVariable Long ticketId){
+        supportTicketService.deleteSupportTicket(ticketId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/addTicketComment")
@@ -260,12 +270,40 @@ public class UserController {
     }
 
     @GetMapping("/getAllUserTicket")
-    public List<SupportTicketEntity> getAllUserTicket(@RequestHeader("Authorization") String token) {
-       String username = extractUsername(token);
+    public List<SupportTicketResponse> getAllUserTicket(@RequestHeader("Authorization") String token) {
+        String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return supportTicketService.getAllTicketsByUserId(userEntity.getId());
+        System.out.println(userEntity.getId());
+
+        List<SupportTicketEntity> supportTickets = supportTicketService.getAllTicketsByUserId(userEntity.getId());
+
+        return supportTickets.stream()
+                .map(ticket -> SupportTicketResponse.builder()
+                        .id(ticket.getId())
+                        .title(ticket.getTitle())
+                        .content(ticket.getContent())
+                        .status(ticket.getStatus())
+                        .createdAt(ticket.getCreatedAt())
+                        .userId(ticket.getUser().getId())
+                        .comments(ticket.getTicketCommentEntities().stream()
+                                .map(comment -> TicketCommentResponse.builder()
+                                        .id(comment.getId())
+                                        .text(comment.getText())
+                                        .createdAt(comment.getCreatedAt())
+                                        .updatedAt(comment.getUpdatedAt())
+                                        .userId(comment.getUser().getId())
+                                        .build())
+                                .toList())
+                        .build())
+                .toList();
     }
 
+    @GetMapping("/getUsername")
+    public ResponseEntity<Map<String,String>> getUsername(@RequestParam("userId")long userId){
+        Map<String, String> response = new HashMap<>();
+        response.put("username", userService.getUserName(userId));
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
 

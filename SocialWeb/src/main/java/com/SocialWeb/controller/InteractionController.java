@@ -67,4 +67,8 @@ public class InteractionController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+    @GetMapping("/getCommentUser/{commentId}")
+    public ResponseEntity<String> getCommentUser(@PathVariable long commentId){
+        return ResponseEntity.status(HttpStatus.OK).body(interactService.getCommentAuthor(commentId));
+    }
 }

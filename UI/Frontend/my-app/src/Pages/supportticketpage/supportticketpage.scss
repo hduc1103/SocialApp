@@ -1,5 +1,4 @@
 .support-ticket-page {
-    max-width: 800px;
     margin: 50px auto;
     padding: 30px;
     background-color: #ffffff;
@@ -8,7 +7,7 @@
     font-family: Arial, sans-serif;
   }
   
-  h2 {
+  .support-ticket-page-h2 {
     text-align: center;
     color: #333;
     margin-bottom: 20px;
@@ -155,14 +154,14 @@
     margin-bottom: 15px;
   }
   
-  .comment-item {
+  .user-comment-item {
     background: #e6f3ff;
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
   }
   
-  .comment-item p {
+  .user-comment-item p {
     font-size: 14px;
     color: #333;
     margin: 0;
@@ -203,5 +202,14 @@
   
   .add-comment button:hover {
     background-color: #45a049;
+  }
+  .ticket-content-list {
+    list-style-type: disc; 
+    padding-left: 20px;
+    margin-top: 10px;
+  }
+  
+  .ticket-content-list li {
+    margin-bottom: 5px;
   }
   
