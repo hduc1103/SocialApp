@@ -147,7 +147,7 @@ public class UserController {
         Long userId1 = userEntity.getId();
 
         String response = userService.addFriend(userId1, userId2);
-        if (response.startsWith("ERROR")) {
+        if (response.startsWith(ERROR_MSG)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);
