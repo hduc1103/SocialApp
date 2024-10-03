@@ -45,15 +45,42 @@ const UserProfile = () => {
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
     try {
-      const formData = new FormData();
-      formData.append('email', updatedDetails.email);
-      formData.append('address', updatedDetails.address);
-      formData.append('bio', updatedDetails.bio);
-      if (updatedDetails.profilePicture) {
-        formData.append('profilePicture', updatedDetails.profilePicture);
-      }
-
+      const updateData = {
+        new_name: updatedDetails.name,
+        new_username: updatedDetails.username,
+        new_email: updatedDetails.email,
+        new_address: updatedDetails.address,
+        new_bio: updatedDetails.bio,
+      };
+  
       const response = await fetch(`${BASE_URL}/user/updateUser`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+  
+      const data = await response.json();
+      setUserDetails(data);
+      setIsUpdateModalOpen(false);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handleUpdateProfileImage = async (profilePicture) => {
+    const token = localStorage.getItem('token');
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', profilePicture);
+
+      const response = await fetch(`${BASE_URL}/user/updateProfileImage`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -62,12 +89,14 @@ const UserProfile = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        throw new Error('Failed to update profile image');
       }
 
-      const data = await response.json();
-      setUserDetails(data);
-      setIsUpdateModalOpen(false);
+      const updatedData = await response.json();
+      setUserDetails((prevDetails) => ({
+        ...prevDetails,
+        img_url: updatedData.img_url,
+      }));
     } catch (error) {
       setError(error.message);
     }
@@ -95,6 +124,7 @@ const UserProfile = () => {
 
         const data = await response.json();
         setUserDetails(data);
+        
         setUpdatedDetails({
           email: data.email,
           address: data.address,
@@ -165,11 +195,34 @@ const UserProfile = () => {
 
       <div className="profile-header">
         <div className="profile-details">
+          <div className="profile-picture-wrapper">
           <img
-            src="https://via.placeholder.com/150"
-            alt="Profile"
-            className="profile-picture"
-          />
+  src={userDetails?.img_url ? `http://localhost:3001/${userDetails.img_url}` : "https://via.placeholder.com/150"}
+  alt="Profile"
+  className="profile-picture"
+/>
+
+            {userId === loggedInUserId && (
+              <>
+                <input
+                  type="file"
+                  id="profileImageInput"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleUpdateProfileImage(e.target.files[0]);
+                    }
+                  }}
+                />
+                <button
+                  className="edit-profile-picture-button"
+                  onClick={() => document.getElementById('profileImageInput').click()}
+                >
+                  Modify
+                </button>
+              </>
+            )}
+          </div>
           <div className="user-info">
             <h1>{userDetails ? `${userDetails.name}` : 'User Profile'}</h1>
             <p>{userDetails ? `Email: ${userDetails.email}` : 'Loading user details...'}</p>

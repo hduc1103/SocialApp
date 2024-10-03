@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -124,6 +126,19 @@ public class UserController {
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         Long userId = userEntity.getId();
         return ResponseEntity.ok(userService.updateUser(userId, updateData));
+    }
+
+    @PutMapping(value = "/updateProfileImage", consumes = "multipart/form-data")
+    public ResponseEntity<Void> updateProfileImage(
+            @RequestHeader("Authorization") String token,
+            @RequestParam("profilePicture") MultipartFile profilePicture) {
+        try {
+            String username = extractUsername(token);
+            userService.updateProfileImage(username, profilePicture);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/deleteUser")

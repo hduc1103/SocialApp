@@ -13,7 +13,7 @@ const UpdateUser = ({ updateData, setUpdateData, updateUser }) => (
       type="text"
       placeholder="Name"
       value={updateData.new_name}
-      onChange={(e) => setUpdateData({ ...updateData, new_username: e.target.value })}
+      onChange={(e) => setUpdateData({ ...updateData, new_name: e.target.value })} 
     />
     <input
       type="text"
@@ -24,20 +24,20 @@ const UpdateUser = ({ updateData, setUpdateData, updateUser }) => (
     <input
       type="email"
       placeholder="Email"
-      value={updateData.email}
-      onChange={(e) => setUpdateData({ ...updateData, email: e.target.value })}
+      value={updateData.new_email}
+      onChange={(e) => setUpdateData({ ...updateData, new_email: e.target.value })} 
     />
     <input
       type="text"
       placeholder="Address"
-      value={updateData.address}
-      onChange={(e) => setUpdateData({ ...updateData, address: e.target.value })}
+      value={updateData.new_address}
+      onChange={(e) => setUpdateData({ ...updateData, new_address: e.target.value })} 
     />
     <input
       type="text"
       placeholder="Bio"
-      value={updateData.bio}
-      onChange={(e) => setUpdateData({ ...updateData, bio: e.target.value })}
+      value={updateData.new_bio}
+      onChange={(e) => setUpdateData({ ...updateData, new_bio: e.target.value })} 
     />
     <button onClick={updateUser}>Update User</button>
   </div>
