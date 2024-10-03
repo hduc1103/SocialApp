@@ -104,6 +104,7 @@ const UserProfile = () => {
         setError(error.message);
       }
     };
+    
     const fetchUserPosts = async () => {
       try {
         const response = await fetch(`${BASE_URL}/post/getUserPost?userId=${userId}`, {

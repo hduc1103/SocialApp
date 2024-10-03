@@ -40,13 +40,39 @@ const Dashboard = () => {
       }
 
       const posts = await response.json();
-      setFriendPosts(posts);
+      const postsWithLikes = await fetchPostLikeCounts(posts);
+      setFriendPosts(postsWithLikes);
     } catch (error) {
       console.error('Error fetching friends posts:', error);
       setError('Failed to fetch posts. Please try again later.');
     }
   };
 
+  const fetchPostLikeCounts = async (posts) => {
+    const updatedPosts = await Promise.all(
+      posts.map(async (post) => {
+        try {
+          const response = await fetch(`${BASE_URL}/post/numberOfLikes?postId=${post.id}`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch like count');
+          }
+
+          const likeCount = await response.json();
+          return { ...post, likeCount };
+        } catch (error) {
+          console.error(`Error fetching like count for post ${post.id}:`, error);
+          return { ...post, likeCount: 0 };
+        }
+      })
+    );
+    return updatedPosts;
+  };
   return (
     <div className="dashboard">
       <h2>Friends' Recent Posts</h2>

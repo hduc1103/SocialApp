@@ -8,6 +8,9 @@ const PostDetailModal = ({ postId, onClose }) => {
   const [likeCount, setLikeCount] = useState(0);
   const [error, setError] = useState('');
   const token = localStorage.getItem('token');
+  const [comments, setComments] = useState([]);
+  const [comment, setComment] = useState('');
+  const [commentUsernames, setCommentUsernames] = useState({});
 
   useEffect(() => {
     const fetchPostDetail = async () => {
@@ -25,6 +28,7 @@ const PostDetailModal = ({ postId, onClose }) => {
 
         const data = await response.json();
         setPost(data);
+        setComments(data.comments || []);
         const likeResponse = await fetch(`${BASE_URL}/post/numberOfLikes?postId=${postId}`, {
           method: 'GET',
           headers: {
@@ -45,6 +49,44 @@ const PostDetailModal = ({ postId, onClose }) => {
 
     fetchPostDetail();
   }, [postId, token]);
+
+  const handleComment = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/interact/addComment?postId=${postId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: comment }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+
+      const newComment = await response.json();
+      setComments((prevComments) => [...prevComments, newComment]);
+      setComment('');
+
+      const responseUsername = await fetch(`${BASE_URL}/user/getUserName?userId=${newComment.user_id}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (responseUsername.ok) {
+        const usernameData = await responseUsername.json();
+        setCommentUsernames((prevUsernames) => ({
+          ...prevUsernames,
+          [newComment.id]: usernameData.username,
+        }));
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -114,11 +156,11 @@ const PostDetailModal = ({ postId, onClose }) => {
         </div>
         <div className="comments-section">
           <h3>Comments:</h3>
-          {post.comments.length > 0 ? (
+          {comments.length > 0 ? (
             <ul>
-              {post.comments.map((comment) => (
-                <li key={comment.id} className="comment-item">
-                  <p>{comment.text}</p>
+              {comments.map((comment) => (
+                <li key={comment.id} className="comment-item-post-detail-modal">
+                  <p><strong>{commentUsernames[comment.id] || 'User'}:</strong> {comment.text}</p>
                   <span className="comment-date">{new Date(comment.createdAt).toLocaleString()}</span>
                 </li>
               ))}
@@ -126,6 +168,16 @@ const PostDetailModal = ({ postId, onClose }) => {
           ) : (
             <p>No comments available.</p>
           )}
+        </div>
+        <div className="add-comment-section-post-detail-modal">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Add a comment..."
+          />
+          <button onClick={handleComment} className="add-comment-button">
+            Add Comment
+          </button>
         </div>
       </div>
     </div>

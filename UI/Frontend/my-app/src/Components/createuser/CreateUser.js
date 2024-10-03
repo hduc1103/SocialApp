@@ -10,6 +10,12 @@ const CreateUser = ({ newUser, setNewUser, createUser }) => (
       onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
     />
     <input
+      type="text"
+      placeholder="Name"
+      value={newUser.name}
+      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+    />
+    <input
       type="email"
       placeholder="Email"
       value={newUser.email}
