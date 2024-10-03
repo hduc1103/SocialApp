@@ -5,10 +5,7 @@ import com.SocialWeb.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
@@ -81,19 +78,25 @@ public class UserService {
     @Value("${upload.path}")
     private String uploadDir;
 
+    public String decodeFileName(String encodedFileName) {
+        byte[] decodedBytes = Base64.getDecoder().decode(encodedFileName);
+        return new String(decodedBytes);
+    }
+
     public void updateProfileImage(String username, MultipartFile profilePicture) throws IOException {
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
         if (profilePicture != null && !profilePicture.isEmpty()) {
             String fileName = profilePicture.getOriginalFilename();
+            String encodedFileName = Base64.getEncoder().encodeToString(fileName.getBytes());
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
             Path filePath = uploadPath.resolve(fileName);
             Files.write(filePath, profilePicture.getBytes());
-            userEntity.setImg_url(fileName);
+            userEntity.setImg_url(encodedFileName);
             userRepository.save(userEntity);
         } else {
             throw new IllegalArgumentException("Profile picture is required");

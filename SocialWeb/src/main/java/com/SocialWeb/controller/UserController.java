@@ -148,13 +148,31 @@ public class UserController {
         userService.deleteUser(userEntity);
     }
 
+
     @GetMapping("/getUserData")
     public ResponseEntity<UserResponse> getUserInfo(@RequestParam("userId") long userId) {
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
-        UserResponse userResponse = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getName(), userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
+
+        String decodedImgUrl = null;
+
+        // Check if img_url is not null before decoding
+        if (userEntity.getImg_url() != null) {
+            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
+        }
+
+        // Create the UserResponse with the decoded image URL
+        UserResponse userResponse = new UserResponse(
+                userEntity.getId(),
+                userEntity.getUsername(),
+                userEntity.getName(),
+                userEntity.getEmail(),
+                decodedImgUrl,  // Use the decoded image URL here
+                userEntity.getBio(),
+                userEntity.getAddress()
+        );
+
         return ResponseEntity.ok(userResponse);
     }
-
     @PostMapping("/addFriend")
     public ResponseEntity<String> addFriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
         String username = extractUsername(token);
