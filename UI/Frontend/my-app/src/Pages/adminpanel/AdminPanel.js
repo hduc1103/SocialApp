@@ -131,15 +131,17 @@ const AdminPanel = () => {
   
   const updateUser = async () => {
     const token = localStorage.getItem('token');
-  
     try {
-      const updateDataPayload = {
-        new_name: updateData.new_name,
-        new_username: updateData.new_username,
-        new_email: updateData.new_email,
-        new_address: updateData.new_address,
-        new_bio: updateData.new_bio,
-      };
+      const updateDataPayload = Object.keys(updateData).reduce((acc, key) => {
+        if (updateData[key]) {
+          acc[key] = updateData[key];
+        }
+        return acc;
+      }, {});
+  
+      if (Object.keys(updateDataPayload).length === 0) {
+        return;
+      }
   
       const response = await fetch(`${BASE_URL}/admin/updateUser?userId=${updateData.userId}`, {
         method: 'PUT',
@@ -167,6 +169,7 @@ const AdminPanel = () => {
       console.error('Error updating user:', error);
     }
   };
+  
   
   return (
     <div className="admin-panel">

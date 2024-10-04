@@ -48,14 +48,17 @@ const UserProfile = () => {
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
     try {
-      const updateData = {
-        new_name: updatedDetails.name,
-        new_username: updatedDetails.username,
-        new_email: updatedDetails.email,
-        new_address: updatedDetails.address,
-        new_bio: updatedDetails.bio,
-      };
-
+      const updateData = Object.keys(updatedDetails).reduce((acc, key) => {
+        if (updatedDetails[key]) {
+          acc[key] = updatedDetails[key];
+        }
+        return acc;
+      }, {});
+  
+      if (Object.keys(updateData).length === 0) {
+        return;
+      }
+  
       const response = await fetch(`${BASE_URL}/user/updateUser`, {
         method: 'PUT',
         headers: {
@@ -64,11 +67,11 @@ const UserProfile = () => {
         },
         body: JSON.stringify(updateData),
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to update profile');
       }
-
+  
       const data = await response.json();
       setUserDetails(data);
       setIsUpdateModalOpen(false);
@@ -76,7 +79,7 @@ const UserProfile = () => {
       setError(error.message);
     }
   };
-
+  
   const handleUpdateProfileImage = async (profilePicture) => {
     const token = localStorage.getItem('token');
     try {
