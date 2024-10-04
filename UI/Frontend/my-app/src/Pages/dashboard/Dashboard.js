@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-import { BASE_URL } from '../../service/config';
+import { BASE_URL } from '../../config';
 import Post from '../../components/post/Post';
 import './dashboard.scss';
 
@@ -12,11 +12,11 @@ const Dashboard = () => {
   const token = localStorage.getItem('token');
   const userId =localStorage.getItem('userId')
   console.log(userId)
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
-      return;
     }
     retrieveFriendsPosts();
   }, []);
@@ -35,8 +35,11 @@ const Dashboard = () => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to retrieve friends posts');
+      if(response.status=== 401){
+        navigate('/login')
+      } else if(response.status=== 403){
+        navigate('/login')
+        alert("Your token expired, please log in!")
       }
 
       const posts = await response.json();

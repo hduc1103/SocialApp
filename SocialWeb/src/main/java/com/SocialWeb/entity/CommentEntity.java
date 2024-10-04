@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
+
 @Entity
 @Data
 @NoArgsConstructor

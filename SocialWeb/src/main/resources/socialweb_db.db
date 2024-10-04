@@ -49,7 +49,7 @@ CREATE TABLE web_likes (
 );
 CREATE TABLE ticket_support (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    content TEXT,
+    content TEXT,  
     created_at TIMESTAMP NOT NULL,
     end_at TIMESTAMP,
     user_id BIGINT NOT NULL,
@@ -117,10 +117,10 @@ WHERE name IS NULL;
 
 select ste1_0.id,ste1_0.content,ste1_0.created_at,ste1_0.end_at,ste1_0.status,ste1_0.title,ste1_0.user_id from ticket_support ste1_0 where ste1_0.user_id=1;
 
-ALTER TABLE ticket_support
+ALTER TABLE ticket_support 
 MODIFY content TEXT;
 
-INSERT INTO ticket_support (title, content, created_at, end_at, user_id, status)
+INSERT INTO ticket_support (title, content, created_at, end_at, user_id, status) 
 VALUES ('Cannot Change Password', 'Cannot change password due to security reasons; Cannot delete account', '2024-10-02 09:00:00', NULL, 1, 'In Progress');
 
 SELECT name FROM web_user wu JOIN web_comment wc ON wu.id=wc.user_id
@@ -142,6 +142,7 @@ INSERT INTO web_friends (user_id1, user_id2) VALUES (8, 24);
 INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 9);
 INSERT INTO web_friends (user_id1, user_id2) VALUES (9, 24);
 
+UPDATE web_user SET name = 'ADMIN' WHERE id=3;
 INSERT INTO web_friends (user_id1, user_id2) VALUES (24, 10);
 INSERT INTO web_friends (user_id1, user_id2) VALUES (10, 24);
 
@@ -203,3 +204,4 @@ INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Watchin
 INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Learning about blockchain technology.', 11, '2024-10-04 11:00:00', '2024-10-04 11:00:00');
 INSERT INTO web_post (content, user_id, created_at, updated_at) VALUES ('Went for a run at sunset.', 11, '2024-10-04 18:00:00', '2024-10-04 18:00:00');
 
+UPDATE web_user SET img_url ='b3RoZXJhdmF0YXIuanBlZw==' WHERE id BETWEEN 1 AND 23;

@@ -3,7 +3,6 @@ package com.SocialWeb.controller;
 import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
-import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +24,16 @@ public class PostController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    private String extractUsername(String token){
+    private String extractUsername(String token) {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
     }
 
     @GetMapping("/getPostById")
-    public PostEntity getPostById (@RequestParam("postId") long postId){
+    public PostEntity getPostById(@RequestParam("postId") long postId) {
         return postService.getPostById(postId);
     }
+
     @GetMapping("/getUserPost")
     public List<PostResponse> getUserPosts(@RequestParam("userId") long userId) {
         List<PostEntity> postEntities = postService.getPostsByUser(userId);
@@ -56,20 +56,22 @@ public class PostController {
                         .build())
                 .collect(Collectors.toList());
     }
+
     @GetMapping("/numberOfLikes")
-    public long getLikeCount(@RequestParam("postId") long postId){
+    public long getLikeCount(@RequestParam("postId") long postId) {
         return postService.numberOfLikes(postId);
     }
 
     @PostMapping("/createPost")
     public ResponseEntity<?> createPost(@RequestHeader("Authorization") String token,
-            @RequestBody Map<String, String> postData) {
+                                        @RequestBody Map<String, String> postData) {
         String username = extractUsername(token);
         String content = postData.get("content");
         return ResponseEntity.status(HttpStatus.OK).body(postService.createPost(username, content));
     }
-    @DeleteMapping ("/deletePost")
-    public ResponseEntity<?> deletePost(@RequestParam("postId") long postId){
+
+    @DeleteMapping("/deletePost")
+    public ResponseEntity<?> deletePost(@RequestParam("postId") long postId) {
         return ResponseEntity.status(HttpStatus.OK).body(postService.deletePost(postId));
     }
 

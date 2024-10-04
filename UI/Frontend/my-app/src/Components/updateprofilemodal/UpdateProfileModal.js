@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './updateprofilemodal.scss';
 
 const UpdateProfileModal = ({ isOpen, onClose, onSubmit, currentDetails }) => {
   const [updatedDetails, setUpdatedDetails] = useState({
-    email: currentDetails?.email || '',
-    address: currentDetails?.address || '',
-    bio: currentDetails?.bio || '',
-    profilePicture: null,
+    new_name: '',
+    new_username: '',
+    new_email: '',
+    new_address: '',
+    new_bio: '',
   });
+
+  useEffect(() => {
+    if (currentDetails) {
+      setUpdatedDetails({
+        new_name: currentDetails.name || '',
+        new_username: currentDetails.username || '',
+        new_email: currentDetails.email || '',
+        new_address: currentDetails.address || '',
+        new_bio: currentDetails.bio || '',
+      });
+    }
+  }, [currentDetails]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,38 +34,34 @@ const UpdateProfileModal = ({ isOpen, onClose, onSubmit, currentDetails }) => {
       <div className="update-modal-content">
         <h2>Update Profile</h2>
         <form onSubmit={handleSubmit}>
-        <input
+          <input
             type="text"
             placeholder="Name"
-            value={updatedDetails.name}
+            value={updatedDetails.new_name}
             onChange={(e) => setUpdatedDetails({ ...updatedDetails, new_name: e.target.value })}
           />
           <input
             type="text"
-            placeholder="UserName"
-            value={updatedDetails.username}
+            placeholder="Username"
+            value={updatedDetails.new_username}
             onChange={(e) => setUpdatedDetails({ ...updatedDetails, new_username: e.target.value })}
           />
           <input
-            type="text"
+            type="email"
             placeholder="Email"
-            value={updatedDetails.email}
+            value={updatedDetails.new_email}
             onChange={(e) => setUpdatedDetails({ ...updatedDetails, new_email: e.target.value })}
           />
           <input
             type="text"
             placeholder="Address"
-            value={updatedDetails.address}
+            value={updatedDetails.new_address}
             onChange={(e) => setUpdatedDetails({ ...updatedDetails, new_address: e.target.value })}
           />
           <textarea
             placeholder="Bio"
-            value={updatedDetails.bio}
+            value={updatedDetails.new_bio}
             onChange={(e) => setUpdatedDetails({ ...updatedDetails, new_bio: e.target.value })}
-          />
-          <input
-            type="file"
-            onChange={(e) => setUpdatedDetails({ ...updatedDetails, new_profilePicture: e.target.files[0] })}
           />
           <button type="submit">Save Changes</button>
           <button type="button" onClick={onClose}>Cancel</button>

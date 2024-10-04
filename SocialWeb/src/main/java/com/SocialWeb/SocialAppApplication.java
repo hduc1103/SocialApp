@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories("com.SocialWeb.repository")
 @EntityScan("com.SocialWeb.entity")
 public class SocialAppApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(SocialAppApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SocialAppApplication.class, args);
+    }
 }
 

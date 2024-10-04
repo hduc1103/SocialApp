@@ -23,12 +23,14 @@ public class PostService {
     private UserRepository userRepository;
 
     public List<PostEntity> getPostsByUser(long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(()-> new RuntimeException(USER_NOT_FOUND + userId));
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + userId));
         return postRepository.findByUser(userEntity);
     }
-    public PostEntity getPostById(long postId){
+
+    public PostEntity getPostById(long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new RuntimeException(POST_NOT_FOUND));
     }
+
     public String createPost(String username, String content) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         PostEntity postEntity = new PostEntity();
@@ -39,11 +41,11 @@ public class PostService {
         return Y_POST;
     }
 
-    public long numberOfLikes(long postId){
+    public long numberOfLikes(long postId) {
         return postRepository.LikeCount(postId);
     }
 
-    public String updatePost(long postId, String newContent){
+    public String updatePost(long postId, String newContent) {
         PostEntity postEntity = postRepository.findById(postId).orElseThrow();
         newContent = newContent.replaceAll("\"", "");
         postEntity.setContent(newContent);
@@ -52,16 +54,16 @@ public class PostService {
         return U_POST;
     }
 
-    public String deletePost(long postId){
+    public String deletePost(long postId) {
         postRepository.deleteById(postId);
         return D_POST;
     }
 
-    public List<PostEntity> searchPostsByKeyWord(String keyword){
+    public List<PostEntity> searchPostsByKeyWord(String keyword) {
         return postRepository.searchPostsByContent(keyword);
     }
 
-    public List<PostEntity> retrieveRecentFriendPosts(Long userId){
+    public List<PostEntity> retrieveRecentFriendPosts(Long userId) {
         return postRepository.retrieveRecentFriendPosts(userId);
     }
 }

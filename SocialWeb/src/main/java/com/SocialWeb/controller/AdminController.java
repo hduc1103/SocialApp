@@ -1,4 +1,5 @@
 package com.SocialWeb.controller;
+
 import com.SocialWeb.domain.response.SupportTicketResponse;
 import com.SocialWeb.domain.response.TicketCommentResponse;
 import com.SocialWeb.domain.response.UserResponse;
@@ -17,7 +18,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,7 +28,7 @@ import static com.SocialWeb.Message.*;
 
 @RestController
 @RequestMapping("/admin")
-public class AdminController{
+public class AdminController {
     @Autowired
     UserService userService;
 
@@ -50,10 +53,10 @@ public class AdminController{
     }
 
     @GetMapping("/allUsers")
-    public List<UserResponse> getAllUsers(){
+    public List<UserResponse> getAllUsers() {
         List<UserResponse> result = new ArrayList<>();
-        List<UserEntity> userEntities =userService.getAllUsers();
-        for(UserEntity userEntity : userEntities){
+        List<UserEntity> userEntities = userService.getAllUsers();
+        for (UserEntity userEntity : userEntities) {
             result.add(new UserResponse(userEntity.getId(),
                     userEntity.getUsername(),
                     userEntity.getName(),
@@ -66,32 +69,35 @@ public class AdminController{
     }
 
     @GetMapping("/oneUser")
-    public ResponseEntity<UserResponse> getOneUser(@RequestParam("userId") Long userId){
+    public ResponseEntity<UserResponse> getOneUser(@RequestParam("userId") Long userId) {
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
-        UserResponse response = new UserResponse(userEntity.getId(), userEntity.getUsername(),userEntity.getName() ,userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
+        UserResponse response = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getName(), userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
     @DeleteMapping("/deleteUser")
-    public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId){
+    public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId) {
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
+        userService.deleteRelationship(userId);
         userService.deleteUser(userEntity);
         return ResponseEntity.ok(D_USER);
     }
 
     @PutMapping("/updateUser")
-    public ResponseEntity<String> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData){
-        if(userService.existsByUsername(updateData.get("new_username"))){
+    public ResponseEntity<String> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData) {
+        if (userService.existsByUsername(updateData.get("new_username"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
         }
-        UserEntity userEntity= userService.getUserById(userId).orElseThrow();
+        UserEntity userEntity = userService.getUserById(userId).orElseThrow();
         return ResponseEntity.ok(userService.updateUser(userId, updateData));
     }
+
     @PostMapping("/createUser")
-    public ResponseEntity<?> createUser(@RequestBody Map<String, String> new_account){
-        if(userService.existsByUsername(new_account.get("username"))){
+    public ResponseEntity<?> createUser(@RequestBody Map<String, String> new_account) {
+        if (userService.existsByUsername(new_account.get("username"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
         }
-        if(userService.existByEmail(new_account.get("email"))){
+        if (userService.existByEmail(new_account.get("email"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(EMAIL_ALREADY_EXIST);
         }
         String rawPassword = new_account.get("password");
@@ -145,6 +151,7 @@ public class AdminController{
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @PostMapping("/addTicketComment")
     public void addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
         String username = extractUsername(token);

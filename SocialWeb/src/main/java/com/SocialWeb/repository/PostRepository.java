@@ -43,13 +43,13 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 
     @Transactional
     @Query(value = """
-    SELECT DISTINCT p.* FROM web_post p
-    JOIN web_friends wf
-    ON (wf.user_id1 = :userId AND wf.user_id2 = p.user_id)
-    OR (wf.user_id2 = :userId AND wf.user_id1 = p.user_id)
-    ORDER BY p.created_at DESC
-    LIMIT 20
-""", nativeQuery = true)
+                SELECT DISTINCT p.* FROM web_post p
+                JOIN web_friends wf
+                ON (wf.user_id1 = :userId AND wf.user_id2 = p.user_id)
+                OR (wf.user_id2 = :userId AND wf.user_id1 = p.user_id)
+                ORDER BY p.created_at DESC
+                LIMIT 20
+            """, nativeQuery = true)
     List<PostEntity> retrieveRecentFriendPosts(@Param("userId") Long userId);
 
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 import static com.SocialWeb.Message.*;
@@ -18,14 +19,14 @@ public class InteractionController {
     @Autowired
     InteractService interactService;
 
-    private String extractUsername(String token){
+    private String extractUsername(String token) {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
     }
 
     @PostMapping("/addComment")
     public ResponseEntity<?> addComment(@RequestHeader("Authorization") String token, @RequestParam Long postId,
-            @RequestBody Map<String, String> text) {
+                                        @RequestBody Map<String, String> text) {
         String username = extractUsername(token);
         String content = text.get("text");
         String response = interactService.addComment(postId, username, content);
@@ -45,9 +46,10 @@ public class InteractionController {
     }
 
     @PutMapping("/updateComment")
-    public void updateComment(@RequestParam Long commentId, @RequestBody String new_comment){
+    public void updateComment(@RequestParam Long commentId, @RequestBody String new_comment) {
         interactService.updateComment(commentId, new_comment);
     }
+
     @PostMapping("/like")
     public ResponseEntity<?> likePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
         String username = extractUsername(token);
@@ -57,6 +59,7 @@ public class InteractionController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
     @PostMapping("/dislike")
     public ResponseEntity<?> dislikePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
         String username = extractUsername(token);
@@ -67,8 +70,9 @@ public class InteractionController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
     @GetMapping("/getCommentUser/{commentId}")
-    public ResponseEntity<String> getCommentUser(@PathVariable long commentId){
+    public ResponseEntity<String> getCommentUser(@PathVariable long commentId) {
         return ResponseEntity.status(HttpStatus.OK).body(interactService.getCommentAuthor(commentId));
     }
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { BASE_URL } from '../../service/config';
+import { BASE_URL } from '../../config';
+import { useNavigate } from 'react-router-dom';
 import './adminticketpage.scss';
 
 const AdminTicketPage = () => {
@@ -12,7 +13,8 @@ const AdminTicketPage = () => {
   useEffect(() => {
     fetchTickets();
   }, []);
-
+  const navigate = useNavigate();
+  
   const fetchTickets = async () => {
     try {
       const response = await fetch(`${BASE_URL}/admin/getAllSupportTicket`, {
@@ -24,6 +26,8 @@ const AdminTicketPage = () => {
 
       if (!response.ok) {
         throw new Error('Failed to fetch support tickets');
+      } else if(response.status=== 401){
+        navigate('/login')
       }
 
       const data = await response.json();
@@ -86,9 +90,9 @@ const AdminTicketPage = () => {
         throw new Error('Failed to add comment');
       }
 
-      await fetchTickets(); // Refresh tickets to include the new comment
-      setShowCommentBox(null); // Hide the comment box after submitting
-      setNewComment(''); // Clear the comment input
+      await fetchTickets(); 
+      setShowCommentBox(null); 
+      setNewComment(''); 
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -104,6 +108,8 @@ const AdminTicketPage = () => {
               <h3 className="ticket-title">{ticket.title}</h3>
               <p className="ticket-user">
                 Posted by: <strong>{usernames[ticket.userId] || 'Loading...'}</strong>
+                <br></br>
+                User_Id: {ticket.userId}
               </p>
               <div className="ticket-content">
                 {ticket.content.split(';').map((issue, index) => (

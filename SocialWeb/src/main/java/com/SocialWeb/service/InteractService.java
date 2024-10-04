@@ -43,13 +43,15 @@ public class InteractService {
             return UNEXPECTED_ERROR + e.getMessage();
         }
     }
-    public void updateComment(Long commentId, String new_comment){
+
+    public void updateComment(Long commentId, String new_comment) {
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow();
 
         commentEntity.setText(new_comment);
         commentEntity.setUpdatedAt(new Date());
         commentRepository.save(commentEntity);
     }
+
     public String deleteComment(Long cmtId) {
         try {
             commentRepository.deleteById(cmtId);
@@ -62,6 +64,7 @@ public class InteractService {
             return UNEXPECTED_ERROR + e.getMessage();
         }
     }
+
     public String likePost(String username, Long postId) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         int alreadyLiked = postRepository.checkUserLikedPost(userEntity.getId(), postId);
@@ -82,7 +85,8 @@ public class InteractService {
         postRepository.removeLike(user_id, postId);
         return DISLIKE;
     }
-    public String getCommentAuthor(long commentId){
+
+    public String getCommentAuthor(long commentId) {
         return commentRepository.getCommentUser(commentId);
     }
 }

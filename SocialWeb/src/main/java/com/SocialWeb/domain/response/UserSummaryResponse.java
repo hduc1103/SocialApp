@@ -10,7 +10,7 @@ public class UserSummaryResponse {
     private String username;
     private String email;
 
-    public UserSummaryResponse(Long id,String username, String email ) {
+    public UserSummaryResponse(Long id, String username, String email) {
         this.id = id;
         this.username = username;
         this.email = email;

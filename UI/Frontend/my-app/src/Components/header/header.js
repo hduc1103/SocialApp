@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaHome, FaSearch, FaBell, FaUserCircle } from 'react-icons/fa';
+import { FaHome, FaSearch, FaUserCircle } from 'react-icons/fa';
 import { RiAdminFill } from 'react-icons/ri';
 import { MdSupportAgent } from "react-icons/md";
-import { BASE_URL } from '../../service/config';
+import { BASE_URL } from '../../config';
 import { IoIosLogOut, IoIosLogIn } from "react-icons/io";
 import SearchResult from '../../components/searchresult/SearchResult';
 import './header.scss';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BASE_URL } from '../../service/config';
+import { BASE_URL, PUBLIC_URL } from '../../config';
 import { useNavigate } from 'react-router-dom';
 import { FaEllipsisH } from 'react-icons/fa';
 import { BiSolidLike } from "react-icons/bi";
@@ -12,6 +12,8 @@ const Post = ({ post }) => {
   const [comment, setComment] = useState('');
   const [commentUsernames, setCommentUsernames] = useState({});
   const [author, setAuthor] = useState('');
+  const [authorImgUrl, setAuthorImgUrl] = useState('')
+  const [cmtImg, setcmtImg] = useState({})
   const [showPostOptions, setShowPostOptions] = useState(false);
   const [commentOptions, setCommentOptions] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -28,7 +30,7 @@ const Post = ({ post }) => {
       fetchPostAuthor(post.userId);
       fetchUsernamesForComments(comments);
     }
-  }, [navigate, comments]);
+  }, [navigate, comments, post.userId]);
 
   const fetchPostAuthor = async (userId) => {
     const token = localStorage.getItem('token');
@@ -46,6 +48,7 @@ const Post = ({ post }) => {
 
       const data = await response.json();
       setAuthor(data.username);
+      setAuthorImgUrl(data.imgUrl);
     } catch (error) {
       console.error('Error fetching post author:', error);
     }
@@ -55,6 +58,7 @@ const Post = ({ post }) => {
     const token = localStorage.getItem('token');
     try {
       const usernames = {};
+      const img_url = {};
       for (const comment of comments) {
         const response = await fetch(`${BASE_URL}/user/getUsername?userId=${comment.user_id}`, {
           method: 'GET',
@@ -65,14 +69,17 @@ const Post = ({ post }) => {
         if (response.ok) {
           const data = await response.json();
           usernames[comment.id] = data.username;
+          img_url[comment.id] = data.imgUrl;
+          console.log(img_url[comment.id])
         }
       }
       setCommentUsernames(usernames);
+      setcmtImg(img_url)
     } catch (error) {
       console.error('Error fetching usernames:', error);
     }
   };
-  
+
   const handleDeleteComment = async (commentId) => {
     const token = localStorage.getItem('token');
     try {
@@ -217,24 +224,36 @@ const Post = ({ post }) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedContent), 
+        body: JSON.stringify(updatedContent),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update post');
       }
-  
+
       setIsEditing(false);
       console.log('Post updated successfully');
     } catch (error) {
       console.error('Error updating post:', error);
     }
   };
-  
+
 
   return (
     <div className="post-card">
-      <h3 className="post-author"> {author}</h3>
+      <div
+        className="post-author-info"
+        onClick={() => navigate(`/userprofile/${post.userId}`)}
+        style={{ cursor: 'pointer' }}
+      >
+        <img
+          src={authorImgUrl ? `${PUBLIC_URL}/profile_img_upload/${authorImgUrl}` : "https://via.placeholder.com/150"}
+          alt="Author Profile"
+          className="post-author-img"
+        />
+        <h3 className="post-author">{author}</h3>
+      </div>
+
       {isEditing ? (
         <div className="edit-post-container">
           <textarea
@@ -249,19 +268,18 @@ const Post = ({ post }) => {
         <p className="post-content">{post.content}</p>
       )}
       {post.userId === parseInt(userId) && (
-  <div className="post-options">
-    <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
-      <FaEllipsisH />
-    </button>
-    {showPostOptions && (
-      <div className="dropdown-menu">
-        <button onClick={handleDeletePost}>Delete Post</button>
-        <button onClick={() => setIsEditing(true)}>Update Post</button>
-      </div>
-    )}
-  </div>
-)}
-
+        <div className="post-options">
+          <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
+            <FaEllipsisH />
+          </button>
+          {showPostOptions && (
+            <div className="dropdown-menu">
+              <button onClick={handleDeletePost}>Delete Post</button>
+              <button onClick={() => setIsEditing(true)}>Update Post</button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
@@ -284,7 +302,18 @@ const Post = ({ post }) => {
         <ul>
           {comments.map((comment) => (
             <li key={comment.id} className="comment-item-post">
-              <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
+              <div
+                className="comment-author-info"
+                onClick={() => navigate(`/userprofile/${comment.user_id}`)}
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              >
+                <img
+                  src={cmtImg[comment.id] ? `${PUBLIC_URL}/profile_img_upload/${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
+                  alt="Author Profile"
+                  className="post-author-img"
+                />
+                <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
+              </div>
               <span className="comment-text">{comment.text}</span>
               {comment.user_id === parseInt(userId) && (
                 <div className="comment-options">
@@ -312,6 +341,7 @@ const Post = ({ post }) => {
         </ul>
       </div>
     </div>
+
   );
 };
 

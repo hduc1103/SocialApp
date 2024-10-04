@@ -4,6 +4,18 @@
   color: #e0e0e0;
   padding: 20px;
 
+  .edit-profile-picture-button{
+    color: #23679e;
+    cursor: pointer;
+    border-radius: 15%;
+    background-color: #ebeeff;
+  }
+  .add-friend-button{
+    color:#ffffff;
+    cursor: pointer;
+    border-radius: 10px;
+    background-color: #23679e;
+  }
   .profile-header {
     display: flex;
     align-items: center;
@@ -14,6 +26,7 @@
     margin-bottom: 20px;
 
     .profile-picture {
+      max-width: 150px;
       border-radius: 10px;
     }
 

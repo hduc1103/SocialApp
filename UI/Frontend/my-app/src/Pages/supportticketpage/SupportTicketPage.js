@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { BASE_URL } from '../../service/config';
+import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../../config';
 import './supportticketpage.scss';
 
 const SupportTicketPage = ({ userId }) => {
@@ -90,6 +90,8 @@ const SupportTicketPage = ({ userId }) => {
 
       if (!response.ok) {
         throw new Error('Failed to fetch user tickets');
+      } else if(response.status=== 401){
+        navigate('/login')
       }
 
       const data = await response.json();

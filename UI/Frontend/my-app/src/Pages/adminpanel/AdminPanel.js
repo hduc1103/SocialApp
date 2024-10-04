@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BASE_URL } from '../../service/config';
+import { BASE_URL } from '../../config';
 import CreateUser from '../../components/createuser/CreateUser';
 import DeleteUser from '../../components/deleteuser/DeleteUser';
 import UserList from '../../components/userlist/UserList';
@@ -130,16 +130,24 @@ const AdminPanel = () => {
   };
   
   const updateUser = async () => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
   
     try {
+      const updateDataPayload = {
+        new_name: updateData.new_name,
+        new_username: updateData.new_username,
+        new_email: updateData.new_email,
+        new_address: updateData.new_address,
+        new_bio: updateData.new_bio,
+      };
+  
       const response = await fetch(`${BASE_URL}/admin/updateUser?userId=${updateData.userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updateData),
+        body: JSON.stringify(updateDataPayload),
       });
   
       if (!response.ok) {
@@ -149,15 +157,17 @@ const AdminPanel = () => {
       alert('User updated successfully');
       setUpdateData({
         userId: '',
+        new_name: '',
         new_username: '',
-        email: '',
-        address: '',
-        bio: '',
+        new_email: '',
+        new_address: '',
+        new_bio: '',
       });
     } catch (error) {
       console.error('Error updating user:', error);
     }
   };
+  
   return (
     <div className="admin-panel">
       <h1>Admin Panel</h1>

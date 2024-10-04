@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BASE_URL } from '../../service/config';
+import { BASE_URL } from '../../config';
 import { TiDeleteOutline } from "react-icons/ti";
 import './postdetailmodal.scss';
 

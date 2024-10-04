@@ -5,7 +5,9 @@ import FloatingButton from '../../components/floatingbutton/FloatingButton';
 import AddNewPost from '../../components/addpostmodal/AddNewPost';
 import UpdateProfileModal from '../../components/updateprofilemodal/UpdateProfileModal';
 import { LiaUserEditSolid } from "react-icons/lia";
-import { BASE_URL } from '../../service/config';
+import { FaUpload } from "react-icons/fa6";
+import { IoPersonAddSharp, IoPersonRemoveSharp } from "react-icons/io5";
+import { BASE_URL, PUBLIC_URL } from '../../config';
 import './userprofile.scss';
 import Footer from '../../components/footer/footer';
 
@@ -13,6 +15,7 @@ const UserProfile = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
   const [error, setError] = useState('');
+  const [isFriend, setIsFriend] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [updatedDetails, setUpdatedDetails] = useState({
@@ -22,7 +25,7 @@ const UserProfile = () => {
   });
 
   const navigate = useNavigate();
-  const { userId } = useParams(); 
+  const { userId } = useParams();
   const loggedInUserId = localStorage.getItem('userId');
 
   const handleNewPost = (content) => {
@@ -41,24 +44,25 @@ const UserProfile = () => {
       })
       .catch(err => console.error(err));
   };
-  
+
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
     try {
-      const formData = new FormData();
-      formData.append('email', updatedDetails.email);
-      formData.append('address', updatedDetails.address);
-      formData.append('bio', updatedDetails.bio);
-      if (updatedDetails.profilePicture) {
-        formData.append('profilePicture', updatedDetails.profilePicture);
-      }
+      const updateData = {
+        new_name: updatedDetails.name,
+        new_username: updatedDetails.username,
+        new_email: updatedDetails.email,
+        new_address: updatedDetails.address,
+        new_bio: updatedDetails.bio,
+      };
 
       const response = await fetch(`${BASE_URL}/user/updateUser`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
@@ -73,6 +77,89 @@ const UserProfile = () => {
     }
   };
 
+  const handleUpdateProfileImage = async (profilePicture) => {
+    const token = localStorage.getItem('token');
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', profilePicture);
+
+      const response = await fetch(`${BASE_URL}/user/updateProfileImage`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile image');
+      }
+
+      const updatedData = await response.json();
+      setUserDetails((prevDetails) => ({
+        ...prevDetails,
+        img_url: updatedData.img_url,
+      }));
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const checkFriendshipStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}/user/checkFriendStatus?userId2=${userId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to check friendship status');
+      }
+  
+      const isFriendStatus = await response.json();
+      setIsFriend(isFriendStatus);
+    } catch (error) {
+      console.error('Error checking friendship status:', error);
+    }
+  };
+  
+  const handleAddFriend = async ()=> {
+      try{
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${BASE_URL}/user/addFriend?userId2=${userId}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok){
+          throw new Error('Failed to add friend');
+        }
+          setIsFriend(1);
+      } catch (error){
+        console.error('Error: ', error);
+      }
+  }
+  const Handleunfriend = async ()=>{
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}/user/unfriend?userId2=${userId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+      });
+      if (!response.ok){
+        throw new Error('Failed to unfriend');
+      }
+      setIsFriend(0);
+    }catch(error){
+      console.log(error);
+    }
+  }
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -95,6 +182,7 @@ const UserProfile = () => {
 
         const data = await response.json();
         setUserDetails(data);
+
         setUpdatedDetails({
           email: data.email,
           address: data.address,
@@ -104,7 +192,7 @@ const UserProfile = () => {
         setError(error.message);
       }
     };
-    
+
     const fetchUserPosts = async () => {
       try {
         const response = await fetch(`${BASE_URL}/post/getUserPost?userId=${userId}`, {
@@ -154,6 +242,9 @@ const UserProfile = () => {
 
     fetchUserProfile();
     fetchUserPosts();
+    if (userId !== loggedInUserId) {
+      checkFriendshipStatus();
+    }
   }, [navigate, userId]);
 
   return (
@@ -165,11 +256,34 @@ const UserProfile = () => {
 
       <div className="profile-header">
         <div className="profile-details">
-          <img
-            src="https://via.placeholder.com/150"
-            alt="Profile"
-            className="profile-picture"
-          />
+          <div className="profile-picture-wrapper">
+            <img
+              src={userDetails?.img_url ? `${PUBLIC_URL}/profile_img_upload/${userDetails.img_url}` : "https://via.placeholder.com/150"}
+              alt="Profile"
+              className="profile-picture"
+            />
+
+            {userId === loggedInUserId && (
+              <>
+                <input
+                  type="file"
+                  id="profileImageInput"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleUpdateProfileImage(e.target.files[0]);
+                    }
+                  }}
+                />
+                <button
+                  className="edit-profile-picture-button"
+                  onClick={() => document.getElementById('profileImageInput').click()}
+                >
+                  <FaUpload size={15}/>
+                </button>
+              </>
+            )}
+          </div>
           <div className="user-info">
             <h1>{userDetails ? `${userDetails.name}` : 'User Profile'}</h1>
             <p>{userDetails ? `Email: ${userDetails.email}` : 'Loading user details...'}</p>
@@ -182,7 +296,28 @@ const UserProfile = () => {
             <LiaUserEditSolid size={20} />
           </button>
         )}
-        {error && <p className="error">{error}</p>}
+        {userId !== loggedInUserId && (
+    <button
+      className="add-friend-button"
+      onClick={() => {
+        if (!isFriend) {
+          handleAddFriend();
+        } else {
+          Handleunfriend();
+        }
+      }}
+    >
+  {isFriend ? (
+    <>
+      <IoPersonRemoveSharp size={20} /> Unfriend
+    </>
+  ) : (
+    <>
+      <IoPersonAddSharp size={20} /> Add Friend
+    </>
+  )}
+    </button>
+  )}
       </div>
 
       {isUpdateModalOpen && (
@@ -194,7 +329,7 @@ const UserProfile = () => {
         />
       )}
       <div className="posts-section">
-        <h2>{userId === loggedInUserId ? 'Your Posts' : `${userDetails?.username}'s Posts`}</h2>
+        <h2>{userId === loggedInUserId ? 'Your Posts' : `${userDetails?.name}'s Posts`}</h2>
         {userPosts.length > 0 ? (
           <div className="post-list">
             {userPosts.map((post) => (
