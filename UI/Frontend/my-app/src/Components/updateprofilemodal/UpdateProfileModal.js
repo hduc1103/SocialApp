@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './updateprofilemodal.scss';
 
-const UpdateProfileModal = ({ isOpen, onClose, onSubmit, currentDetails }) => {
+const UpdateProfileModal = ({ isOpen, onClose, onSubmit }) => {
   const [updatedDetails, setUpdatedDetails] = useState({
     new_name: '',
     new_username: '',
@@ -9,18 +9,6 @@ const UpdateProfileModal = ({ isOpen, onClose, onSubmit, currentDetails }) => {
     new_address: '',
     new_bio: '',
   });
-
-  useEffect(() => {
-    if (currentDetails) {
-      setUpdatedDetails({
-        new_name: currentDetails.name || '',
-        new_username: currentDetails.username || '',
-        new_email: currentDetails.email || '',
-        new_address: currentDetails.address || '',
-        new_bio: currentDetails.bio || '',
-      });
-    }
-  }, [currentDetails]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -85,6 +85,7 @@ public class AdminController {
 
     @PutMapping("/updateUser")
     public ResponseEntity<String> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData) {
+        System.out.println(updateData.get("new_username"));
         if (userService.existsByUsername(updateData.get("new_username"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
         }

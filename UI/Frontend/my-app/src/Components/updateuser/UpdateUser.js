@@ -44,3 +44,4 @@ const UpdateUser = ({ updateData, setUpdateData, updateUser }) => (
 );
 
 export default UpdateUser;
+

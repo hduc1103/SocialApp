@@ -37,7 +37,7 @@ const SearchResult = ({ userResults, postResults, onClose }) => {
                 className="result-item"
                 onClick={() => handleUserClick(user.id)}
               >
-                <span className="result-name">{user.username}</span>
+                <span className="result-name">{user.name}</span>
                 <br />
                 <span className="result-email">{user.email}</span>
               </li>

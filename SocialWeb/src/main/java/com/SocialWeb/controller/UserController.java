@@ -145,6 +145,7 @@ public class UserController {
     public void deleteUser(@RequestHeader("Authorization") String token) {
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        userService.deleteRelationship(userEntity.getId());
         userService.deleteUser(userEntity);
     }
 
@@ -214,6 +215,7 @@ public class UserController {
         List<UserSummaryResponse> userSummaryResponses = userEntities.stream()
                 .map(user -> UserSummaryResponse.builder()
                         .id(user.getId())
+                        .name(user.getName())
                         .username(user.getUsername())
                         .email(user.getEmail())
                         .build())

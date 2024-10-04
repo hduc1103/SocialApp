@@ -44,7 +44,20 @@ const UserProfile = () => {
       })
       .catch(err => console.error(err));
   };
+  const deleteProfile = async() =>{
+    try{
+      const token = localStorage.getItem('token')
+      const response = fetch(`${BASE_URL}/user/deleteUser`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+    }catch(error){
+      throw new Error('Failed to update profile image');
 
+    }
+  }
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
     try {
