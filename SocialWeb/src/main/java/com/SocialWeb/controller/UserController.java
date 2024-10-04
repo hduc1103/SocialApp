@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -128,19 +126,6 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(userId, updateData));
     }
 
-    @PutMapping(value = "/updateProfileImage", consumes = "multipart/form-data")
-    public ResponseEntity<Void> updateProfileImage(
-            @RequestHeader("Authorization") String token,
-            @RequestParam("profilePicture") MultipartFile profilePicture) {
-        try {
-            String username = extractUsername(token);
-            userService.updateProfileImage(username, profilePicture);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     @DeleteMapping("/deleteUser")
     public void deleteUser(@RequestHeader("Authorization") String token) {
         String username = extractUsername(token);
@@ -151,21 +136,7 @@ public class UserController {
     @GetMapping("/getUserData")
     public ResponseEntity<UserResponse> getUserInfo(@RequestParam("userId") long userId) {
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
-
-        String decodedImgUrl = null;
-        if (userEntity.getImg_url() != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
-        }
-        UserResponse userResponse = new UserResponse(
-                userEntity.getId(),
-                userEntity.getUsername(),
-                userEntity.getName(),
-                userEntity.getEmail(),
-                decodedImgUrl,
-                userEntity.getBio(),
-                userEntity.getAddress()
-        );
-
+        UserResponse userResponse = new UserResponse(userEntity.getId(), userEntity.getUsername(), userEntity.getName(), userEntity.getEmail(), userEntity.getImg_url(), userEntity.getBio(), userEntity.getAddress());
         return ResponseEntity.ok(userResponse);
     }
 
@@ -183,25 +154,18 @@ public class UserController {
     }
 
     @GetMapping("/checkFriendStatus")
-    public ResponseEntity<Boolean> checkFriendStatus(@RequestHeader("Authorization") String token,
-                                                     @RequestParam Long userId2) {
+    public ResponseEntity<String> checkFriendStatus(@RequestHeader("Authorization") String token,
+                                                    @RequestParam Long userId2) {
         String username = extractUsername(token);
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         Long userId1 = userEntity.getId();
-        String response = userService.checkFriendStatus(userId1, userId2);
-        if (response.equals(Y_FRIEND)) {
-            return ResponseEntity.status(HttpStatus.OK).body(true);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(false);
-    }
 
-    @DeleteMapping("/unfriend")
-    public ResponseEntity<Void> unfriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        Long userId1 = userEntity.getId();
-        userService.unfriend(userId1, userId2);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        String response = userService.checkFriendStatus(userId1, userId2);
+
+        if (response.equals(Y_FRIEND)) {
+            return ResponseEntity.status(HttpStatus.OK).body(Y_FRIEND);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(N_FRIEND);
     }
 
     @GetMapping("/search")
@@ -232,7 +196,6 @@ public class UserController {
 
         return result;
     }
-
     @PostMapping("/createSupportTicket")
     public ResponseEntity<Void> createSupportTicket(
             @RequestHeader("Authorization") String token,
@@ -278,7 +241,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{ticketId}/close")
-    public ResponseEntity<Void> closeSupportTicket(@PathVariable Long ticketId) {
+    public ResponseEntity<Void> closeSupportTicket(@PathVariable Long ticketId){
         supportTicketService.deleteSupportTicket(ticketId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -338,14 +301,9 @@ public class UserController {
     }
 
     @GetMapping("/getUsername")
-    public ResponseEntity<Map<String, String>> getUsername(@RequestParam("userId") long userId) {
+    public ResponseEntity<Map<String,String>> getUsername(@RequestParam("userId")long userId){
         Map<String, String> response = new HashMap<>();
         response.put("username", userService.getUserName(userId));
-        String decodedImgUrl = null;
-        if (userService.getImageUrl(userId) != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userService.getImageUrl(userId)));
-        }
-        response.put("imgUrl", decodedImgUrl);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
