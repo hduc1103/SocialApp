@@ -12,12 +12,14 @@ const Post = ({ post }) => {
   const [comment, setComment] = useState('');
   const [commentUsernames, setCommentUsernames] = useState({});
   const [author, setAuthor] = useState('');
-  const [authorImgUrl, setAuthorImgUrl] = useState('')
-  const [cmtImg, setcmtImg] = useState({})
+  const [authorImgUrl, setAuthorImgUrl] = useState('');
+  const [cmtImg, setcmtImg] = useState({});
   const [showPostOptions, setShowPostOptions] = useState(false);
   const [commentOptions, setCommentOptions] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [updatedContent, setUpdatedContent] = useState(post.content);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [updatedComment, setUpdatedComment] = useState('');
 
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
@@ -70,11 +72,10 @@ const Post = ({ post }) => {
           const data = await response.json();
           usernames[comment.id] = data.username;
           img_url[comment.id] = data.imgUrl;
-          console.log(img_url[comment.id])
         }
       }
       setCommentUsernames(usernames);
-      setcmtImg(img_url)
+      setcmtImg(img_url);
     } catch (error) {
       console.error('Error fetching usernames:', error);
     }
@@ -99,28 +100,33 @@ const Post = ({ post }) => {
     }
   };
 
-  const handleUpdateComment = async (commentId, comment) => {
+  const handleUpdateComment = async (commentId) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/interact/updateComment?cmtId=${commentId}`, {
+      const response = await fetch(`${BASE_URL}/interact/updateComment?commentId=${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ comment }),
+        body: JSON.stringify({ text: updatedComment }),
       });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      console.log('Comment updated successfully:', result);
+      const updatedComments = comments.map((comment) =>
+        comment.id === commentId ? { ...comment, text: updatedComment } : comment
+      );
+      setComments(updatedComments);
+      setEditingCommentId(null);
+      setUpdatedComment('');
     } catch (error) {
       console.error('Failed to update comment:', error);
     }
   };
+
   const handleLike = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -172,24 +178,9 @@ const Post = ({ post }) => {
         }
 
         const newComment = await response.json();
-        const updatedComments = [...comments, newComment];
-        setComments(updatedComments);
+        setComments([...comments, newComment]);
         setComment('');
-
-        const responseUsername = await fetch(`${BASE_URL}/user/getUsername?userId=${newComment.user_id}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (responseUsername.ok) {
-          const usernameData = await responseUsername.json();
-          setCommentUsernames((prevUsernames) => ({
-            ...prevUsernames,
-            [newComment.id]: usernameData.username,
-          }));
-        }
+        fetchUsernamesForComments([newComment]);
       } catch (error) {
         console.error('Error adding comment:', error);
       }
@@ -237,7 +228,6 @@ const Post = ({ post }) => {
       console.error('Error updating post:', error);
     }
   };
-
 
   return (
     <div className="post-card">
@@ -302,46 +292,68 @@ const Post = ({ post }) => {
         <ul>
           {comments.map((comment) => (
             <li key={comment.id} className="comment-item-post">
-              <div
-                className="comment-author-info"
-                onClick={() => navigate(`/userprofile/${comment.user_id}`)}
-                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-              >
-                <img
-                  src={cmtImg[comment.id] ? `${PUBLIC_URL}/profile_img_upload/${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
-                  alt="Author Profile"
-                  className="post-author-img"
-                />
-                <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
-              </div>
-              <span className="comment-text">{comment.text}</span>
-              {comment.user_id === parseInt(userId) && (
-                <div className="comment-options">
-                  <button
-                    className="three-dot-button"
-                    onClick={() =>
-                      setCommentOptions((prev) => ({
-                        ...prev,
-                        [comment.id]: !prev[comment.id],
-                      }))
-                    }
+              {editingCommentId === comment.id ? (
+                <>
+                  <input
+                    type="text"
+                    value={updatedComment}
+                    onChange={(e) => setUpdatedComment(e.target.value)}
+                    placeholder="Update your comment"
+                    className="edit-comment-input"
+                  />
+                  <button onClick={() => handleUpdateComment(comment.id)}>Save</button>
+                  <button onClick={() => setEditingCommentId(null)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  <div
+                    className="comment-author-info"
+                    onClick={() => navigate(`/userprofile/${comment.user_id}`)}
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
-                    <FaEllipsisH />
-                  </button>
-                  {commentOptions[comment.id] && (
-                    <div className="dropdown-menu">
-                      <button onClick={() => handleDeleteComment(comment.id)}>Delete Comment</button>
-                      <button onClick={() => handleUpdateComment(comment.id)}>Update Comment</button>
+                    <img
+                      src={cmtImg[comment.id] ? `${PUBLIC_URL}/profile_img_upload/${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
+                      alt="Author Profile"
+                      className="post-author-img"
+                    />
+                    <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
+                  </div>
+                  <span className="comment-text">{comment.text}</span>
+                  {comment.user_id === parseInt(userId) && (
+                    <div className="comment-options">
+                      <button
+                        className="three-dot-button"
+                        onClick={() =>
+                          setCommentOptions((prev) => ({
+                            ...prev,
+                            [comment.id]: !prev[comment.id],
+                          }))
+                        }
+                      >
+                        <FaEllipsisH />
+                      </button>
+                      {commentOptions[comment.id] && (
+                        <div className="dropdown-menu">
+                          <button onClick={() => handleDeleteComment(comment.id)}>Delete Comment</button>
+                          <button
+                            onClick={() => {
+                              setEditingCommentId(comment.id);
+                              setUpdatedComment(comment.text);
+                            }}
+                          >
+                            Update Comment
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
+                </>
               )}
             </li>
           ))}
         </ul>
       </div>
     </div>
-
   );
 };
 

@@ -46,8 +46,9 @@ public class InteractionController {
     }
 
     @PutMapping("/updateComment")
-    public void updateComment(@RequestParam Long commentId, @RequestBody String new_comment) {
-        interactService.updateComment(commentId, new_comment);
+    public void updateComment(@RequestParam Long commentId, @RequestBody Map<String, String> new_comment) {
+        String new_content = new_comment.get("text");
+        interactService.updateComment(commentId, new_content);
     }
 
     @PostMapping("/like")
