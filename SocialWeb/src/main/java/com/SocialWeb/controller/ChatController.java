@@ -1,13 +1,14 @@
 package com.SocialWeb.controller;
 
-
-import com.SocialWeb.entity.Message;
+import com.SocialWeb.entity.MessageEntity;
+import com.SocialWeb.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+import java.time.LocalDateTime;
 
 @Controller
 public class ChatController {
@@ -15,16 +16,16 @@ public class ChatController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @MessageMapping("/message")
-    @SendTo("/chatroom/public")
-    public Message receiveMessage(@Payload Message message){
-        return message;
-    }
+    @Autowired
+    private MessageService messageService;
 
     @MessageMapping("/private-message")
-    public Message recMessage(@Payload Message message){
-        simpMessagingTemplate.convertAndSendToUser(message.getReceiverName(),"/private",message);
-        System.out.println(message.toString());
-        return message;
+    public void recMessage(@Payload MessageEntity message) {
+        // Set timestamp and save the message into MongoDB
+        message.setTimestamp(LocalDateTime.now());
+        messageService.saveMessage(message);
+
+        // Send the message to the specific user
+        simpMessagingTemplate.convertAndSendToUser(message.getReceiverId(), "/private", message);
     }
 }

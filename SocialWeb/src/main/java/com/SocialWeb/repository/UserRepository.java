@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT u FROM UserEntity u WHERE u.username LIKE %:keyword%")
+    @Query("SELECT u FROM UserEntity u WHERE u.username LIKE %:keyword% OR u.name LIKE %:keyword%")
     List<UserEntity> searchUsersByUsername(@Param("keyword") String keyword);
 
     @Query(value = "SELECT COUNT(*) FROM web_friends WHERE (user_id1 = :userId1 AND user_id2 = :userId2) OR (user_id1 = :userId2 AND user_id2 = :userId1)", nativeQuery = true)

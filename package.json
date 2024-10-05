@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "sockjs-client": "^1.6.1"
+  },
+  "devDependencies": {
+    "@stomp/stompjs": "^7.0.0"
+  }
+}
