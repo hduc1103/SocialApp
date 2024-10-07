@@ -97,7 +97,6 @@ const ConversationsPage = () => {
           </li>
         ))}
       </ul>
-
       {showModal && (
         <div className="modal">
           <div className="modal-content">
