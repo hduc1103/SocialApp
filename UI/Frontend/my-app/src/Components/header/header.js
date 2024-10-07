@@ -5,6 +5,7 @@ import { RiAdminFill } from 'react-icons/ri';
 import { MdSupportAgent } from "react-icons/md";
 import { BASE_URL } from '../../config';
 import { IoIosLogOut, IoIosLogIn } from "react-icons/io";
+import { AiFillMessage } from "react-icons/ai";
 import SearchResult from '../../components/searchresult/SearchResult';
 import './header.scss';
 
@@ -98,6 +99,10 @@ const Header = () => {
             <div className="nav-item" onClick={() => navigate(`/userprofile/${userId}`)}>
               <FaUserCircle size={24} />
               <span>Profile</span>
+            </div>
+            <div className="nav-item" onClick={() =>navigate(`/conversation`)}>
+            <AiFillMessage size={24}/>
+            <span>Chat</span>
             </div>
             <div className="nav-item" onClick={handleSupportNavigation}>
         <MdSupportAgent size={24} />

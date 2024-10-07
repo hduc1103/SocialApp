@@ -14,7 +14,7 @@ import Footer from '../../components/footer/footer';
 const UserProfile = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
-  const [error, setError] = useState('');
+  const [setError] = useState('');
   const [isFriend, setIsFriend] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -44,20 +44,6 @@ const UserProfile = () => {
       })
       .catch(err => console.error(err));
   };
-  const deleteProfile = async() =>{
-    try{
-      const token = localStorage.getItem('token')
-      const response = fetch(`${BASE_URL}/user/deleteUser`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-    }catch(error){
-      throw new Error('Failed to update profile image');
-
-    }
-  }
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
     try {

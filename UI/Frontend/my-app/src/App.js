@@ -7,7 +7,8 @@ import UserProfile from './pages/userprofile/UserProfile';
 import SupportTicketPage from './pages/supportticketpage/SupportTicketPage';
 import AdminSupportTicketPage from './pages/adminsupportticket/AdminTicketPage';
 import Dashboard from './pages/dashboard/Dashboard';
-import ChatComponent from './components/chatcomponent/ChatComponent';
+import ConversationsPage from './pages/conversation/ConversationsPage';
+import ChatPage from './pages/chatpage/ChatPage';
 
 const App = () => {
   return (
@@ -20,7 +21,8 @@ const App = () => {
         <Route path="/userprofile/:userId" element={<UserProfile />} />
         <Route path="/ticketsupport" element={<SupportTicketPage/>} />
         <Route path="/admin/ticketsupport" element={<AdminSupportTicketPage/>}/>
-        <Route path="chat" element={<ChatComponent/>}/>
+        <Route path="/chat/:receiverId" element={<ChatPage/>}/>
+        <Route path="/conversation" element={<ConversationsPage/>}/>
       </Routes>
     </Router>
   );
