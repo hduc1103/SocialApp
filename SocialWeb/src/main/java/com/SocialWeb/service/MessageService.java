@@ -3,7 +3,6 @@ package com.SocialWeb.service;
 import com.SocialWeb.entity.MessageEntity;
 import com.SocialWeb.mongorepository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

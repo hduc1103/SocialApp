@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/addFriend").authenticated()
                         .requestMatchers("/user/checkFriendStatus").authenticated()
                         .requestMatchers("/user/unfriend").authenticated()
+                        .requestMatchers("/user/getAllFriends").authenticated()
                         .requestMatchers("/user/updateUser").authenticated()
                         .requestMatchers("/user/createSupportTicket").authenticated()
                         .requestMatchers("/user/updateSupportTicket").authenticated()

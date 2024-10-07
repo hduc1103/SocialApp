@@ -1,5 +1,7 @@
 package com.SocialWeb.service;
 
+import com.SocialWeb.domain.response.UserResponse;
+import com.SocialWeb.domain.response.UserSummaryResponse;
 import com.SocialWeb.entity.*;
 import com.SocialWeb.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.SocialWeb.Message.*;
 import static com.SocialWeb.Message.UNEXPECTED_ERROR;
@@ -124,6 +127,36 @@ public class UserService {
     public void deleteRelationship(long userId) {
         userRepository.deleteRelationship(userId);
     }
+
+    public List<UserResponse> getAllFriends(long userId) {
+        List<Long> friendIds = userRepository.findFriendsByUserId(userId);
+
+        List<UserResponse> friends = friendIds.stream()
+                .map(friendId -> {
+                    Optional<UserEntity> friendEntity = userRepository.findById(friendId);
+                    if (friendEntity.isPresent()) {
+                        UserEntity friend = friendEntity.get();
+
+                        String decodedImgUrl = null;
+                        if (friend.getImg_url() != null) {
+                            decodedImgUrl = new String(Base64.getDecoder().decode(friend.getImg_url()));
+                        }
+                        return UserResponse.builder()
+                                .id(friend.getId())
+                                .name(friend.getName())
+                                .username(friend.getUsername())
+                                .img_url(decodedImgUrl)
+                                .build();
+                    } else {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return friends;
+    }
+
 
     public Optional<UserEntity> getUserByUsername(String username) {
         return userRepository.findByUsername(username);

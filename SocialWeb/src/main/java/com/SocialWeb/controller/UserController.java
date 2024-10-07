@@ -205,6 +205,15 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @GetMapping("/getAllFriends")
+    public ResponseEntity<List<UserResponse>> getAllFriends(@RequestHeader("Authorization") String token) {
+        String username = extractUsername(token);
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+        Long userId = userEntity.getId();
+        List<UserResponse> friends = userService.getAllFriends(userId);
+        return ResponseEntity.ok(friends);
+    }
+
     @GetMapping("/search")
     public Map<String, Object> searchCombined(@RequestParam("keyword") String keyword) {
         System.out.println("Searching for keyword: " + keyword);

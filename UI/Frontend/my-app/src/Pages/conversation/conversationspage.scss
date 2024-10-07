@@ -1,58 +1,121 @@
-.conversations-container {
-  margin-top: 80px; /* Ensures space for header */
-  padding: 20px;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-  background-color: #ffffff; /* Background for a clear and clean container */
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+.conversations-container{
+  margin-top: 80px;
+}
+.add-conversation-button {
+  display: block;
+  margin: 0 auto 20px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-h2 {
+.add-conversation-button:hover {
+  background-color: #0056b3;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh; /* Limit the modal height to 80% of the viewport height */
+  overflow-y: auto; /* Add vertical scroll if content overflows */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
   text-align: center;
   color: #444444;
-  font-size: 2rem;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
-.conversations-list {
-  list-style-type: none; /* Remove default list styling */
+.friends-list {
+  list-style-type: none;
   padding: 0;
   margin: 0;
 }
 
-.conversation-item {
-  padding: 15px 20px;
-  margin-bottom: 15px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-
+.friend-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.conversation-item:hover {
+.friend-item:hover {
   background-color: #e8f4ff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.receiver-id {
-  font-weight: bold;
-  color: #007bff; /* Blue color to highlight user */
+.friend-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.friend-username {
   font-size: 1.1rem;
+  font-weight: bold;
+  color: #333333;
+}
+
+.close-modal-button {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #dc3545;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-modal-button:hover {
+  background-color: #b02a37;
 }
 
 @media (max-width: 768px) {
-  .conversations-container {
+  .friend-item {
+    padding: 10px;
+  }
+
+  .friend-avatar {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  .modal-content {
     padding: 15px;
   }
 
-  .conversation-item {
-    padding: 12px 15px;
+  .close-modal-button {
+    padding: 8px 15px;
   }
 }

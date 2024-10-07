@@ -18,9 +18,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,7 +87,6 @@ public class AdminController {
         if (userService.existsByUsername(updateData.get("new_username"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
         }
-        UserEntity userEntity = userService.getUserById(userId).orElseThrow();
         return ResponseEntity.ok(userService.updateUser(userId, updateData));
     }
 
