@@ -49,17 +49,17 @@ This project follows a layered architecture:
 
 1. Clone the backend repository:
    ```bash
-   git clone https://github.com/yourusername/social-network-backend.git
+   git clone https://github.com/hduc1103/SocialApp.git
    cd social-network-backend
    ```
 
 2. Configure the MySQL and MongoDB connection strings in `application.properties`:
    ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/social_network
+   spring.datasource.url=jdbc:mysql://localhost:3306/dbname
    spring.datasource.username=root
    spring.datasource.password=yourpassword
 
-   spring.data.mongodb.uri=mongodb://localhost:27017/social_network_chat
+   spring.data.mongodb.uri=mongodb://localhost: /messages
    ```
 
 3. Build and run the backend service:
@@ -71,8 +71,8 @@ This project follows a layered architecture:
 
 1. Clone the frontend repository:
    ```bash
-   git clone https://github.com/yourusername/social-network-frontend.git
-   cd social-network-frontend
+   git clone https://github.com/hduc1103/SocialApp.git
+   cd UI/Frontend/my-app
    ```
 
 2. Install dependencies and start the frontend development server:
