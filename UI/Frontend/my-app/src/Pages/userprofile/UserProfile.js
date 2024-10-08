@@ -17,10 +17,35 @@ const UserProfile = () => {
   const [isFriend, setIsFriend] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  
+  const [author, setAuthor] = useState('');
+  const [authorImgUrl, setAuthorImgUrl] = useState('');
+
   const navigate = useNavigate();
   const { userId } = useParams();
   const loggedInUserId = localStorage.getItem('userId');
+
+  const fetchPostAuthor = async (new_post_userId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/user/getUsername?userId=${new_post_userId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch post author');
+      }
+
+      const data = await response.json();
+      setAuthor(data.username);
+      setAuthorImgUrl(data.imgUrl);
+      return data;
+    } catch (error) {
+      console.error('Error fetching post author:', error);
+    }
+  };
 
   const handleNewPost = (content) => {
     const token = localStorage.getItem('token');
@@ -34,11 +59,19 @@ const UserProfile = () => {
     })
       .then(response => response.json())
       .then(data => {
-        setUserPosts([...userPosts, { ...data, likeCount: 0 }]);
+        fetchPostAuthor(data.userId).then((authorData) => {
+          const newPost = {
+            ...data,
+            likeCount: 0,
+            author: authorData.username,
+            authorImgUrl: authorData.imgUrl
+          };
+          setUserPosts([...userPosts, newPost]);
+        });
       })
       .catch(err => showRedNotification(err));
   };
-  
+
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
     try {
@@ -48,11 +81,11 @@ const UserProfile = () => {
         }
         return acc;
       }, {});
-  
+
       if (Object.keys(updateData).length === 0) {
         return;
       }
-  
+
       const response = await fetch(`${BASE_URL}/user/updateUser`, {
         method: 'PUT',
         headers: {
@@ -61,11 +94,11 @@ const UserProfile = () => {
         },
         body: JSON.stringify(updateData),
       });
-  
-      if (response.status===409) {
+
+      if (response.status === 409) {
         showRedNotification('Username or email already exists');
       }
-  
+
       const data = await response.json();
       showGreenNotification("Profile updated")
       setUserDetails(data);
@@ -74,7 +107,7 @@ const UserProfile = () => {
       console.log(error);
     }
   };
-  
+
   const handleUpdateProfileImage = async (profilePicture) => {
     const token = localStorage.getItem('token');
     try {
@@ -100,7 +133,8 @@ const UserProfile = () => {
         img_url: updatedData.img_url,
       }));
     } catch (error) {
-      showRedNotification(error);    }
+      showRedNotification(error);
+    }
   };
 
   const checkFriendshipStatus = async () => {
@@ -112,49 +146,49 @@ const UserProfile = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to check friendship status');
       }
-  
+
       const isFriendStatus = await response.json();
       setIsFriend(isFriendStatus);
     } catch (error) {
       console.error('Error checking friendship status:', error);
     }
   };
-  
-  const handleAddFriend = async ()=> {
-      try{
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${BASE_URL}/user/addFriend?userId2=${userId}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok){
-          throw new Error('Failed to add friend');
-        }
-          setIsFriend(1);
-      } catch (error){
-        console.error('Error: ', error);
+
+  const handleAddFriend = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}/user/addFriend?userId2=${userId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add friend');
       }
+      setIsFriend(1);
+    } catch (error) {
+      console.error('Error: ', error);
+    }
   }
-  const Handleunfriend = async ()=>{
+  const Handleunfriend = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${BASE_URL}/user/unfriend?userId2=${userId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      if (!response.ok){
+      if (!response.ok) {
         throw new Error('Failed to unfriend');
       }
       setIsFriend(0);
-    }catch(error){
+    } catch (error) {
       console.log(error);
     }
   }
@@ -181,7 +215,8 @@ const UserProfile = () => {
         const data = await response.json();
         setUserDetails(data);
       } catch (error) {
-        console.error(error);      }
+        console.error(error);
+      }
     };
 
     const fetchUserPosts = async () => {
@@ -201,7 +236,8 @@ const UserProfile = () => {
         const postsWithLikes = await fetchPostLikeCounts(posts);
         setUserPosts(postsWithLikes);
       } catch (error) {
-        console.error(error);      }
+        console.error(error);
+      }
     };
 
     const fetchPostLikeCounts = async (posts) => {
@@ -269,7 +305,7 @@ const UserProfile = () => {
                   className="edit-profile-picture-button"
                   onClick={() => document.getElementById('profileImageInput').click()}
                 >
-                  <FaUpload size={15}/>
+                  <FaUpload size={15} />
                 </button>
               </>
             )}
@@ -287,27 +323,27 @@ const UserProfile = () => {
           </button>
         )}
         {userId !== loggedInUserId && (
-    <button
-      className="add-friend-button"
-      onClick={() => {
-        if (!isFriend) {
-          handleAddFriend();
-        } else {
-          Handleunfriend();
-        }
-      }}
-    >
-  {isFriend ? (
-    <>
-      <IoPersonRemoveSharp size={20} /> Unfriend
-    </>
-  ) : (
-    <>
-      <IoPersonAddSharp size={20} /> Add Friend
-    </>
-  )}
-    </button>
-  )}
+          <button
+            className="add-friend-button"
+            onClick={() => {
+              if (!isFriend) {
+                handleAddFriend();
+              } else {
+                Handleunfriend();
+              }
+            }}
+          >
+            {isFriend ? (
+              <>
+                <IoPersonRemoveSharp size={20} /> Unfriend
+              </>
+            ) : (
+              <>
+                <IoPersonAddSharp size={20} /> Add Friend
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {isUpdateModalOpen && (
@@ -322,10 +358,11 @@ const UserProfile = () => {
         <h2>{userId === loggedInUserId ? 'Your Posts' : `${userDetails?.name}'s Posts`}</h2>
         {userPosts.length > 0 ? (
           <div className="post-list">
-            {userPosts.map((post) => (
-              <Post key={post.id} post={post} />
-            ))}
-          </div>
+  {userPosts.slice().reverse().map((post) => (
+    <Post key={post.id} post={post} />
+  ))}
+</div>
+
         ) : (
           <p>No posts to display.</p>
         )}

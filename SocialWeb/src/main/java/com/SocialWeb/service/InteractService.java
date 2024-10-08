@@ -33,6 +33,7 @@ public class InteractService {
             commentEntity.setPost(postEntity);
             commentEntity.setText(text);
             commentEntity.setCreatedAt(new Date());
+            commentEntity.setUpdatedAt(new Date());
             commentRepository.save(commentEntity);
             return CMT_ADD;
         } catch (NoSuchElementException e) {
@@ -46,7 +47,6 @@ public class InteractService {
 
     public void updateComment(Long commentId, String new_comment) {
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow();
-
         commentEntity.setText(new_comment);
         commentEntity.setUpdatedAt(new Date());
         commentRepository.save(commentEntity);

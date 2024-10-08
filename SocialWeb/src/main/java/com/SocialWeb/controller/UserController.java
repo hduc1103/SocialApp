@@ -306,6 +306,7 @@ public class UserController {
                 .user(userEntity)
                 .supportTicketEntity(supportTicketEntity)
                 .createdAt(new Date())
+                .updatedAt(new Date())
                 .build();
         supportTicketService.addTicketComment(ticketCommentEntity);
     }

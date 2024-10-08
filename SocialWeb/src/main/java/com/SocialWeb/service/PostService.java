@@ -1,5 +1,6 @@
 package com.SocialWeb.service;
 
+import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.PostRepository;
@@ -7,6 +8,7 @@ import com.SocialWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -31,15 +33,24 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(() -> new RuntimeException(POST_NOT_FOUND));
     }
 
-    public String createPost(String username, String content) {
+    public PostResponse createPost(String username, String content) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         PostEntity postEntity = new PostEntity();
         postEntity.setUser(userEntity);
         postEntity.setContent(content);
         postEntity.setCreatedAt(new Date());
+        postEntity.setUpdatedAt(new Date());
         postRepository.save(postEntity);
-        return Y_POST;
+        return new PostResponse(
+                postEntity.getId(),
+                postEntity.getContent(),
+                Collections.emptyList(),
+                postEntity.getCreatedAt(),
+                postEntity.getUpdatedAt(),
+                userEntity.getId()
+        );
     }
+
 
     public long numberOfLikes(long postId) {
         return postRepository.LikeCount(postId);

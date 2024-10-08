@@ -7,6 +7,7 @@ import com.SocialWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 import static com.SocialWeb.Message.*;
@@ -45,6 +46,7 @@ public class SupportTicketService {
     public void updateTicketComment(Long comment_id, String new_content) {
         TicketCommentEntity ticketCommentEntity = ticketCommentRepository.findById(comment_id).orElseThrow();
         ticketCommentEntity.setText(new_content);
+        ticketCommentEntity.setUpdatedAt(new Date());
         ticketCommentRepository.save(ticketCommentEntity);
     }
 
