@@ -5,9 +5,9 @@ import com.SocialWeb.mongorepository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class MessageService {
@@ -15,8 +15,8 @@ public class MessageService {
     @Autowired
     private MessageRepository messageRepository;
 
-    public MessageEntity saveMessage(MessageEntity message) {
-        return messageRepository.save(message);
+    public void saveMessage(MessageEntity message) {
+        messageRepository.save(message);
     }
 
     public List<MessageEntity> getMessagesBetweenUsers(String senderId, String receiverId) {
@@ -28,11 +28,19 @@ public class MessageService {
     }
     public Set<String> getAllConversations(String userId) {
         List<MessageEntity> messages = getAllMessagesForUser(userId);
-        return messages.stream()
-                .flatMap(msg -> msg.getSenderId().equals(userId) ?
-                        List.of(msg.getReceiverId()).stream() : List.of(msg.getSenderId()).stream())
-                .collect(Collectors.toSet());
+        Set<String> conversationIds = new HashSet<>();
+
+        for (MessageEntity message : messages) {
+            if (message.getSenderId().equals(userId)) {
+                conversationIds.add(message.getReceiverId());
+            }
+            else {
+                conversationIds.add(message.getSenderId());
+            }
+        }
+        return conversationIds;
     }
+
     public void deleteAllUserMessage(Long userId){
         String user_id = userId.toString();
         messageRepository.deleteAllMessagesForUser(user_id);
