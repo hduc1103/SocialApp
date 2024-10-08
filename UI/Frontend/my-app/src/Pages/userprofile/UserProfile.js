@@ -7,23 +7,17 @@ import UpdateProfileModal from '../../components/updateprofilemodal/UpdateProfil
 import { LiaUserEditSolid } from "react-icons/lia";
 import { FaUpload } from "react-icons/fa6";
 import { IoPersonAddSharp, IoPersonRemoveSharp } from "react-icons/io5";
-import { BASE_URL, PUBLIC_URL } from '../../config';
+import { BASE_URL, PUBLIC_URL, showRedNotification, showGreenNotification } from '../../config';
 import './userprofile.scss';
 import Footer from '../../components/footer/footer';
 
 const UserProfile = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
-  const [setError] = useState('');
   const [isFriend, setIsFriend] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [updatedDetails, setUpdatedDetails] = useState({
-    email: '',
-    address: '',
-    bio: '',
-  });
-
+  
   const navigate = useNavigate();
   const { userId } = useParams();
   const loggedInUserId = localStorage.getItem('userId');
@@ -42,8 +36,9 @@ const UserProfile = () => {
       .then(data => {
         setUserPosts([...userPosts, { ...data, likeCount: 0 }]);
       })
-      .catch(err => console.error(err));
+      .catch(err => showRedNotification(err));
   };
+  
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
     try {
@@ -67,15 +62,16 @@ const UserProfile = () => {
         body: JSON.stringify(updateData),
       });
   
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
+      if (response.status===409) {
+        showRedNotification('Username or email already exists');
       }
   
       const data = await response.json();
+      showGreenNotification("Profile updated")
       setUserDetails(data);
       setIsUpdateModalOpen(false);
     } catch (error) {
-      setError(error.message);
+      console.log(error);
     }
   };
   
@@ -94,17 +90,17 @@ const UserProfile = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile image');
+        showRedNotification('Failed to update profile image');
       }
 
       const updatedData = await response.json();
+      showGreenNotification("Profile image updated")
       setUserDetails((prevDetails) => ({
         ...prevDetails,
         img_url: updatedData.img_url,
       }));
     } catch (error) {
-      setError(error.message);
-    }
+      showRedNotification(error);    }
   };
 
   const checkFriendshipStatus = async () => {
@@ -184,15 +180,8 @@ const UserProfile = () => {
 
         const data = await response.json();
         setUserDetails(data);
-
-        setUpdatedDetails({
-          email: data.email,
-          address: data.address,
-          bio: data.bio,
-        });
       } catch (error) {
-        setError(error.message);
-      }
+        console.error(error);      }
     };
 
     const fetchUserPosts = async () => {
@@ -212,8 +201,7 @@ const UserProfile = () => {
         const postsWithLikes = await fetchPostLikeCounts(posts);
         setUserPosts(postsWithLikes);
       } catch (error) {
-        setError(error.message);
-      }
+        console.error(error);      }
     };
 
     const fetchPostLikeCounts = async (posts) => {

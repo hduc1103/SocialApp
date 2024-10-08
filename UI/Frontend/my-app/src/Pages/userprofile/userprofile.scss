@@ -3,19 +3,30 @@
   background-color: #121212;
   color: #e0e0e0;
   padding: 20px;
+  animation: fadeIn 0.8s ease-in-out;
 
-  .edit-profile-picture-button{
+  .edit-profile-picture-button {
     color: #23679e;
     cursor: pointer;
     border-radius: 15%;
     background-color: #ebeeff;
+    transition: transform 0.3s ease;
+    &:hover {
+      transform: scale(1.1);
+    }
   }
-  .add-friend-button{
-    color:#ffffff;
+
+  .add-friend-button {
+    color: #ffffff;
     cursor: pointer;
     border-radius: 10px;
     background-color: #23679e;
+    transition: transform 0.3s ease;
+    &:hover {
+      transform: scale(1.05);
+    }
   }
+
   .profile-header {
     display: flex;
     align-items: center;
@@ -24,19 +35,26 @@
     background-color: #1e1e1e;
     border-radius: 10px;
     margin-bottom: 20px;
+    animation: slideDown 0.8s ease-in-out;
 
     .profile-picture {
       max-width: 150px;
       border-radius: 10px;
+      transition: transform 0.3s ease;
+      &:hover {
+        transform: scale(1.1);
+      }
     }
 
     h1 {
       color: #fff;
       font-size: 24px;
+      animation: fadeInUp 0.5s ease-in-out;
     }
 
     p {
       color: #b0b0b0;
+      animation: fadeInUp 0.6s ease-in-out;
     }
 
     .profile-actions {
@@ -50,10 +68,11 @@
         color: #fff;
         cursor: pointer;
         border-radius: 5px;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.3s ease;
 
         &:hover {
           background-color: #555;
+          transform: translateY(-3px);
         }
       }
     }
@@ -65,10 +84,11 @@
       border-radius: 5px;
       border: none;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.3s ease;
 
       &:hover {
         background-color: #354493;
+        transform: translateY(-3px);
       }
     }
   }
@@ -83,6 +103,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    animation: fadeIn 0.8s ease-in-out;
 
     .update-modal-content {
       background: #2b2b2b;
@@ -90,21 +111,28 @@
       border-radius: 10px;
       width: 400px;
       max-width: 80%;
+      animation: slideUp 0.8s ease-in-out;
 
       h2 {
         color: #fff;
         margin-bottom: 20px;
+        animation: fadeInUp 0.5s ease-in-out;
       }
 
       input,
       textarea {
-        width: 100%;
+        width: 97%;
         padding: 10px;
         margin-bottom: 10px;
         border-radius: 5px;
         border: none;
         background: #444;
         color: #fff;
+        transition: background-color 0.3s ease;
+
+        &:focus {
+          background-color: #555;
+        }
       }
 
       button {
@@ -113,6 +141,7 @@
         border: none;
         cursor: pointer;
         margin-right: 10px;
+        transition: background-color 0.3s ease;
 
         &:first-of-type {
           background-color: #4caf50;
@@ -138,6 +167,7 @@
   .posts-section {
     h2 {
       color: #fff;
+      animation: fadeInUp 0.6s ease-in-out;
     }
 
     .post-list {
@@ -147,6 +177,7 @@
         border-radius: 10px;
         margin-bottom: 20px;
         color: #e0e0e0;
+        animation: fadeInUp 0.7s ease-in-out;
 
         .post-actions {
           display: flex;
@@ -160,10 +191,11 @@
             color: #fff;
             cursor: pointer;
             border-radius: 5px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease;
 
             &:hover {
               background-color: #555;
+              transform: translateY(-3px);
             }
           }
         }
@@ -173,6 +205,7 @@
 
           h4 {
             color: #b0b0b0;
+            animation: fadeInUp 0.8s ease-in-out;
           }
 
           ul {
@@ -182,10 +215,53 @@
             li {
               margin: 5px 0;
               color: #ccc;
+              animation: fadeInUp 0.9s ease-in-out;
             }
           }
         }
       }
     }
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

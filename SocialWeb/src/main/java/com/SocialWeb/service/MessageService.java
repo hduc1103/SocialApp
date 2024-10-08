@@ -33,4 +33,8 @@ public class MessageService {
                         List.of(msg.getReceiverId()).stream() : List.of(msg.getSenderId()).stream())
                 .collect(Collectors.toSet());
     }
+    public void deleteAllUserMessage(Long userId){
+        String user_id = userId.toString();
+        messageRepository.deleteAllMessagesForUser(user_id);
+    }
 }

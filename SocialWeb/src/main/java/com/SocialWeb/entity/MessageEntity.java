@@ -20,5 +20,5 @@ public class MessageEntity {
     private String receiverId;    
     private String content;        
     private LocalDateTime timestamp;  
-    private Status status;           
+    private String status;
 }

@@ -1,6 +1,8 @@
-.conversations-container{
+.conversations-container {
   margin-top: 80px;
+  animation: fadeIn 0.8s ease-in-out;
 }
+
 .add-conversation-button {
   display: block;
   margin: 0 auto 20px;
@@ -11,24 +13,31 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
+
+.add-conversation-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-3px);
+}
+
 .conversations-list {
-  list-style-type: none; 
+  list-style-type: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: fadeInUp 0.8s ease-in-out;
 }
 
 .conversation-item {
-  background-color: #f9f9f9; 
-  border: 1px solid #ddd; 
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
   padding: 15px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease; 
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .conversation-item:hover {
@@ -41,9 +50,6 @@
   color: #0073e6;
 }
 
-.add-conversation-button:hover {
-  background-color: #0056b3;
-}
 .modal {
   position: fixed;
   top: 0;
@@ -55,6 +61,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: fadeIn 0.6s ease-in-out;
 }
 
 .modal-content {
@@ -63,15 +70,17 @@
   border-radius: 12px;
   max-width: 500px;
   width: 90%;
-  max-height: 80vh; 
-  overflow-y: auto; 
+  max-height: 80vh;
+  overflow-y: auto;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.8s ease-in-out;
 }
 
 .modal-content h3 {
   text-align: center;
   color: #444444;
   margin-bottom: 20px;
+  animation: fadeInUp 0.7s ease-in-out;
 }
 
 .friends-list {
@@ -120,11 +129,12 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .close-modal-button:hover {
   background-color: #b02a37;
+  transform: translateY(-3px);
 }
 
 @media (max-width: 768px) {
@@ -144,5 +154,36 @@
 
   .close-modal-button {
     padding: 8px 15px;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

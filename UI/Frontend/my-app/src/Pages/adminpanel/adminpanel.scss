@@ -1,79 +1,111 @@
 .admin-panel {
   margin-top: 50px;
-    padding: 20px;
-    background-color: #121212;
-    color: #e0e0e0;
-  
-    h1, h2 {
-      color: #fff;
-    }
-  
-    input {
-      margin: 10px 0;
-      padding: 10px;
-      width: 100%;
-      border-radius: 5px;
-      border: none;
-      background-color: #2b2b2b;
-      color: #fff;
-    }
-  
-    button {
-      margin-top: 10px;
-      padding: 10px 15px;
-      background-color: #3f51b5;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-  
-      &:hover {
-        background-color: #354493;
-      }
-    }
-  
-    .user-list, .user-details, .get-one-user, .create-user, .update-user, .delete-user {
-      margin-top: 20px;
-      padding: 20px;
-      background-color: #1e1e1e;
-      border-radius: 10px;
-  
-      .user-item {
-        padding: 10px;
-        border-bottom: 1px solid #333;
-  
-        p {
-          margin: 5px 0;
-          color: #b0b0b0;
-        }
-      }
-    }
-  
-    .user-details {
-      p {
-        margin: 5px 0;
-        color: #ccc;
-      }
-    }
-  
-    .get-one-user,
-    .create-user,
-    .update-user,
-    .delete-user {
-      display: flex;
-      flex-direction: column;
-  
-      input {
-        margin-bottom: 10px;
-      }
-    }
-  
-    .get-one-user button,
-    .create-user button,
-    .update-user button,
-    .delete-user button {
-      align-self: flex-start;
+  padding: 20px;
+  background-color: #121212;
+  color: #e0e0e0;
+  animation: fadeIn 0.8s ease-in-out;
+
+  h1, h2 {
+    color: #fff;
+    animation: fadeInUp 0.6s ease-in-out;
+  }
+
+  input {
+    margin: 10px 0;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    border: none;
+    background-color: #2b2b2b;
+    color: #fff;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+
+    &:focus {
+      background-color: #333;
+      transform: translateY(-3px);
     }
   }
-  
+
+  button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #3f51b5;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+
+    &:hover {
+      background-color: #354493;
+      transform: translateY(-3px);
+    }
+  }
+
+  .user-list, .user-details, .get-one-user, .create-user, .update-user, .delete-user {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    animation: fadeInUp 0.8s ease-in-out;
+
+    .user-item {
+      padding: 10px;
+      border-bottom: 1px solid #333;
+
+      p {
+        margin: 5px 0;
+        color: #b0b0b0;
+        animation: fadeInUp 0.9s ease-in-out;
+      }
+    }
+  }
+
+  .user-details {
+    p {
+      margin: 5px 0;
+      color: #ccc;
+      animation: fadeInUp 0.9s ease-in-out;
+    }
+  }
+
+  .get-one-user,
+  .create-user,
+  .update-user,
+  .delete-user {
+    display: flex;
+    flex-direction: column;
+
+    input {
+      margin-bottom: 10px;
+      animation: fadeInUp 0.8s ease-in-out;
+    }
+  }
+
+  .get-one-user button,
+  .create-user button,
+  .update-user button,
+  .delete-user button {
+    align-self: flex-start;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

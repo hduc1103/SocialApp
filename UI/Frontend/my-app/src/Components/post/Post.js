@@ -163,6 +163,8 @@ const Post = ({ post }) => {
     e.preventDefault();
     if (comment.trim()) {
       const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+
       try {
         const response = await fetch(`${BASE_URL}/interact/addComment?postId=${post.id}`, {
           method: 'POST',
@@ -177,7 +179,8 @@ const Post = ({ post }) => {
           throw new Error('Failed to add comment');
         }
 
-        const newComment = await response.json();
+        let newComment = await response.json();
+        newComment = { ...newComment, user_id: userId };
         setComments([...comments, newComment]);
         setComment('');
         fetchUsernamesForComments([newComment]);
@@ -186,6 +189,7 @@ const Post = ({ post }) => {
       }
     }
   };
+
 
   const handleDeletePost = async () => {
     const token = localStorage.getItem('token');

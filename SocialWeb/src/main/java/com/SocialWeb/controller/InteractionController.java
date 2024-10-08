@@ -31,9 +31,9 @@ public class InteractionController {
         String content = text.get("text");
         String response = interactService.addComment(postId, username, content);
         if (response.startsWith(ERROR_MSG)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(text);
     }
 
     @DeleteMapping("/deleteComment")

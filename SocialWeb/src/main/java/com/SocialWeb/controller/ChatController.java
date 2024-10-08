@@ -26,25 +26,19 @@ public class ChatController {
     private MessageService messageService;
 
     @MessageMapping("/private-message")
-    public void recMessage(@Payload MessageEntity message) {
+    public void receiveMessage(@Payload MessageEntity message) {
         message.setTimestamp(LocalDateTime.now());
         messageService.saveMessage(message);
-
         simpMessagingTemplate.convertAndSendToUser(message.getReceiverId(), "/private", message);
     }
     @GetMapping("/conversations")
     public Set<String> getConversations(@RequestParam String userId) {
-        System.out.println("flag1");
         return messageService.getAllConversations(userId);
     }
     @GetMapping("/conversation")
     public List<MessageEntity> getConversation(
             @RequestParam String senderId,
             @RequestParam String receiverId) {
-        System.out.println("Fetching conversation between senderId: " + senderId + " and receiverId: " + receiverId);
-        List<MessageEntity> messages = messageService.getMessagesBetweenUsers(senderId, receiverId);
-        System.out.println("Messages fetched: " + messages);
-        return messages;
+        return messageService.getMessagesBetweenUsers(senderId, receiverId);
     }
-
 }

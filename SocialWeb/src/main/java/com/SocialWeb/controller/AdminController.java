@@ -7,6 +7,7 @@ import com.SocialWeb.entity.SupportTicketEntity;
 import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.security.JwtUtil;
+import com.SocialWeb.service.MessageService;
 import com.SocialWeb.service.SupportTicketService;
 import com.SocialWeb.service.UserDetail;
 import com.SocialWeb.service.UserService;
@@ -29,6 +30,9 @@ import static com.SocialWeb.Message.*;
 public class AdminController {
     @Autowired
     UserService userService;
+
+    @Autowired
+    MessageService messageService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -76,16 +80,20 @@ public class AdminController {
     @DeleteMapping("/deleteUser")
     public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId) {
         UserEntity userEntity = userService.getUserById(userId).orElseThrow();
+        messageService.deleteAllUserMessage(userId);
         userService.deleteRelationship(userId);
         userService.deleteUser(userEntity);
         return ResponseEntity.ok(D_USER);
     }
 
     @PutMapping("/updateUser")
-    public ResponseEntity<String> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData) {
+    public ResponseEntity<UserResponse> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData) {
         System.out.println(updateData.get("new_username"));
         if (userService.existsByUsername(updateData.get("new_username"))) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+        if (userService.existByEmail(updateData.get("new_email"))) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         return ResponseEntity.ok(userService.updateUser(userId, updateData));
     }

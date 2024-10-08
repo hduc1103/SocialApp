@@ -1,215 +1,242 @@
 .support-ticket-page {
-    margin: 50px auto;
-    padding: 30px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.support-ticket-page-h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.7s ease-in-out;
+}
+
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.ticket-form input[type="text"] {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.ticket-form input[type="text"]:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+.ticket-options {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  animation: fadeInUp 0.8s ease-in-out;
+}
+
+.ticket-options h4 {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.ticket-options label {
+  display: block;
+  font-size: 15px;
+  padding: 5px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.ticket-options label:hover {
+  background-color: #eef7ee;
+}
+
+.ticket-form button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.ticket-form button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.error {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.ticket-list {
+  margin-top: 20px;
+}
+
+.ticket-list h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4CAF50;
+  padding-bottom: 10px;
+}
+
+.ticket-item {
+  background: #f0f8ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  position: relative;
+  animation: fadeInUp 0.8s ease-in-out;
+}
+
+.ticket-item.closed {
+  background-color: #d3d3d3;
+  color: #555;
+}
+
+.ticket-item h4 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.ticket-item p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.ticket-item button {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-right: 10px;
+}
+
+.ticket-item button:hover {
+  background-color: #0069d9;
+  transform: translateY(-2px);
+}
+
+.ticket-item button.close-ticket {
+  background-color: #dc3545;
+}
+
+.ticket-item button.close-ticket:hover {
+  background-color: #c82333;
+}
+
+.comments-section {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.comments-section h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.user-comment-item {
+  background: #e6f3ff;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.user-comment-item p {
+  font-size: 14px;
+  color: #333;
+  margin: 0;
+}
+
+.add-comment {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-comment textarea {
+  resize: none;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.add-comment textarea:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+.add-comment button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  align-self: flex-start;
+}
+
+.add-comment button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.ticket-content-list {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-top: 10px;
+}
+
+.ticket-content-list li {
+  margin-bottom: 5px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
   }
-  
-  .support-ticket-page-h2 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 20px;
+  100% {
+    opacity: 1;
   }
-  
-  .ticket-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
   }
-  
-  .ticket-form input[type="text"] {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    transition: all 0.3s ease;
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
-  
-  .ticket-form input[type="text"]:focus {
-    border-color: #4CAF50;
-    outline: none;
-  }
-  
-  .ticket-options {
-    margin-bottom: 15px;
-    padding: 10px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-  }
-  
-  .ticket-options h4 {
-    font-size: 18px;
-    color: #555;
-    margin-bottom: 10px;
-  }
-  
-  .ticket-options label {
-    display: block;
-    font-size: 15px;
-    padding: 5px 0;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .ticket-options label:hover {
-    background-color: #eef7ee;
-  }
-  
-  .ticket-form button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .ticket-form button:hover {
-    background-color: #45a049;
-  }
-  
-  .error {
-    color: #e74c3c;
-    font-weight: bold;
-  }
-  
-  .ticket-list {
-    margin-top: 20px;
-  }
-  
-  .ticket-list h3 {
-    font-size: 20px;
-    color: #333;
-    margin-bottom: 10px;
-    border-bottom: 2px solid #4CAF50;
-    padding-bottom: 10px;
-  }
-  
-  .ticket-item {
-    background: #f0f8ff;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    position: relative;
-  }
-  
-  .ticket-item.closed {
-    background-color: #d3d3d3;
-    color: #555;
-  }
-  
-  .ticket-item h4 {
-    font-size: 18px;
-    color: #333;
-    margin-bottom: 10px;
-  }
-  
-  .ticket-item p {
-    font-size: 14px;
-    color: #555;
-    margin-bottom: 10px;
-  }
-  
-  .ticket-item button {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-right: 10px;
-  }
-  
-  .ticket-item button:hover {
-    background-color: #0069d9;
-  }
-  
-  .ticket-item button.close-ticket {
-    background-color: #dc3545;
-  }
-  
-  .ticket-item button.close-ticket:hover {
-    background-color: #c82333;
-  }
-  
-  .comments-section {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: #fafafa;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .comments-section h3 {
-    font-size: 20px;
-    color: #333;
-    margin-bottom: 15px;
-  }
-  
-  .user-comment-item {
-    background: #e6f3ff;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-  }
-  
-  .user-comment-item p {
-    font-size: 14px;
-    color: #333;
-    margin: 0;
-  }
-  
-  .add-comment {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .add-comment textarea {
-    resize: none;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 15px;
-    transition: all 0.3s ease;
-  }
-  
-  .add-comment textarea:focus {
-    border-color: #4CAF50;
-    outline: none;
-  }
-  
-  .add-comment button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    align-self: flex-start;
-  }
-  
-  .add-comment button:hover {
-    background-color: #45a049;
-  }
-  .ticket-content-list {
-    list-style-type: disc; 
-    padding-left: 20px;
-    margin-top: 10px;
-  }
-  
-  .ticket-content-list li {
-    margin-bottom: 5px;
-  }
-  
+}

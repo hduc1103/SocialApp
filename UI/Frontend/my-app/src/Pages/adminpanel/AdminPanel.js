@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BASE_URL } from '../../config';
+import { BASE_URL, showGreenNotification, showRedNotification } from '../../config';
 import CreateUser from '../../components/createuser/CreateUser';
 import DeleteUser from '../../components/deleteuser/DeleteUser';
 import UserList from '../../components/userlist/UserList';
@@ -41,13 +41,13 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        showRedNotification('Failed to fetch users');
       }
   
       const data = await response.json();
       setUsers(data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      showRedNotification('Error fetching users:', error);
     }
   };
   
@@ -65,13 +65,13 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        throw new Error('Failed to fetch user details');
+        showRedNotification('Failed to fetch user details');
       }
   
       const data = await response.json();
       setUserDetails(data);
     } catch (error) {
-      console.error('Error fetching user:', error);
+      showRedNotification('Error fetching user:', error);
     }
   };
   
@@ -88,13 +88,13 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        throw new Error('Failed to delete user');
+        showRedNotification('Failed to delete user');
       }
   
-      alert('User deleted successfully');
+      showGreenNotification('User deleted successfully');
       getAllUsers();
     } catch (error) {
-      console.error('Error deleting user:', error);
+      showRedNotification('Error deleting user:', error);
     }
   };
   
@@ -112,12 +112,13 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        throw new Error('Failed to create user');
+        showRedNotification('Failed to create user');
       }
   
-      alert('User created successfully');
+      showGreenNotification('User created successfully');
       setNewUser({
         username: '',
+        name: '',
         email: '',
         password: '',
         address: '',
@@ -125,7 +126,7 @@ const AdminPanel = () => {
         img_url: '',
       });
     } catch (error) {
-      console.error('Error creating user:', error);
+      showRedNotification('Error creating user:', error);
     }
   };
   
@@ -152,11 +153,11 @@ const AdminPanel = () => {
         body: JSON.stringify(updateDataPayload),
       });
   
-      if (!response.ok) {
-        throw new Error('Failed to update user');
+      if (response.status===409) {
+        showRedNotification('Username or gmail already exits');
       }
   
-      alert('User updated successfully');
+      showGreenNotification('User updated successfully');
       setUpdateData({
         userId: '',
         new_name: '',
@@ -166,7 +167,7 @@ const AdminPanel = () => {
         new_bio: '',
       });
     } catch (error) {
-      console.error('Error updating user:', error);
+      showRedNotification('Error updating user:', error);
     }
   };
   

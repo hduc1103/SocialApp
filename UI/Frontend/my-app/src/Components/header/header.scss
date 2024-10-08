@@ -1,7 +1,7 @@
 .header {
   top: 0px;
-   width: 100%;
-   position: fixed;
+  width: 100%;
+  position: fixed;
   background-color: #1e1e1e;
   padding: 15px 30px;
   display: flex;
@@ -10,16 +10,17 @@
   width: 100%;
   top: 0;
   z-index: 1000;
+  animation: slideDown 0.6s ease-in-out;
 }
 
 .header-container {
   width: 100%;
-  max-width: 1600px; 
+  max-width: 1600px;
   height: 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px; 
+  padding: 0 20px;
 }
 
 .header-logo {
@@ -27,6 +28,11 @@
   font-size: 24px;
   font-weight: bold;
   cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.header-logo:hover {
+  transform: scale(1.1);
 }
 
 .header-nav {
@@ -40,11 +46,12 @@
   align-items: center;
   cursor: pointer;
   color: #e0e0e0;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .nav-item:hover {
   color: #fff;
+  transform: translateY(-3px);
 }
 
 .nav-item svg {
@@ -68,8 +75,13 @@
   color: #fff;
   border-radius: 20px;
   outline: none;
-  transition: background-color 0.3s ease;
-  max-width: 300px; 
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  max-width: 300px;
+}
+
+.search-bar input:focus {
+  background-color: #444;
+  transform: translateY(-3px);
 }
 
 .search-bar button {
@@ -80,12 +92,17 @@
   border: none;
   border-radius: 20px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.search-bar button:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
 }
 
 @media (min-width: 2560px) {
   .header-container {
-    max-width: 2400px; 
+    max-width: 2400px;
   }
 
   .header-logo {
@@ -97,12 +114,13 @@
   }
 
   .search-bar input {
-    max-width: 400px; 
+    max-width: 400px;
   }
 }
+
 @media (max-width: 1920px) {
   .header-container {
-    max-width: 1200px; 
+    max-width: 1200px;
   }
 
   .header-nav {
@@ -110,7 +128,7 @@
   }
 
   .header-logo {
-    font-size: 22px; 
+    font-size: 22px;
   }
 
   .search-bar input {
@@ -118,3 +136,13 @@
   }
 }
 
+@keyframes slideDown {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

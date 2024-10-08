@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useParams } from 'react-router-dom';
-import { BASE_URL , PUBLIC_URL} from '../../config';
+import { BASE_URL , PUBLIC_URL, showGreenNotification} from '../../config';
 import './chatpage.scss';
 
 const ChatPage = () => {
@@ -30,10 +30,8 @@ const ChatPage = () => {
           }
           const data = await response.json();
           setChatMessages(data);
-
-          // Fetch details of users in chat (usernames and img_urls)
-          const userIds = new Set(data.map(msg => msg.senderId).concat(receiverId));
-          fetchUserDetails(userIds);
+          const oponents = new Set(data.map(msg => msg.senderId));
+          fetchUserDetails(oponents);
         } catch (error) {
           console.error('Failed to load chat history:', error);
         } finally {
@@ -67,7 +65,6 @@ const ChatPage = () => {
       };
 
       fetchChatHistory();
-
       const socket = new SockJS(`${BASE_URL}/ws`);
       stompClient.current = new Client({
         webSocketFactory: () => socket,
@@ -90,12 +87,12 @@ const ChatPage = () => {
   }, [senderId, receiverId, token]);
 
   const onConnected = () => {
-    console.log('Connected to WebSocket');
+    showGreenNotification('Connected to WebSocket');
     stompClient.current.subscribe(`/user/${senderId}/private`, onMessageReceived);
-  };
+};
 
   const onError = (error) => {
-    console.error('WebSocket error:', error);
+    alert(error)
   };
 
   const onMessageReceived = (payload) => {

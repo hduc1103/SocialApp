@@ -118,10 +118,13 @@ public class UserController {
     }
 
     @PutMapping("/updateUser")
-    public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> updateData) {
+    public ResponseEntity<UserResponse> updateUser(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> updateData) {
         String username = extractUsername(token);
         if (userService.existsByUsername(updateData.get("new_username"))) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+        if (userService.existByEmail(updateData.get("new_email"))) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
         Long userId = userEntity.getId();
@@ -166,7 +169,6 @@ public class UserController {
                 userEntity.getBio(),
                 userEntity.getAddress()
         );
-
         return ResponseEntity.ok(userResponse);
     }
 

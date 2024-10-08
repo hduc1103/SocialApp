@@ -4,36 +4,45 @@
   border-radius: 10px;
   color: #e0e0e0;
   margin-bottom: 20px;
+  animation: fadeIn 0.8s ease-in-out;
 
-  .post-author{
+  .post-author {
     transition: background-color 0.3s ease;
   }
 
   .post-content {
     font-size: 18px;
     margin-bottom: 10px;
+    animation: fadeInUp 0.7s ease-in-out;
   }
+
   .post-author-info {
     display: flex;
     align-items: center;
+    animation: slideDown 0.7s ease-in-out;
   }
-  
+
   .post-author-img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     margin-right: 10px;
+    transition: transform 0.3s ease;
+    &:hover {
+      transform: scale(1.1);
+    }
   }
-  
+
   .post-author {
     font-size: 1.2em;
   }
-  
+
   .post-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
+    animation: fadeInUp 0.8s ease-in-out;
   }
 
   .like-button {
@@ -43,12 +52,14 @@
     border-radius: 5px;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+
+    &:hover {
+      background-color: #9eacda;
+      transform: translateY(-3px);
+    }
   }
 
-  .like-button:hover {
-    background-color: #9eacda;
-  }
   .edit-comment-input {
     width: 80%;
     padding: 10px;
@@ -58,17 +69,18 @@
     font-size: 1rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s, box-shadow 0.3s;
-  
+
     &:focus {
-      border-color: #007bff; 
+      border-color: #007bff;
       box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
       outline: none;
     }
   }
-  
+
   .comment-form {
     display: flex;
     align-items: center;
+    animation: fadeInUp 0.9s ease-in-out;
 
     .comment-input {
       flex-grow: 1;
@@ -88,15 +100,16 @@
       border: none;
       cursor: pointer;
       transition: background-color 0.3s ease;
-    }
 
-    .comment-button:hover {
-      background-color: #354493;
+      &:hover {
+        background-color: #354493;
+      }
     }
   }
 
   .post-comments {
     margin-top: 15px;
+    animation: fadeInUp 0.9s ease-in-out;
 
     h4 {
       font-size: 16px;
@@ -133,6 +146,11 @@
     cursor: pointer;
     color: #888;
     font-size: 1.5rem;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: rotate(90deg);
+    }
   }
 
   .dropdown-menu {
@@ -142,6 +160,7 @@
     position: absolute;
     padding: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.5s ease-in-out;
 
     button {
       background: none;
@@ -152,10 +171,42 @@
       display: block;
       text-align: left;
       width: 100%;
-    }
+      transition: background-color 0.3s ease;
 
-    button:hover {
-      background: #f0f0f0;
+      &:hover {
+        background: #f0f0f0;
+      }
     }
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

@@ -4,6 +4,8 @@ import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.domain.response.UserSummaryResponse;
 import com.SocialWeb.entity.*;
 import com.SocialWeb.repository.*;
+import lombok.Builder;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
@@ -60,8 +62,9 @@ public class UserService {
         return userRepository.findByUsername(username).orElseThrow();
     }
 
-    public String updateUser(Long userId, Map<String, String> updateData) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
+    public UserResponse updateUser(Long userId, Map<String, String> updateData) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
         if (updateData.containsKey("new_name")) {
             userEntity.setName(updateData.get("new_name"));
         }
@@ -77,8 +80,23 @@ public class UserService {
         if (updateData.containsKey("new_address")) {
             userEntity.setAddress(updateData.get("new_address"));
         }
+
         userRepository.save(userEntity);
-        return Y_UPDATE;
+
+        String decodedImgUrl = null;
+        if (userEntity.getImg_url() != null) {
+            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
+        }
+
+        return UserResponse.builder()
+                .id(userEntity.getId())
+                .username(userEntity.getUsername())
+                .name(userEntity.getName())
+                .email(userEntity.getEmail())
+                .img_url(decodedImgUrl)
+                .bio(userEntity.getBio())
+                .address(userEntity.getAddress())
+                .build();
     }
 
     public String decodeFileName(String encodedFileName) {
