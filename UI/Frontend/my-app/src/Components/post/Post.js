@@ -23,6 +23,7 @@ const Post = ({ post }) => {
 
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
+  const role = localStorage.getItem('role');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -261,7 +262,7 @@ const Post = ({ post }) => {
       ) : (
         <p className="post-content">{post.content}</p>
       )}
-      {post.userId === parseInt(userId) && (
+      {(post.userId === parseInt(userId) || role =='ADMIN') && (
         <div className="post-options">
           <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
             <FaEllipsisH />
@@ -323,7 +324,7 @@ const Post = ({ post }) => {
                     <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
                   </div>
                   <span className="comment-text">{comment.text}</span>
-                  {comment.user_id === parseInt(userId) && (
+                  {(comment.user_id === parseInt(userId) || role =='ADMIN') && (
                     <div className="comment-options">
                       <button
                         className="three-dot-button"

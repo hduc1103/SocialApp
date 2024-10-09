@@ -22,8 +22,8 @@ const UserProfile = () => {
 
   const navigate = useNavigate();
   const { userId } = useParams();
-  const loggedInUserId = localStorage.getItem('userId');
 
+  const loggedInUserId = localStorage.getItem('userId');
   const fetchPostAuthor = async (new_post_userId) => {
     const token = localStorage.getItem('token');
     try {

@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/addTicketComment").authenticated()
                         .requestMatchers("/user/getUsername").authenticated()
                         .requestMatchers("/user/*/close").authenticated()
+                        .requestMatchers("user/changePassword").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/ws/**", "/websocket/**", "/sockjs/**").permitAll()
                         .requestMatchers("/chat-websocket/**").permitAll()
