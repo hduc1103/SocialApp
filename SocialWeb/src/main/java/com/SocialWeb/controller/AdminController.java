@@ -9,7 +9,6 @@ import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.MessageService;
 import com.SocialWeb.service.SupportTicketService;
-import com.SocialWeb.service.UserDetail;
 import com.SocialWeb.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,9 +35,6 @@ public class AdminController {
 
     @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
-    UserDetail userDetail;
 
     @Autowired
     JwtUtil jwtUtil;
