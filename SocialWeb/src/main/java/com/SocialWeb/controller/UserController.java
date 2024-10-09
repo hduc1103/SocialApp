@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,6 @@ import static com.SocialWeb.Message.*;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -83,6 +83,19 @@ public class UserController {
         UserEntity user = userService.getUserByUsername(username).orElseThrow();
         String role = user.getRoles().getFirst();
         return ResponseEntity.ok(role);
+    }
+
+    //To-do
+    @PostMapping("/changPassword")
+    public ResponseEntity<Void> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> password){
+        String username = extractUsername(token);
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+
+    }
+
+    @PostMapping("/forgetPassword")
+    public void forgetPassword(@){
+
     }
 
     @PostMapping("/createUser")

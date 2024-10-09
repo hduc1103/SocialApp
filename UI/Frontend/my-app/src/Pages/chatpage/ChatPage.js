@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useParams } from 'react-router-dom';
-import { BASE_URL , PUBLIC_URL, showGreenNotification} from '../../config';
+import { BASE_URL, PUBLIC_URL, showGreenNotification } from '../../config';
 import './chatpage.scss';
 
 const ChatPage = () => {
@@ -15,7 +15,7 @@ const ChatPage = () => {
   const [userDetails, setUserDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const stompClient = useRef(null);
-
+  
   useEffect(() => {
     if (senderId && receiverId && token) {
       const fetchChatHistory = async () => {
@@ -89,7 +89,7 @@ const ChatPage = () => {
   const onConnected = () => {
     showGreenNotification('Connected to WebSocket');
     stompClient.current.subscribe(`/user/${senderId}/private`, onMessageReceived);
-};
+  };
 
   const onError = (error) => {
     alert(error)
@@ -137,11 +137,11 @@ const ChatPage = () => {
                 >
                   {msg.senderId !== senderId && userDetails[msg.senderId] && (
                     <>
-                      <img           
-                        src={userDetails[msg.senderId]?.imgUrl 
-                            ? `${PUBLIC_URL}/profile_img_upload/${userDetails[msg.senderId].imgUrl}` 
-                            : 'https://via.placeholder.com/40'}
-                      
+                      <img
+                        src={userDetails[msg.senderId]?.imgUrl
+                          ? `${PUBLIC_URL}/profile_img_upload/${userDetails[msg.senderId].imgUrl}`
+                          : 'https://via.placeholder.com/40'}
+
                         className="user-avatar-chat"
                       />
                       <strong>{userDetails[msg.senderId].username || 'Loading...'}:</strong>

@@ -82,7 +82,7 @@ const Dashboard = () => {
       {error && <p className="error-message">{error}</p>}
       <div className="posts-container">
         {friendPosts.length > 0 ? (
-          friendPosts.slice().reverse().map((post) => (
+          friendPosts.map((post) => (
             <Post key={post.id} post={post} /> 
           ))
         ) : (

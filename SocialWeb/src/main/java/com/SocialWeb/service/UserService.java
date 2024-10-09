@@ -1,11 +1,8 @@
 package com.SocialWeb.service;
 
 import com.SocialWeb.domain.response.UserResponse;
-import com.SocialWeb.domain.response.UserSummaryResponse;
 import com.SocialWeb.entity.*;
-import com.SocialWeb.repository.*;
-import lombok.Builder;
-import lombok.Data;
+import com.SocialWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
@@ -27,14 +24,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private PostRepository postRepository;
-
     @Value("${upload.path}")
     private String uploadDir;
-
-    @Autowired
-    private CommentRepository commentRepository;
 
     public long getUserId(String username) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
