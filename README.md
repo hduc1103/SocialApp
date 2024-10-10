@@ -58,8 +58,7 @@ This project follows a layered architecture:
    spring.datasource.url=jdbc:mysql://localhost:3306/dbname
    spring.datasource.username=root
    spring.datasource.password=yourpassword
-
-spring.data.mongodb.uri=mongodb+srv://<yourusername>:<yourpassword>.@cluster*.n8qh0.mongodb.net/db_name?retryWrites=true&w=majority&appName=Cluster*
+   spring.data.mongodb.uri=mongodb+srv://<yourusername>:<yourpassword>.@cluster*.n8qh0.mongodb.net/db_name?retryWrites=true&w=majority&appName=Cluster*
    ```
 
 3. Build and run the backend service:
