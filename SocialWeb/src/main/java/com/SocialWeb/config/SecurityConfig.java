@@ -35,6 +35,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/login").permitAll()
+                        .requestMatchers("user/forgetPassword").permitAll()
+                        .requestMatchers("user/verifyOtp").permitAll()
+                        .requestMatchers("/user/resetPassword").permitAll()
                         .requestMatchers("/chat/**").authenticated()
                         .requestMatchers("/interact/**").authenticated()
                         .requestMatchers("/post/numberOfLikes").permitAll()

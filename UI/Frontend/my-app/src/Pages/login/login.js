@@ -2,19 +2,26 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.scss';
 import { BASE_URL } from '../../config';
+import EmailModal from '../../components/emailmodal/EmailModal';
+import OtpModal from '../../components/otpmodal/OtpModal';
+import NewPasswordModal from '../../components/newpasswordmodal/NewPasswordModal';
 
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(''); 
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (isSignUp) {
       try {
         const signUpResponse = await fetch(`${BASE_URL}/user/createUser`, {
@@ -88,6 +95,71 @@ const Login = () => {
     }
   };
 
+  const handleEmailSubmit = async (submittedEmail) => {
+    setEmail(submittedEmail);  
+
+    try {
+      const response = await fetch(`${BASE_URL}/user/forgetPassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: submittedEmail }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Email not found');
+      }
+
+      setShowEmailModal(false);
+      setShowOtpModal(true);  
+    } catch (error) {
+      setError('Failed to send OTP. Please try again.');
+    }
+  };
+
+  const handleOtpSubmit = async (otp) => {
+    try {
+      const response = await fetch(`${BASE_URL}/user/verifyOtp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: otp,
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid OTP');
+      }
+
+      setShowOtpModal(false);
+      setShowPasswordModal(true);  
+    } catch (error) {
+      setError('Invalid OTP. Please try again.');
+    }
+  };
+
+  const handleNewPasswordSubmit = async (newPassword) => {
+    try {
+      const response = await fetch(`${BASE_URL}/user/resetPassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, new_password: newPassword }),  
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset password');
+      }
+
+      setShowPasswordModal(false);
+      setError('');
+    } catch (error) {
+      setError('Failed to reset password. Please try again.');
+    }
+  };
+
   return (
     <div className="login-page">
       <div className="login-wrapper">
@@ -151,7 +223,9 @@ const Login = () => {
             <button type="submit" className="login-button">
               {isSignUp ? 'Sign Up' : 'Sign In'}
             </button>
-            <p className="forgot-password">Forgot password?</p>
+            <p className="forgot-password" onClick={() => setShowEmailModal(true)}>
+              Forgot password?
+            </p>
           </form>
           {error && <p className="login-error">{error}</p>}
           <div className="toggle-login-signup" onClick={() => setIsSignUp(!isSignUp)}>
@@ -159,6 +233,27 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* Email Modal */}
+      <EmailModal
+        show={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        onSubmit={handleEmailSubmit}
+      />
+
+      {/* OTP Modal */}
+      <OtpModal
+        show={showOtpModal}
+        onClose={() => setShowOtpModal(false)}
+        onSubmit={handleOtpSubmit}
+      />
+
+      {/* New Password Modal */}
+      <NewPasswordModal
+        show={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSubmit={handleNewPasswordSubmit}
+      />
     </div>
   );
 };

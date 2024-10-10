@@ -57,6 +57,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserEntity findUserbyEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
     public UserResponse updateUser(Long userId, Map<String, String> updateData) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
@@ -225,5 +230,10 @@ public class UserServiceImpl implements UserService {
     public String getUserName(long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow();
         return userEntity.getName();
+    }
+
+    @Override
+    public boolean userExistByEmail(String email){
+        return userRepository.existsByEmail(email);
     }
 }

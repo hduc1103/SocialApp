@@ -6,6 +6,7 @@ import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.SupportTicketEntity;
 import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
+import com.SocialWeb.service.EmailService;
 import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.security.UserDetail;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.*;
@@ -51,6 +53,9 @@ public class UserController {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private EmailService emailService;
 
     private String extractUsername(String token) {
         String jwtToken = token.substring(7);
@@ -84,33 +89,79 @@ public class UserController {
         return ResponseEntity.ok(role);
     }
 
-@PostMapping("/changePassword")
-public ResponseEntity<String> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> passwordData) {
-    String username = extractUsername(token);
-    UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+    @PostMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> passwordData) {
+        String username = extractUsername(token);
+        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
 
-    String oldPassword = passwordData.get("old-password");
-    String newPassword = passwordData.get("new-password");
+        String oldPassword = passwordData.get("old-password");
+        String newPassword = passwordData.get("new-password");
 
-    try {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, oldPassword));
-    } catch (BadCredentialsException e) {
-        //401
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid old password");
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, oldPassword));
+        } catch (BadCredentialsException e) {
+            //401
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid old password");
+        }
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userService.saveUser(userEntity);
+
+        return ResponseEntity.ok("Password updated successfully");
     }
-    userEntity.setPassword(passwordEncoder.encode(newPassword));
-    userService.saveUser(userEntity);
 
-    return ResponseEntity.ok("Password updated successfully");
-}
+    private String generateOtp() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
 
+    @PostMapping("/forgetPassword")
+    public ResponseEntity<Void> forgetPassword(@RequestBody Map<String,String> email, HttpSession session) {
+        System.out.println(email);
+        boolean check= userService.userExistByEmail(email.get("email"));
 
-//To-do
-//    @PostMapping("/forgetPassword")
-//    public void forgetPassword(@){
-//
-//    }
+        if (!check) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        String otp = generateOtp();
+        session.setAttribute("otp", otp);
+        emailService.sendOtpEmail(email.get("email"), otp);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping("/verifyOtp")
+    public String verifyOtp(@RequestBody String otp, HttpSession session) {
+        String storedOtp = (String) session.getAttribute("otp");
+        if (storedOtp != null && storedOtp.equals(otp)) {
+            session.removeAttribute("otp");
+            return "OTP verified successfully. You can reset your password.";
+        }
+        return "Invalid OTP. Please try again.";
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<Void> resetPassword(@RequestBody Map<String, String> requestData) {
+        String email = requestData.get("email");
+        String newPassword = requestData.get("new_password");
+
+        UserEntity userEntity = userService.findUserbyEmail(email);
+        if (userEntity == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userService.saveUser(userEntity);
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userEntity.getUsername(), newPassword)
+            );
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
     @PostMapping("/createUser")
     public ResponseEntity<?> createUser(@RequestBody Map<String, String> new_account) {
@@ -390,4 +441,3 @@ public ResponseEntity<String> changePassword(@RequestHeader("Authorization") Str
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
-

@@ -17,6 +17,7 @@ public interface UserService {
 
     UserEntity findUserbyUsername(String username);
 
+    UserEntity findUserbyEmail(String email);
     UserResponse updateUser(Long userId, Map<String, String> updateData);
 
     String decodeFileName(String encodedFileName);
@@ -50,4 +51,6 @@ public interface UserService {
     List<UserEntity> searchUserByName(String keyword);
 
     String getUserName(long userId);
+
+    boolean userExistByEmail(String email);
 }
