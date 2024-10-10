@@ -100,7 +100,7 @@ public ResponseEntity<String> changePassword(@RequestHeader("Authorization") Str
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid old password");
     }
     userEntity.setPassword(passwordEncoder.encode(newPassword));
-    userService.createUser(userEntity);
+    userService.saveUser(userEntity);
 
     return ResponseEntity.ok("Password updated successfully");
 }
@@ -131,7 +131,7 @@ public ResponseEntity<String> changePassword(@RequestHeader("Authorization") Str
                 .img_url(new_account.get("img_url"))
                 .roles(new ArrayList<>(List.of("USER")))
                 .build();
-        userService.createUser(userEntity);
+        userService.saveUser(userEntity);
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword));

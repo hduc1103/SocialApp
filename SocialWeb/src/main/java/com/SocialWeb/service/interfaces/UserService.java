@@ -37,7 +37,7 @@ public interface UserService {
 
     String getImageUrl(long userId);
 
-    void createUser(UserEntity userEntity);
+    void saveUser(UserEntity userEntity);
 
     void deleteUser(UserEntity userEntity);
 

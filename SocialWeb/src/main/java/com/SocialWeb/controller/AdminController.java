@@ -113,7 +113,7 @@ public class AdminController {
                 .img_url(new_account.get("img_url"))
                 .roles(new ArrayList<>(List.of("USER")))
                 .build();
-        userService.createUser(userEntity);
+        userService.saveUser(userEntity);
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword));
