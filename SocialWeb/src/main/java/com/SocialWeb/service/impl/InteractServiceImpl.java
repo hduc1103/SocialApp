@@ -1,4 +1,4 @@
-package com.SocialWeb.service;
+package com.SocialWeb.service.impl;
 
 import com.SocialWeb.entity.CommentEntity;
 import com.SocialWeb.entity.PostEntity;
@@ -6,6 +6,7 @@ import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.CommentRepository;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
+import com.SocialWeb.service.interfaces.InteractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,15 +16,18 @@ import java.util.NoSuchElementException;
 import static com.SocialWeb.Message.*;
 
 @Service
-public class InteractService {
+public class InteractServiceImpl implements InteractService {
 
     @Autowired
-    UserRepository userRepository;
-    @Autowired
-    PostRepository postRepository;
-    @Autowired
-    CommentRepository commentRepository;
+    private UserRepository userRepository;
 
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Override
     public String addComment(Long postId, String username, String text) {
         try {
             UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
@@ -45,6 +49,7 @@ public class InteractService {
         }
     }
 
+    @Override
     public void updateComment(Long commentId, String new_comment) {
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow();
         commentEntity.setText(new_comment);
@@ -52,6 +57,7 @@ public class InteractService {
         commentRepository.save(commentEntity);
     }
 
+    @Override
     public String deleteComment(Long cmtId) {
         try {
             commentRepository.deleteById(cmtId);
@@ -65,6 +71,7 @@ public class InteractService {
         }
     }
 
+    @Override
     public String likePost(String username, Long postId) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         int alreadyLiked = postRepository.checkUserLikedPost(userEntity.getId(), postId);
@@ -75,17 +82,19 @@ public class InteractService {
         return LIKE;
     }
 
+    @Override
     public String dislikePost(String username, Long postId) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
-        long user_id = Math.toIntExact(userEntity.getId());
-        int alreadyLiked = postRepository.checkUserLikedPost(user_id, postId);
+        long userId = Math.toIntExact(userEntity.getId());
+        int alreadyLiked = postRepository.checkUserLikedPost(userId, postId);
         if (alreadyLiked == 0) {
             return N_LIKE;
         }
-        postRepository.removeLike(user_id, postId);
+        postRepository.removeLike(userId, postId);
         return DISLIKE;
     }
 
+    @Override
     public String getCommentAuthor(long commentId) {
         return commentRepository.getCommentUser(commentId);
     }

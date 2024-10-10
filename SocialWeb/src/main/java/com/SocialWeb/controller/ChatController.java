@@ -1,7 +1,7 @@
 package com.SocialWeb.controller;
 
 import com.SocialWeb.entity.MessageEntity;
-import com.SocialWeb.service.MessageService;
+import com.SocialWeb.service.interfaces.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;

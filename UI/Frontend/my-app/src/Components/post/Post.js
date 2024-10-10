@@ -164,8 +164,6 @@ const Post = ({ post }) => {
     e.preventDefault();
     if (comment.trim()) {
       const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
-
       try {
         const response = await fetch(`${BASE_URL}/interact/addComment?postId=${post.id}`, {
           method: 'POST',
@@ -181,7 +179,7 @@ const Post = ({ post }) => {
         }
 
         let newComment = await response.json();
-        newComment = { ...newComment, user_id: userId };
+        newComment = { ...newComment, user_id: parseInt(userId, 10) }; 
         setComments([...comments, newComment]);
         setComment('');
         fetchUsernamesForComments([newComment]);

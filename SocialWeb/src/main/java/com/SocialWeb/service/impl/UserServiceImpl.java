@@ -1,12 +1,13 @@
-package com.SocialWeb.service;
+package com.SocialWeb.service.impl;
 
 import com.SocialWeb.domain.response.UserResponse;
-import com.SocialWeb.entity.*;
+import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.UserRepository;
+import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,10 +17,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.SocialWeb.Message.*;
-import static com.SocialWeb.Message.UNEXPECTED_ERROR;
 
 @Service
-public class UserService {
+public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
@@ -27,11 +27,13 @@ public class UserService {
     @Value("${upload.path}")
     private String uploadDir;
 
+    @Override
     public long getUserId(String username) {
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         return userEntity.getId();
     }
 
+    @Override
     public String addFriend(Long userId1, Long userId2) {
         try {
             UserEntity userEntity1 = userRepository.findById(userId1)
@@ -49,10 +51,12 @@ public class UserService {
         }
     }
 
+    @Override
     public UserEntity findUserbyUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow();
     }
 
+    @Override
     public UserResponse updateUser(Long userId, Map<String, String> updateData) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
@@ -90,11 +94,13 @@ public class UserService {
                 .build();
     }
 
+    @Override
     public String decodeFileName(String encodedFileName) {
         byte[] decodedBytes = Base64.getDecoder().decode(encodedFileName);
         return new String(decodedBytes);
     }
 
+    @Override
     public void updateProfileImage(String username, MultipartFile profilePicture) throws IOException {
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
@@ -115,6 +121,7 @@ public class UserService {
         }
     }
 
+    @Override
     public String checkFriendStatus(Long userId1, Long userId2) {
         try {
             int count = userRepository.countFriendship(userId1, userId2);
@@ -129,17 +136,19 @@ public class UserService {
         return N_FRIEND;
     }
 
+    @Override
     public void unfriend(Long userId1, Long userId2) {
         userRepository.unfriend(userId1, userId2);
     }
 
+    @Override
     public void deleteRelationship(long userId) {
         userRepository.deleteRelationship(userId);
     }
 
+    @Override
     public List<UserResponse> getAllFriends(long userId) {
         List<Long> friendIds = userRepository.findFriendsByUserId(userId);
-
         List<UserResponse> friends = friendIds.stream()
                 .map(friendId -> {
                     Optional<UserEntity> friendEntity = userRepository.findById(friendId);
@@ -166,48 +175,55 @@ public class UserService {
         return friends;
     }
 
-
+    @Override
     public Optional<UserEntity> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
+    @Override
     public Optional<UserEntity> getUserById(Long userId) {
         return userRepository.findById(userId);
     }
 
+    @Override
     public String getImageUrl(long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow();
         return userEntity.getImg_url();
     }
 
+    @Override
     public void createUser(UserEntity userEntity) {
         userRepository.save(userEntity);
     }
 
+    @Override
     public void deleteUser(UserEntity userEntity) {
         userRepository.delete(userEntity);
     }
 
+    @Override
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
 
+    @Override
     public boolean existByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
+    @Override
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
 
+    @Override
     public List<UserEntity> searchUserByName(String keyword) {
         return userRepository.searchUsersByUsername(keyword);
     }
 
+    @Override
     public String getUserName(long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow();
         return userEntity.getName();
     }
 }
-
-

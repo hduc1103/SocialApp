@@ -1,4 +1,4 @@
-package com.SocialWeb.service;
+package com.SocialWeb.security;
 
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.UserRepository;

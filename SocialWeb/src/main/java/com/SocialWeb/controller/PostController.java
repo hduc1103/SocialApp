@@ -4,7 +4,7 @@ import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.security.JwtUtil;
-import com.SocialWeb.service.PostService;
+import com.SocialWeb.service.interfaces.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

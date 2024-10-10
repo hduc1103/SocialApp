@@ -6,15 +6,14 @@ import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.SupportTicketEntity;
 import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
-import com.SocialWeb.service.PostService;
-import com.SocialWeb.service.SupportTicketService;
-import com.SocialWeb.service.UserDetail;
-import com.SocialWeb.service.UserService;
+import com.SocialWeb.service.interfaces.PostService;
+import com.SocialWeb.service.interfaces.SupportTicketService;
+import com.SocialWeb.security.UserDetail;
+import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -85,18 +84,19 @@ public class UserController {
         return ResponseEntity.ok(role);
     }
 
-    //To-do
-    @PostMapping("/changPassword")
-    public ResponseEntity<Void> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> password){
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-
-    }
-
-    @PostMapping("/forgetPassword")
-    public void forgetPassword(@){
-
-    }
+//    //To-do
+//    @PostMapping("/changePassword")
+//    public ResponseEntity<Void> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> password){
+//        String username = extractUsername(token);
+//        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+//        String old_password = password.get("old-password");
+//        String new-password = password.get("new-password");
+//    }
+//
+//    @PostMapping("/forgetPassword")
+//    public void forgetPassword(@){
+//
+//    }
 
     @PostMapping("/createUser")
     public ResponseEntity<?> createUser(@RequestBody Map<String, String> new_account) {
