@@ -4,9 +4,11 @@ import Post from '../../components/post/Post';
 import FloatingButton from '../../components/floatingbutton/FloatingButton';
 import AddNewPost from '../../components/addpostmodal/AddNewPost';
 import UpdateProfileModal from '../../components/updateprofilemodal/UpdateProfileModal';
+import ChangePasswordModal from '../../components/changepasswordmodal/ChangePasswordModal';
 import { LiaUserEditSolid } from "react-icons/lia";
 import { FaUpload } from "react-icons/fa6";
 import { IoPersonAddSharp, IoPersonRemoveSharp } from "react-icons/io5";
+import { PiPasswordBold } from "react-icons/pi";
 import { BASE_URL, PUBLIC_URL, showRedNotification, showGreenNotification } from '../../config';
 import './userprofile.scss';
 import Footer from '../../components/footer/footer';
@@ -17,6 +19,7 @@ const UserProfile = () => {
   const [isFriend, setIsFriend] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [author, setAuthor] = useState('');
   const [authorImgUrl, setAuthorImgUrl] = useState('');
 
@@ -135,6 +138,33 @@ const UserProfile = () => {
     } catch (error) {
       showRedNotification(error);
     }
+  };
+  const handlePasswordChange = (passwordDetails) => {
+    const token = localStorage.getItem('token');
+    fetch(`${BASE_URL}/user/changePassword`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        'old-password': passwordDetails.old_password,
+        'new-password': passwordDetails.new_password,
+      }),
+    })
+    .then((response) => {
+      if (response.ok) {
+        showGreenNotification('Password changed successfully');
+        setIsPasswordModalOpen(false); 
+      } else if (response.status === 401) {
+        showRedNotification('Invalid old password');
+      } else {
+        showRedNotification('Failed to change password');
+      }
+    })
+    .catch(() => {
+      showRedNotification('Failed to change password');
+    });
   };
 
   const checkFriendshipStatus = async () => {
@@ -318,9 +348,14 @@ const UserProfile = () => {
           </div>
         </div>
         {userId === loggedInUserId && (
+          <div className="profile-actions">
           <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
             <LiaUserEditSolid size={20} />
           </button>
+          <button className="change-password-button" onClick={() => setIsPasswordModalOpen(true)}>
+          <PiPasswordBold size={20}/>
+            </button>
+            </div>
         )}
         {userId !== loggedInUserId && (
           <button
@@ -352,6 +387,13 @@ const UserProfile = () => {
           onClose={() => setIsUpdateModalOpen(false)}
           onSubmit={handleUpdateProfile}
           currentDetails={userDetails}
+        />
+      )}
+      {isPasswordModalOpen && (
+        <ChangePasswordModal
+          isOpen={isPasswordModalOpen}
+          onClose={() => setIsPasswordModalOpen(false)}
+          onSubmit={handlePasswordChange} 
         />
       )}
       <div className="posts-section">

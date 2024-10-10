@@ -11,6 +11,7 @@
     border-radius: 15%;
     background-color: #ebeeff;
     transition: transform 0.3s ease;
+
     &:hover {
       transform: scale(1.1);
     }
@@ -22,6 +23,7 @@
     border-radius: 10px;
     background-color: #23679e;
     transition: transform 0.3s ease;
+
     &:hover {
       transform: scale(1.05);
     }
@@ -41,6 +43,7 @@
       max-width: 150px;
       border-radius: 10px;
       transition: transform 0.3s ease;
+
       &:hover {
         transform: scale(1.1);
       }
@@ -164,6 +167,25 @@
     }
   }
 
+  .update-profile-button,
+  .change-password-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+  }
+
+  .profile-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
   .posts-section {
     h2 {
       color: #fff;
@@ -228,6 +250,7 @@
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -238,6 +261,7 @@
     transform: translateY(-20px);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;
@@ -249,6 +273,7 @@
     transform: translateY(20px);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;
@@ -260,6 +285,7 @@
     transform: translateY(10px);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;

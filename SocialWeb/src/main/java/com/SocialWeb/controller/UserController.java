@@ -84,15 +84,29 @@ public class UserController {
         return ResponseEntity.ok(role);
     }
 
-//    //To-do
-//    @PostMapping("/changePassword")
-//    public ResponseEntity<Void> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> password){
-//        String username = extractUsername(token);
-//        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-//        String old_password = password.get("old-password");
-//        String new-password = password.get("new-password");
-//    }
-//
+@PostMapping("/changePassword")
+public ResponseEntity<String> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> passwordData) {
+    String username = extractUsername(token);
+    UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
+
+    String oldPassword = passwordData.get("old-password");
+    String newPassword = passwordData.get("new-password");
+
+    try {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, oldPassword));
+    } catch (BadCredentialsException e) {
+        //401
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid old password");
+    }
+    userEntity.setPassword(passwordEncoder.encode(newPassword));
+    userService.createUser(userEntity);
+
+    return ResponseEntity.ok("Password updated successfully");
+}
+
+
+//To-do
 //    @PostMapping("/forgetPassword")
 //    public void forgetPassword(@){
 //
