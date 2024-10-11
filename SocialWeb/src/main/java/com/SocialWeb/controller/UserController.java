@@ -22,7 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.SocialWeb.security.JwtUtil;
 import org.springframework.web.multipart.MultipartFile;
-import jakarta.servlet.http.HttpSession;
+
 
 import java.io.IOException;
 import java.util.*;
@@ -111,21 +111,21 @@ public class UserController {
         return String.format("%06d", random.nextInt(1000000));
     }
 
+    private String server_otp=null;
     @PostMapping("/forgetPassword")
-    public ResponseEntity<Void> forgetPassword(@RequestBody Map<String,String> email, HttpSession session) {
+    public ResponseEntity<Void> forgetPassword(@RequestBody Map<String,String> email) {
         System.out.println(email);
         boolean check= userService.userExistByEmail(email.get("email"));
 
         if (!check) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        String otp = generateOtp();
-        session.setAttribute("otp", otp);
+        server_otp = generateOtp();
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email.get("email"));
         message.setSubject("Your OTP for Password Reset");
-        message.setText("Your OTP is: " + otp);
+        message.setText("Your OTP is: " + server_otp);
         message.setFrom("your-email@gmail.com");
 
         mailSender.send(message);
@@ -134,13 +134,13 @@ public class UserController {
     }
 
     @PostMapping("/verifyOtp")
-    public String verifyOtp(@RequestBody String otp, HttpSession session) {
-        String storedOtp = (String) session.getAttribute("otp");
-        if (storedOtp != null && storedOtp.equals(otp)) {
-            session.removeAttribute("otp");
-            return "OTP verified successfully. You can reset your password.";
+    public ResponseEntity<?> verifyOtp(@RequestBody String otp) {
+        System.out.println(otp);
+        if (server_otp != null && server_otp.equals(otp)) {
+            server_otp = null;
+            return ResponseEntity.status(HttpStatus.OK).build();
         }
-        return "Invalid OTP. Please try again.";
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @PostMapping("/resetPassword")

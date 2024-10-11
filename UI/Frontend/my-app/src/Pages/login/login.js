@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.scss';
-import { BASE_URL } from '../../config';
+import { BASE_URL, showRedNotification } from '../../config';
 import EmailModal from '../../components/emailmodal/EmailModal';
 import OtpModal from '../../components/otpmodal/OtpModal';
 import NewPasswordModal from '../../components/newpasswordmodal/NewPasswordModal';
@@ -108,6 +108,7 @@ const Login = () => {
       });
 
       if (!response.ok) {
+        showRedNotification("Email not found");
         throw new Error('Email not found');
       }
 
@@ -129,6 +130,7 @@ const Login = () => {
       });
 
       if (!response.ok) {
+        showRedNotification('Invalid OTP');
         throw new Error('Invalid OTP');
       }
 

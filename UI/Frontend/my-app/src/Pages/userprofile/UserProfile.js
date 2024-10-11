@@ -139,6 +139,7 @@ const UserProfile = () => {
       showRedNotification(error);
     }
   };
+  
   const handlePasswordChange = (passwordDetails) => {
     const token = localStorage.getItem('token');
     fetch(`${BASE_URL}/user/changePassword`, {

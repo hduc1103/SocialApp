@@ -34,14 +34,6 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     long LikeCount(@Param("postId") long postId);
 
     @Transactional
-    @Query(value = "SELECT wp.id as post_id, wp.content, wp.created_at, wp.updated_at, COUNT(wl.user_id) as like_count " +
-            "FROM web_post wp " +
-            "LEFT JOIN web_likes wl ON wp.id = wl.post_id " +
-            "WHERE wp.user_id = (SELECT wu.id FROM web_user wu WHERE wu.username = :userName) " +
-            "GROUP BY wp.id, wp.content, wp.created_at, wp.updated_at", nativeQuery = true)
-    List<Object[]> getPostsWithLikeCountByUsername(@Param("userName") String userName);
-
-    @Transactional
     @Query(value = """
                 SELECT DISTINCT p.* FROM web_post p
                 JOIN web_friends wf
