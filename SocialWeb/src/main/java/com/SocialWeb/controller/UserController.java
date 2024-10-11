@@ -6,11 +6,12 @@ import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.SupportTicketEntity;
 import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
-import com.SocialWeb.service.EmailService;
 import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.UserService;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,9 +40,9 @@ public class UserController {
     private final SupportTicketService supportTicketService;
     private final UserDetail userDetail;
     private final PostService postService;
-    private final EmailService emailService;
+    private final JavaMailSender mailSender;
 
-    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, SupportTicketService supportTicketService, UserDetail userDetail, PostService postService, EmailService emailService) {
+    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, SupportTicketService supportTicketService, UserDetail userDetail, PostService postService, JavaMailSender mailSender) {
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
@@ -49,7 +50,7 @@ public class UserController {
         this.supportTicketService = supportTicketService;
         this.userDetail = userDetail;
         this.postService = postService;
-        this.emailService = emailService;
+        this.mailSender = mailSender;
     }
 
     private String extractUsername(String token) {
@@ -120,7 +121,15 @@ public class UserController {
         }
         String otp = generateOtp();
         session.setAttribute("otp", otp);
-        emailService.sendOtpEmail(email.get("email"), otp);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email.get("email"));
+        message.setSubject("Your OTP for Password Reset");
+        message.setText("Your OTP is: " + otp);
+        message.setFrom("your-email@gmail.com");
+
+        mailSender.send(message);
+
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
