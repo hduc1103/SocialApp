@@ -26,4 +26,8 @@ public class PostResponse {
         this.updatedAt = updatedAt;
         this.userId = userId;
     }
+    public PostResponse(Long id, String content) {
+        this.id = id;
+        this.content = content;
+    }
 }

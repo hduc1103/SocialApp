@@ -1,2 +1,0 @@
-add admin usecase: addpost-deleteallpost-deleteallcomment
-forrget password

@@ -11,7 +11,6 @@ import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,29 +32,25 @@ import static com.SocialWeb.Message.*;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final SupportTicketService supportTicketService;
+    private final UserDetail userDetail;
+    private final PostService postService;
+    private final EmailService emailService;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private SupportTicketService supportTicketService;
-
-    @Autowired
-    private UserDetail userDetail;
-
-    @Autowired
-    private PostService postService;
-
-    @Autowired
-    private EmailService emailService;
+    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, SupportTicketService supportTicketService, UserDetail userDetail, PostService postService, EmailService emailService) {
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+        this.supportTicketService = supportTicketService;
+        this.userDetail = userDetail;
+        this.postService = postService;
+        this.emailService = emailService;
+    }
 
     private String extractUsername(String token) {
         String jwtToken = token.substring(7);
@@ -301,8 +296,8 @@ public class UserController {
         List<UserEntity> userEntities = userService.searchUserByName(keyword);
         List<PostEntity> postEntities = postService.searchPostsByKeyWord(keyword);
 
-        List<UserSummaryResponse> userSummaryResponses = userEntities.stream()
-                .map(user -> UserSummaryResponse.builder()
+        List<UserResponse> userResponses = userEntities.stream()
+                .map(user -> UserResponse.builder()
                         .id(user.getId())
                         .name(user.getName())
                         .username(user.getUsername())
@@ -310,15 +305,15 @@ public class UserController {
                         .build())
                 .collect(Collectors.toList());
 
-        List<PostSummaryResponse> postResponses = postEntities.stream()
-                .map(post -> PostSummaryResponse.builder()
+        List<PostResponse> postResponses = postEntities.stream()
+                .map(post -> PostResponse.builder()
                         .id(post.getId())
                         .content(post.getContent())
                         .build())
                 .collect(Collectors.toList());
 
         Map<String, Object> result = new HashMap<>();
-        result.put("users", userSummaryResponses);
+        result.put("users", userResponses);
         result.put("posts", postResponses);
 
         return result;

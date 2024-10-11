@@ -2,7 +2,7 @@ package com.SocialWeb.controller;
 
 import com.SocialWeb.entity.MessageEntity;
 import com.SocialWeb.service.interfaces.MessageService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,11 +19,13 @@ import java.util.Set;
 @RestController
 public class ChatController {
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final MessageService messageService;
 
-    @Autowired
-    private MessageService messageService;
+    public ChatController(SimpMessagingTemplate simpMessagingTemplate, MessageService messageService) {
+        this.simpMessagingTemplate = simpMessagingTemplate;
+        this.messageService = messageService;
+    }
 
     @MessageMapping("/private-message")
     public void receiveMessage(@Payload MessageEntity message) {

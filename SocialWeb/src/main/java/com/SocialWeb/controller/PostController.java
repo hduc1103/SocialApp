@@ -5,7 +5,6 @@ import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.PostService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +17,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/post")
 public class PostController {
 
-    @Autowired
-    private PostService postService;
+    private final PostService postService;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    public PostController(PostService postService, JwtUtil jwtUtil){
+        this.postService = postService;
+        this.jwtUtil = jwtUtil;
+    }
 
     private String extractUsername(String token) {
         String jwtToken = token.substring(7);

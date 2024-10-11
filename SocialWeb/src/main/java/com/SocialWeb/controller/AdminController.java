@@ -10,7 +10,6 @@ import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.MessageService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,23 +26,27 @@ import static com.SocialWeb.Message.*;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-    @Autowired
-    UserService userService;
 
-    @Autowired
-    MessageService messageService;
+    private final UserService userService;
+    private final MessageService messageService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final SupportTicketService supportTicketService;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
-    JwtUtil jwtUtil;
-
-    @Autowired
-    SupportTicketService supportTicketService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    public AdminController(UserService userService,
+                           MessageService messageService,
+                           PasswordEncoder passwordEncoder,
+                           JwtUtil jwtUtil,
+                           SupportTicketService supportTicketService,
+                           AuthenticationManager authenticationManager) {
+        this.userService = userService;
+        this.messageService = messageService;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.supportTicketService = supportTicketService;
+        this.authenticationManager = authenticationManager;
+    }
 
     private String extractUsername(String token) {
         String jwtToken = token.substring(7);

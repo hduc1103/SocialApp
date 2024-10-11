@@ -24,10 +24,10 @@ public class UserResponse {
         this.address = address;
     }
 
-    public UserResponse(Long id, String img_url, String username, String name) {
+    public UserResponse(Long id, String name, String username, String email) {
         this.id = id;
-        this.img_url = img_url;
-        this.username = username;
         this.name = name;
+        this.username = username;
+        this.email = email;
     }
 }

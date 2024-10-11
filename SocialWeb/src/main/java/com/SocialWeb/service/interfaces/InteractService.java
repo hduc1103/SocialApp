@@ -1,8 +1,10 @@
 package com.SocialWeb.service.interfaces;
 
+import com.SocialWeb.domain.response.CommentResponse;
+
 public interface InteractService {
 
-    String addComment(Long postId, String username, String text);
+    CommentResponse addComment(Long postId, String username, String text);
 
     void updateComment(Long commentId, String new_comment);
 

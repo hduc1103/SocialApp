@@ -120,6 +120,7 @@ const Post = ({ post }) => {
       const updatedComments = comments.map((comment) =>
         comment.id === commentId ? { ...comment, text: updatedComment } : comment
       );
+      
       setComments(updatedComments);
       setEditingCommentId(null);
       setUpdatedComment('');
@@ -189,7 +190,6 @@ const Post = ({ post }) => {
     }
   };
 
-
   const handleDeletePost = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -225,6 +225,7 @@ const Post = ({ post }) => {
         throw new Error('Failed to update post');
       }
 
+      post.content = updatedContent;
       setIsEditing(false);
       console.log('Post updated successfully');
     } catch (error) {
@@ -260,7 +261,7 @@ const Post = ({ post }) => {
       ) : (
         <p className="post-content">{post.content}</p>
       )}
-      {(post.userId === parseInt(userId) || role =='ADMIN') && (
+      {(post.userId === parseInt(userId) || role ==='ADMIN') && (
         <div className="post-options">
           <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
             <FaEllipsisH />
@@ -273,7 +274,6 @@ const Post = ({ post }) => {
           )}
         </div>
       )}
-
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
           <BiSolidLike /> {likes}
@@ -322,7 +322,7 @@ const Post = ({ post }) => {
                     <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
                   </div>
                   <span className="comment-text">{comment.text}</span>
-                  {(comment.user_id === parseInt(userId) || role =='ADMIN') && (
+                  {(comment.user_id === parseInt(userId) || role ==='ADMIN') && (
                     <div className="comment-options">
                       <button
                         className="three-dot-button"

@@ -21,11 +21,14 @@ import static com.SocialWeb.Message.*;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Value("${upload.path}")
     private String uploadDir;
+
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public long getUserId(String username) {

@@ -16,14 +16,13 @@ import static com.SocialWeb.Message.*;
 @Service
 public class SupportTicketServiceImpl implements SupportTicketService {
 
-    @Autowired
-    SupportTicketRepository supportTicketRepository;
+    private final SupportTicketRepository supportTicketRepository;
+    private final TicketCommentRepository ticketCommentRepository;
 
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    TicketCommentRepository ticketCommentRepository;
+    public SupportTicketServiceImpl(SupportTicketRepository supportTicketRepository, TicketCommentRepository ticketCommentRepository) {
+        this.supportTicketRepository = supportTicketRepository;
+        this.ticketCommentRepository = ticketCommentRepository;
+    }
 
     @Override
     public void createTicket(SupportTicketEntity supportTicketEntity) {

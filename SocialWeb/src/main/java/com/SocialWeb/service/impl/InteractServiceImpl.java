@@ -1,5 +1,6 @@
 package com.SocialWeb.service.impl;
 
+import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.entity.CommentEntity;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
@@ -18,35 +19,35 @@ import static com.SocialWeb.Message.*;
 @Service
 public class InteractServiceImpl implements InteractService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
+    public InteractServiceImpl(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository) {
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+    }
 
     @Override
-    public String addComment(Long postId, String username, String text) {
-        try {
-            UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
-            PostEntity postEntity = postRepository.findById(postId).orElseThrow();
-            CommentEntity commentEntity = new CommentEntity();
-            commentEntity.setUser(userEntity);
-            commentEntity.setPost(postEntity);
-            commentEntity.setText(text);
-            commentEntity.setCreatedAt(new Date());
-            commentEntity.setUpdatedAt(new Date());
-            commentRepository.save(commentEntity);
-            return CMT_ADD;
-        } catch (NoSuchElementException e) {
-            System.err.println(ERROR_MSG + e.getMessage());
-            return ERROR_MSG + e.getMessage();
-        } catch (Exception e) {
-            System.err.println(UNEXPECTED_ERROR + e.getMessage());
-            return UNEXPECTED_ERROR + e.getMessage();
-        }
+    public CommentResponse addComment(Long postId, String username, String text) {
+        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
+        PostEntity postEntity = postRepository.findById(postId).orElseThrow();
+        CommentEntity commentEntity = new CommentEntity();
+        commentEntity.setUser(userEntity);
+        commentEntity.setPost(postEntity);
+        commentEntity.setText(text);
+        commentEntity.setCreatedAt(new Date());
+        commentEntity.setUpdatedAt(new Date());
+        commentRepository.save(commentEntity);
+
+        return CommentResponse.builder()
+                .id(commentEntity.getId())
+                .user_id(userEntity.getId())
+                .text(commentEntity.getText())
+                .createdAt(commentEntity.getCreatedAt())
+                .updatedAt(commentEntity.getUpdatedAt())
+                .build();
     }
 
     @Override
