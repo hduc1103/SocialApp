@@ -152,19 +152,19 @@ const UserProfile = () => {
         'new-password': passwordDetails.new_password,
       }),
     })
-    .then((response) => {
-      if (response.ok) {
-        showGreenNotification('Password changed successfully');
-        setIsPasswordModalOpen(false); 
-      } else if (response.status === 401) {
-        showRedNotification('Invalid old password');
-      } else {
+      .then((response) => {
+        if (response.ok) {
+          showGreenNotification('Password changed successfully');
+          setIsPasswordModalOpen(false);
+        } else if (response.status === 401) {
+          showRedNotification('Invalid old password');
+        } else {
+          showRedNotification('Failed to change password');
+        }
+      })
+      .catch(() => {
         showRedNotification('Failed to change password');
-      }
-    })
-    .catch(() => {
-      showRedNotification('Failed to change password');
-    });
+      });
   };
 
   const checkFriendshipStatus = async () => {
@@ -318,7 +318,6 @@ const UserProfile = () => {
               alt="Profile"
               className="profile-picture"
             />
-
             {userId === loggedInUserId && (
               <>
                 <input
@@ -349,13 +348,13 @@ const UserProfile = () => {
         </div>
         {userId === loggedInUserId && (
           <div className="profile-actions">
-          <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
-            <LiaUserEditSolid size={20} />
-          </button>
-          <button className="change-password-button" onClick={() => setIsPasswordModalOpen(true)}>
-          <PiPasswordBold size={20}/>
+            <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
+              <LiaUserEditSolid size={20} />
             </button>
-            </div>
+            <button className="change-password-button" onClick={() => setIsPasswordModalOpen(true)}>
+              <PiPasswordBold size={20} />
+            </button>
+          </div>
         )}
         {userId !== loggedInUserId && (
           <button
@@ -393,17 +392,17 @@ const UserProfile = () => {
         <ChangePasswordModal
           isOpen={isPasswordModalOpen}
           onClose={() => setIsPasswordModalOpen(false)}
-          onSubmit={handlePasswordChange} 
+          onSubmit={handlePasswordChange}
         />
       )}
       <div className="posts-section">
         <h2>{userId === loggedInUserId ? 'Your Posts' : `${userDetails?.name}'s Posts`}</h2>
         {userPosts.length > 0 ? (
           <div className="post-list">
-  {userPosts.slice().reverse().map((post) => (
-    <Post key={post.id} post={post} />
-  ))}
-</div>
+            {userPosts.slice().reverse().map((post) => (
+              <Post key={post.id} post={post} />
+            ))}
+          </div>
 
         ) : (
           <p>No posts to display.</p>

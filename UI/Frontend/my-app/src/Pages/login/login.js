@@ -234,21 +234,18 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Email Modal */}
       <EmailModal
         show={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         onSubmit={handleEmailSubmit}
       />
 
-      {/* OTP Modal */}
       <OtpModal
         show={showOtpModal}
         onClose={() => setShowOtpModal(false)}
         onSubmit={handleOtpSubmit}
       />
 
-      {/* New Password Modal */}
       <NewPasswordModal
         show={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
