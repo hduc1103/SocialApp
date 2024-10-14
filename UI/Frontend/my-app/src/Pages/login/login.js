@@ -35,7 +35,6 @@ const Login = () => {
         if (!signUpResponse.ok) {
           throw new Error('Failed to sign up');
         }
-
         setIsSignUp(false);
         setError('');
       } catch (error) {

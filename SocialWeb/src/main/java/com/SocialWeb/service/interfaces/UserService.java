@@ -11,26 +11,52 @@ import java.util.Optional;
 
 public interface UserService {
 
+    Long getUserIdByToken(String token);
+
     long getUserId(String username);
 
-    String addFriend(Long userId1, Long userId2);
+    String addFriend(String token, Long userId2);
 
     UserEntity findUserbyUsername(String username);
 
     UserEntity findUserbyEmail(String email);
     UserResponse updateUser(Long userId, Map<String, String> updateData);
 
+    UserResponse updateUserByToken(String token, Map<String, String> updateData);
+
     String decodeFileName(String encodedFileName);
 
     void updateProfileImage(String username, MultipartFile profilePicture) throws IOException;
 
-    String checkFriendStatus(Long userId1, Long userId2);
+    String getUserRoleByToken(String token);
 
-    void unfriend(Long userId1, Long userId2);
+    List<UserResponse> getAllUserResponses();
+
+    void changeUserPassword(String token, Map<String, String> passwordData);
+
+    void sendOtpForPasswordReset(String email);
+
+    boolean verifyOtp(String otp);
+
+    void resetUserPassword(String email, String newPassword);
+
+    String createNewUser(Map<String, String> newAccount);
+
+    UserResponse getUserResponseById(Long userId);
+
+    void deleteUserById(Long userId);
+
+    boolean checkFriendStatus(String token, Long userId2);
+
+    void unfriend(String token, Long userId2);
+
+    void deleteUserByToken(String token);
 
     void deleteRelationship(long userId);
 
-    List<UserResponse> getAllFriends(long userId);
+    List<UserResponse> getAllFriends(String token);
+
+    Map<String, Object> searchCombined(String keyword);
 
     Optional<UserEntity> getUserByUsername(String username);
 
@@ -53,4 +79,6 @@ public interface UserService {
     String getUserName(long userId);
 
     boolean userExistByEmail(String email);
+
+    void createUser(Map<String, String> newAccount);
 }

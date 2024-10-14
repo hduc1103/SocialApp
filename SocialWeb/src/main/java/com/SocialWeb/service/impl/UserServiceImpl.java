@@ -1,11 +1,22 @@
 package com.SocialWeb.service.impl;
 
+import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.domain.response.UserResponse;
+import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.UserRepository;
+import com.SocialWeb.security.JwtUtil;
+import com.SocialWeb.security.UserDetail;
+import com.SocialWeb.service.interfaces.MessageService;
+import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,12 +33,39 @@ import static com.SocialWeb.Message.*;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final MessageService messageService;
+    private final PostService postService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final JavaMailSender mailSender;
+    private final UserDetail userDetail;
 
     @Value("${upload.path}")
     private String uploadDir;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail, String uploadDir) {
+        this.messageService = messageService;
         this.userRepository = userRepository;
+        this.postService = postService;
+        this.passwordEncoder= passwordEncoder;
+        this.authenticationManager= authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.mailSender = mailSender;
+        this.userDetail = userDetail;
+        this.uploadDir = uploadDir;
+    }
+
+    private String extractUsername(String token) {
+        String jwtToken = token.substring(7);
+        return jwtUtil.extractUsername(jwtToken);
+    }
+    @Override
+    public Long getUserIdByToken(String token) {
+        String username = extractUsername(token);
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
+        return user.getId();
     }
 
     @Override
@@ -37,16 +75,163 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String addFriend(Long userId1, Long userId2) {
+    public String getUserRoleByToken(String token) {
+        String username = extractUsername(token);
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
+        return user.getRoles().getFirst();
+    }
+
+    @Override
+    public List<UserResponse> getAllUserResponses() {
+        List<UserEntity> userEntities = getAllUsers(); 
+        List<UserResponse> result = new ArrayList<>();
+        for (UserEntity userEntity : userEntities) {
+            result.add(new UserResponse(
+                    userEntity.getId(),
+                    userEntity.getUsername(),
+                    userEntity.getName(),
+                    userEntity.getEmail(),
+                    userEntity.getImg_url(),
+                    userEntity.getBio(),
+                    userEntity.getAddress()
+            ));
+        }
+        return result;
+    }
+    @Override
+    public void changeUserPassword(String token, Map<String, String> passwordData) {
+        String username = extractUsername(token);
+        UserEntity userEntity = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
+
+        String oldPassword = passwordData.get("old-password");
+        String newPassword = passwordData.get("new-password");
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, oldPassword));
+
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
+    }
+    private String serverOtp=null;
+    @Override
+    public void sendOtpForPasswordReset(String email) {
+        boolean userExists = userRepository.existsByEmail(email);
+
+        if (!userExists) {
+            throw new NoSuchElementException("Email not found");
+        }
+
+        String otp = generateOtp();
+        // Store the OTP securely in the service (or database if necessary)
+        serverOtp = otp;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Your OTP for Password Reset");
+        message.setText("Your OTP is: " + otp);
+        message.setFrom("your-email@gmail.com");
+
+        mailSender.send(message);
+    }
+
+    private String generateOtp() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+    @Override
+    public boolean verifyOtp(String otp) {
+        if (serverOtp != null && serverOtp.equals(otp)) {
+            serverOtp = null;
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public void resetUserPassword(String email, String newPassword) {
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) {
+            throw new NoSuchElementException("User not found");
+        }
+
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
+
+        // Authenticate the user with the new password to validate
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userEntity.getUsername(), newPassword)
+        );
+    }
+    @Override
+    public String createNewUser(Map<String, String> newAccount) {
+        if (existsByUsername(newAccount.get("username"))) {
+            throw new IllegalArgumentException(USERNAME_ALREADY_EXIST);
+        }
+        if (existByEmail(newAccount.get("email"))) {
+            throw new IllegalArgumentException(EMAIL_ALREADY_EXIST);
+        }
+
+        String rawPassword = newAccount.get("password");
+        UserEntity userEntity = UserEntity.builder()
+                .password(passwordEncoder.encode(rawPassword))
+                .name(newAccount.get("name"))
+                .username(newAccount.get("username"))
+                .email(newAccount.get("email"))
+                .bio(newAccount.get("bio"))
+                .address(newAccount.get("address"))
+                .img_url(newAccount.get("img_url"))
+                .roles(new ArrayList<>(List.of("USER")))
+                .build();
+
+        saveUser(userEntity);
+
+        // Authenticate user
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword)
+        );
+
+        // Generate JWT token
+        final UserDetails userDetails = userDetail.loadUserByUsername(userEntity.getUsername());
+        return jwtUtil.generateToken(userDetails);
+    }
+
+    @Override
+    public UserResponse getUserResponseById(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+        return new UserResponse(
+                userEntity.getId(),
+                userEntity.getUsername(),
+                userEntity.getName(),
+                userEntity.getEmail(),
+                userEntity.getImg_url(),
+                userEntity.getBio(),
+                userEntity.getAddress()
+        );
+    }
+    @Override
+    public void deleteUserById(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+                messageService.deleteAllUserMessage(userId);
+                deleteRelationship(userId);
+                deleteUser(userEntity);
+    }
+
+    @Override
+    public String addFriend(String token, Long userId2) {
         try {
-            UserEntity userEntity1 = userRepository.findById(userId1)
-                    .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId1));
+            String username = extractUsername(token);
+            UserEntity userEntity1 = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
             UserEntity userEntity2 = userRepository.findById(userId2)
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId2));
+
             userEntity1.getFriends().add(userEntity2);
             userEntity2.getFriends().add(userEntity1);
+
             userRepository.save(userEntity1);
             userRepository.save(userEntity2);
+
             return FRIEND_ADDED;
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
@@ -66,8 +251,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse updateUser(Long userId, Map<String, String> updateData) {
+        if (updateData.containsKey("new_username") && existsByUsername(updateData.get("new_username"))) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        if (updateData.containsKey("new_email") && existByEmail(updateData.get("new_email"))) {
+            throw new IllegalArgumentException("Email already exists");
+        }
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
+
         if (updateData.containsKey("new_name")) {
             userEntity.setName(updateData.get("new_name"));
         }
@@ -86,11 +278,69 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(userEntity);
 
+        // Decode img_url if present
         String decodedImgUrl = null;
         if (userEntity.getImg_url() != null) {
             decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
         }
 
+        // Return the updated user response
+        return UserResponse.builder()
+                .id(userEntity.getId())
+                .username(userEntity.getUsername())
+                .name(userEntity.getName())
+                .email(userEntity.getEmail())
+                .img_url(decodedImgUrl)
+                .bio(userEntity.getBio())
+                .address(userEntity.getAddress())
+                .build();
+    }
+
+    @Override
+    public UserResponse updateUserByToken(String token, Map<String, String> updateData) {
+        String username = extractUsername(token);
+
+        // Fetch user entity by username
+        UserEntity userEntity = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
+
+        Long userId = userEntity.getId();
+
+        // Validate new username and email if provided
+        if (updateData.containsKey("new_username") && existsByUsername(updateData.get("new_username"))) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        if (updateData.containsKey("new_email") && existByEmail(updateData.get("new_email"))) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+
+        // Update user fields
+        if (updateData.containsKey("new_name")) {
+            userEntity.setName(updateData.get("new_name"));
+        }
+        if (updateData.containsKey("new_username")) {
+            userEntity.setUsername(updateData.get("new_username"));
+        }
+        if (updateData.containsKey("new_email")) {
+            userEntity.setEmail(updateData.get("new_email"));
+        }
+        if (updateData.containsKey("new_bio")) {
+            userEntity.setBio(updateData.get("new_bio"));
+        }
+        if (updateData.containsKey("new_address")) {
+            userEntity.setAddress(updateData.get("new_address"));
+        }
+
+        // Save updated user
+        userRepository.save(userEntity);
+
+        // Decode img_url if present
+        String decodedImgUrl = null;
+        if (userEntity.getImg_url() != null) {
+            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
+        }
+
+        // Return updated user response
         return UserResponse.builder()
                 .id(userEntity.getId())
                 .username(userEntity.getUsername())
@@ -109,44 +359,71 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateProfileImage(String username, MultipartFile profilePicture) throws IOException {
+    public void updateProfileImage(String token, MultipartFile profilePicture) throws IOException {
+        if (profilePicture == null || profilePicture.isEmpty()) {
+            throw new IllegalArgumentException("Profile picture is required");
+        }
+
+        String username = extractUsername(token);  // Extract the username from the token inside the service
+
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
-        if (profilePicture != null && !profilePicture.isEmpty()) {
-            String fileName = profilePicture.getOriginalFilename();
-            String encodedFileName = Base64.getEncoder().encodeToString(fileName.getBytes());
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Path filePath = uploadPath.resolve(fileName);
-            Files.write(filePath, profilePicture.getBytes());
-            userEntity.setImg_url(encodedFileName);
-            userRepository.save(userEntity);
-        } else {
-            throw new IllegalArgumentException("Profile picture is required");
+        String fileName = profilePicture.getOriginalFilename();
+        String encodedFileName = Base64.getEncoder().encodeToString(fileName.getBytes());
+
+        saveProfileImage(profilePicture, fileName);
+
+        userEntity.setImg_url(encodedFileName);
+        userRepository.save(userEntity);
+    }
+
+    private void saveProfileImage(MultipartFile profilePicture, String fileName) throws IOException {
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
         }
+        Path filePath = uploadPath.resolve(fileName);
+        Files.write(filePath, profilePicture.getBytes());
     }
 
     @Override
-    public String checkFriendStatus(Long userId1, Long userId2) {
+    public boolean checkFriendStatus(String token, Long userId2) {
         try {
-            int count = userRepository.countFriendship(userId1, userId2);
+            String username = extractUsername(token);
+            UserEntity userEntity1 = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
-            if (count == 2) {
-                return Y_FRIEND;
-            }
+            int count = userRepository.countFriendship(userEntity1.getId(), userId2);
+
+            return count == 2;
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
-            return UNEXPECTED_ERROR + e.getMessage();
+            return false;
         }
-        return N_FRIEND;
     }
 
     @Override
-    public void unfriend(Long userId1, Long userId2) {
-        userRepository.unfriend(userId1, userId2);
+    public void unfriend(String token, Long userId2) {
+        try {
+            String username = extractUsername(token);
+            UserEntity userEntity1 = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
+
+            userRepository.unfriend(userEntity1.getId(), userId2);
+        } catch (Exception e) {
+            System.err.println(UNEXPECTED_ERROR + e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteUserByToken(String token) {
+        String username = extractUsername(token);  // Extract username from token
+        UserEntity userEntity = getUserByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+        deleteRelationship(userEntity.getId());
+        deleteUser(userEntity);
     }
 
     @Override
@@ -155,18 +432,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllFriends(long userId) {
+    public List<UserResponse> getAllFriends(String token) {
+        String username = extractUsername(token);  // Extract username from token
+        UserEntity userEntity = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
+
+        Long userId = userEntity.getId();
+        return getFriends(userId);
+    }
+
+    private List<UserResponse> getFriends(long userId) {
         List<Long> friendIds = userRepository.findFriendsByUserId(userId);
-        List<UserResponse> friends = friendIds.stream()
+
+        return friendIds.stream()
                 .map(friendId -> {
                     Optional<UserEntity> friendEntity = userRepository.findById(friendId);
                     if (friendEntity.isPresent()) {
                         UserEntity friend = friendEntity.get();
-
                         String decodedImgUrl = null;
+
                         if (friend.getImg_url() != null) {
                             decodedImgUrl = new String(Base64.getDecoder().decode(friend.getImg_url()));
                         }
+
                         return UserResponse.builder()
                                 .id(friend.getId())
                                 .name(friend.getName())
@@ -179,9 +467,36 @@ public class UserServiceImpl implements UserService {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-
-        return friends;
     }
+
+    @Override
+    public Map<String, Object> searchCombined(String keyword) {
+        List<UserEntity> userEntities = userRepository.searchUsersByUsername(keyword);
+        List<PostEntity> postEntities = postService.searchPostsByKeyWord(keyword);  // Assuming postService is available in UserService
+
+        List<UserResponse> userResponses = userEntities.stream()
+                .map(user -> UserResponse.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<PostResponse> postResponses = postEntities.stream()
+                .map(post -> PostResponse.builder()
+                        .id(post.getId())
+                        .content(post.getContent())
+                        .build())
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("users", userResponses);
+        result.put("posts", postResponses);
+
+        return result;
+    }
+
 
     @Override
     public Optional<UserEntity> getUserByUsername(String username) {
@@ -197,6 +512,34 @@ public class UserServiceImpl implements UserService {
     public String getImageUrl(long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow();
         return userEntity.getImg_url();
+    }
+
+    @Override
+    public void createUser(Map<String, String> newAccount) {
+        if (existsByUsername(newAccount.get("username"))) {
+            throw new IllegalArgumentException(USERNAME_ALREADY_EXIST);
+        }
+        if (existByEmail(newAccount.get("email"))) {
+            throw new IllegalArgumentException(EMAIL_ALREADY_EXIST);
+        }
+
+        String rawPassword = newAccount.get("password");
+        UserEntity userEntity = UserEntity.builder()
+                .name(newAccount.get("name"))
+                .password(passwordEncoder.encode(rawPassword))
+                .username(newAccount.get("username"))
+                .email(newAccount.get("email"))
+                .bio(newAccount.get("bio"))
+                .address(newAccount.get("address"))
+                .img_url(newAccount.get("img_url"))
+                .roles(new ArrayList<>(List.of("USER")))
+                .build();
+
+        // Save the user
+        saveUser(userEntity);
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword));
     }
 
     @Override

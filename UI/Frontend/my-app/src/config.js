@@ -1,4 +1,4 @@
-export const PUBLIC_URL = 'http://localhost:3000';
+export const PUBLIC_URL = 'http://localhost:3001';
 export const BASE_URL = 'http://localhost:8080';
 export function showGreenNotification(message) {
     const notification = document.createElement('div');
@@ -25,6 +25,7 @@ export function showGreenNotification(message) {
         }, 300); 
     }, 3000);
 }
+
 export function showRedNotification(message) {
     const notification = document.createElement('div');
     notification.textContent = message;

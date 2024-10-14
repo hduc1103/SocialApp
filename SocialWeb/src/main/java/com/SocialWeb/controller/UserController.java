@@ -12,6 +12,7 @@ import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,9 +41,9 @@ public class UserController {
     private final SupportTicketService supportTicketService;
     private final UserDetail userDetail;
     private final PostService postService;
-    private final JavaMailSender mailSender;
 
-    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, SupportTicketService supportTicketService, UserDetail userDetail, PostService postService, JavaMailSender mailSender) {
+
+    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, SupportTicketService supportTicketService, UserDetail userDetail, PostService postService) {
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
@@ -50,12 +51,7 @@ public class UserController {
         this.supportTicketService = supportTicketService;
         this.userDetail = userDetail;
         this.postService = postService;
-        this.mailSender = mailSender;
-    }
 
-    private String extractUsername(String token) {
-        String jwtToken = token.substring(7);
-        return jwtUtil.extractUsername(jwtToken);
     }
 
     @PostMapping("/login")
@@ -72,38 +68,39 @@ public class UserController {
     }
 
     @GetMapping("/getUserId")
-    public long getUserId(@RequestHeader("Authorization") String token) {
-        String username = extractUsername(token);
-        return userService.getUserId(username);
+    public ResponseEntity<Long> getUserId(@RequestHeader("Authorization") String token) {
+        try {
+            Long userId = userService.getUserIdByToken(token);
+            return ResponseEntity.ok(userId);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/getUserRole")
     public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
-        String username = extractUsername(token);
-        UserEntity user = userService.getUserByUsername(username).orElseThrow();
-        String role = user.getRoles().getFirst();
-        return ResponseEntity.ok(role);
+        try {
+            String role = userService.getUserRoleByToken(token);
+            return ResponseEntity.ok(role);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> passwordData) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-
-        String oldPassword = passwordData.get("old-password");
-        String newPassword = passwordData.get("new-password");
-
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, oldPassword));
+            userService.changeUserPassword(token, passwordData);
+            return ResponseEntity.ok("Password updated successfully");
         } catch (BadCredentialsException e) {
-            //401
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid old password");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        userEntity.setPassword(passwordEncoder.encode(newPassword));
-        userService.saveUser(userEntity);
-
-        return ResponseEntity.ok("Password updated successfully");
     }
 
     private String generateOtp() {
@@ -111,33 +108,21 @@ public class UserController {
         return String.format("%06d", random.nextInt(1000000));
     }
 
-    private String server_otp=null;
     @PostMapping("/forgetPassword")
-    public ResponseEntity<Void> forgetPassword(@RequestBody Map<String,String> email) {
-        System.out.println(email);
-        boolean check= userService.userExistByEmail(email.get("email"));
-
-        if (!check) {
+    public ResponseEntity<Void> forgetPassword(@RequestBody Map<String, String> email) {
+        try {
+            userService.sendOtpForPasswordReset(email.get("email"));
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        server_otp = generateOtp();
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email.get("email"));
-        message.setSubject("Your OTP for Password Reset");
-        message.setText("Your OTP is: " + server_otp);
-        message.setFrom("your-email@gmail.com");
-
-        mailSender.send(message);
-
-        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/verifyOtp")
-    public ResponseEntity<?> verifyOtp(@RequestBody String otp) {
-        System.out.println(otp);
-        if (server_otp != null && server_otp.equals(otp)) {
-            server_otp = null;
+    public ResponseEntity<Void> verifyOtp(@RequestBody String otp) {
+        if (userService.verifyOtp(otp)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -145,72 +130,45 @@ public class UserController {
 
     @PostMapping("/resetPassword")
     public ResponseEntity<Void> resetPassword(@RequestBody Map<String, String> requestData) {
-        String email = requestData.get("email");
-        String newPassword = requestData.get("new_password");
-
-        UserEntity userEntity = userService.findUserbyEmail(email);
-        if (userEntity == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        userEntity.setPassword(passwordEncoder.encode(newPassword));
-        userService.saveUser(userEntity);
-
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userEntity.getUsername(), newPassword)
-            );
+            userService.resetUserPassword(requestData.get("email"), requestData.get("new_password"));
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    // sua catch loi tren frontend
     @PostMapping("/createUser")
     public ResponseEntity<?> createUser(@RequestBody Map<String, String> new_account) {
-        if (userService.existsByUsername(new_account.get("username"))) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(USERNAME_ALREADY_EXIST);
-        }
-        if (userService.existByEmail(new_account.get("email"))) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(EMAIL_ALREADY_EXIST);
-        }
-        String rawPassword = new_account.get("password");
-        UserEntity userEntity = UserEntity.builder()
-                .password(passwordEncoder.encode(rawPassword))
-                .name(new_account.get("name"))
-                .username(new_account.get("username"))
-                .email(new_account.get("email"))
-                .bio(new_account.get("bio"))
-                .address(new_account.get("address"))
-                .img_url(new_account.get("img_url"))
-                .roles(new ArrayList<>(List.of("USER")))
-                .build();
-        userService.saveUser(userEntity);
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword));
+            String jwt = userService.createNewUser(new_account);
+            return ResponseEntity.ok(new AuthResponse(jwt));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        final UserDetails userDetails = userDetail.loadUserByUsername(userEntity.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        System.out.println(jwt);
-        return ResponseEntity.ok(new AuthResponse(jwt));
     }
 
     @PutMapping("/updateUser")
     public ResponseEntity<UserResponse> updateUser(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> updateData) {
-        String username = extractUsername(token);
-        if (userService.existsByUsername(updateData.get("new_username"))) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        try {
+            UserResponse updatedUser = userService.updateUserByToken(token, updateData);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        if (userService.existByEmail(updateData.get("new_email"))) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        Long userId = userEntity.getId();
-        return ResponseEntity.ok(userService.updateUser(userId, updateData));
     }
 
     @PutMapping(value = "/updateProfileImage", consumes = "multipart/form-data")
@@ -218,8 +176,7 @@ public class UserController {
             @RequestHeader("Authorization") String token,
             @RequestParam("profilePicture") MultipartFile profilePicture) {
         try {
-            String username = extractUsername(token);
-            userService.updateProfileImage(username, profilePicture);
+            userService.updateProfileImage(token, profilePicture);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -227,11 +184,13 @@ public class UserController {
     }
 
     @DeleteMapping("/deleteUser")
-    public void deleteUser(@RequestHeader("Authorization") String token) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        userService.deleteRelationship(userEntity.getId());
-        userService.deleteUser(userEntity);
+    public ResponseEntity<Void> deleteUser(@RequestHeader("Authorization") String token) {
+        try {
+            userService.deleteUserByToken(token);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();  // 204 No Content on successful deletion
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // 404 if user not found
+        }
     }
 
     @GetMapping("/getUserData")
@@ -256,76 +215,58 @@ public class UserController {
 
     @PostMapping("/addFriend")
     public ResponseEntity<String> addFriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        Long userId1 = userEntity.getId();
-
-        String response = userService.addFriend(userId1, userId2);
-        if (response.startsWith(ERROR_MSG)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        try {
+            String response = userService.addFriend(token, userId2);
+            if (response.startsWith(ERROR_MSG)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UNEXPECTED_ERROR + e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/checkFriendStatus")
     public ResponseEntity<Boolean> checkFriendStatus(@RequestHeader("Authorization") String token,
                                                      @RequestParam Long userId2) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        Long userId1 = userEntity.getId();
-        String response = userService.checkFriendStatus(userId1, userId2);
-        if (response.equals(Y_FRIEND)) {
-            return ResponseEntity.status(HttpStatus.OK).body(true);
+        try {
+            boolean isFriend = userService.checkFriendStatus(token, userId2);
+            return ResponseEntity.status(HttpStatus.OK).body(isFriend);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(false);
     }
 
     @DeleteMapping("/unfriend")
     public ResponseEntity<Void> unfriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        Long userId1 = userEntity.getId();
-        userService.unfriend(userId1, userId2);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        try {
+            userService.unfriend(token, userId2);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/getAllFriends")
     public ResponseEntity<List<UserResponse>> getAllFriends(@RequestHeader("Authorization") String token) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        Long userId = userEntity.getId();
-        List<UserResponse> friends = userService.getAllFriends(userId);
-        return ResponseEntity.ok(friends);
+        try {
+            List<UserResponse> friends = userService.getAllFriends(token);
+            return ResponseEntity.ok(friends);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/search")
-    public Map<String, Object> searchCombined(@RequestParam("keyword") String keyword) {
-        System.out.println("Searching for keyword: " + keyword);
-
-        List<UserEntity> userEntities = userService.searchUserByName(keyword);
-        List<PostEntity> postEntities = postService.searchPostsByKeyWord(keyword);
-
-        List<UserResponse> userResponses = userEntities.stream()
-                .map(user -> UserResponse.builder()
-                        .id(user.getId())
-                        .name(user.getName())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<PostResponse> postResponses = postEntities.stream()
-                .map(post -> PostResponse.builder()
-                        .id(post.getId())
-                        .content(post.getContent())
-                        .build())
-                .collect(Collectors.toList());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("users", userResponses);
-        result.put("posts", postResponses);
-
-        return result;
+    public ResponseEntity<Map<String, Object>> searchCombined(@RequestParam("keyword") String keyword) {
+        try {
+            Map<String, Object> result = userService.searchCombined(keyword);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/createSupportTicket")
@@ -333,20 +274,7 @@ public class UserController {
             @RequestHeader("Authorization") String token,
             @RequestBody Map<String, Object> requestBody) {
         try {
-            String title = (String) requestBody.get("title");
-            String content = (String) requestBody.get("content");
-            String username = extractUsername(token);
-            UserEntity userEntity = userService.findUserbyUsername(username);
-
-            SupportTicketEntity supportTicketEntity = SupportTicketEntity.builder()
-                    .user(userEntity)
-                    .title(title)
-                    .content(content)
-                    .status("In progress")
-                    .createdAt(new Date())
-                    .build();
-
-            supportTicketService.createTicket(supportTicketEntity);
+            supportTicketService.createSupportTicketByToken(token, requestBody);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -359,14 +287,12 @@ public class UserController {
             @RequestBody String content,
             @RequestParam Long t_id) {
         try {
-            String username = extractUsername(token);
-            UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-            Long userId = userEntity.getId();
-            String response = supportTicketService.updateTicket(userId, content, t_id);
-            if (response.equals(DENIED_ACCESS_TICKET)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
+            supportTicketService.updateSupportTicket(token, content, t_id);
             return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -379,18 +305,15 @@ public class UserController {
     }
 
     @PostMapping("/addTicketComment")
-    public void addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username).orElseThrow();
-        SupportTicketEntity supportTicketEntity = supportTicketService.findSupportTicket(ticket_id);
-        TicketCommentEntity ticketCommentEntity = TicketCommentEntity.builder()
-                .text(text)
-                .user(userEntity)
-                .supportTicketEntity(supportTicketEntity)
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
-        supportTicketService.addTicketComment(ticketCommentEntity);
+    public ResponseEntity<Void> addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
+        try {
+            supportTicketService.addTicketCommentByToken(token, ticket_id, text);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/updateTicketComment")
@@ -404,33 +327,15 @@ public class UserController {
     }
 
     @GetMapping("/getAllUserTicket")
-    public List<SupportTicketResponse> getAllUserTicket(@RequestHeader("Authorization") String token) {
-        String username = extractUsername(token);
-        UserEntity userEntity = userService.getUserByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        System.out.println(userEntity.getId());
-
-        List<SupportTicketEntity> supportTickets = supportTicketService.getAllTicketsByUserId(userEntity.getId());
-
-        return supportTickets.stream()
-                .map(ticket -> SupportTicketResponse.builder()
-                        .id(ticket.getId())
-                        .title(ticket.getTitle())
-                        .content(ticket.getContent())
-                        .status(ticket.getStatus())
-                        .createdAt(ticket.getCreatedAt())
-                        .userId(ticket.getUser().getId())
-                        .comments(ticket.getTicketCommentEntities().stream()
-                                .map(comment -> TicketCommentResponse.builder()
-                                        .id(comment.getId())
-                                        .text(comment.getText())
-                                        .createdAt(comment.getCreatedAt())
-                                        .updatedAt(comment.getUpdatedAt())
-                                        .userId(comment.getUser().getId())
-                                        .build())
-                                .toList())
-                        .build())
-                .toList();
+    public ResponseEntity<List<SupportTicketResponse>> getAllUserTicket(@RequestHeader("Authorization") String token) {
+        try {
+            List<SupportTicketResponse> tickets = supportTicketService.getAllTicketsByToken(token);
+            return ResponseEntity.ok(tickets);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/getUsername")
