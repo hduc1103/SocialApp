@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static com.SocialWeb.Message.D_USER;
 import static com.SocialWeb.Message.USER_CREATED;
@@ -43,9 +44,16 @@ public class AdminController {
     }
 
     @GetMapping("/one-user")
-    public ResponseEntity<UserResponse> getOneUser(@RequestParam("userId") Long userId) {
-        UserResponse userResponse = userService.getUserResponseById(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(userResponse);
+    public ResponseEntity<?> getOneUser(@RequestParam("userId") Long userId) {
+        try {
+            UserResponse userResponse = userService.getUserResponseById(userId);
+            return ResponseEntity.status(HttpStatus.OK).body(userResponse);
+        } catch (NoSuchElementException e) {
+            System.out.println("here");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+ userId.toString()+ " not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/delete-user")
@@ -55,9 +63,17 @@ public class AdminController {
     }
 
     @PutMapping("/update-user")
-    public ResponseEntity<UserResponse> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData) {
-        UserResponse updatedUser = userService.updateUser(userId, updateData);
-        return ResponseEntity.ok(updatedUser);
+    public ResponseEntity<?> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData) {
+        try {
+            UserResponse updatedUser = userService.updateUser(userId, updateData);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     @PostMapping("/create-user")

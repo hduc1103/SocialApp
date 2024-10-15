@@ -65,8 +65,8 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        const errorData = await response.json();
-        showRedNotification(errorData.message || 'Failed to fetch user details');
+        const errorData = await response.text();
+        showRedNotification(errorData|| 'Failed to fetch user details');
         return; 
       }
   
@@ -92,7 +92,7 @@ const AdminPanel = () => {
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to delete user');
-        return; // Stop execution if there's an error
+        return; 
       }
   
       showGreenNotification('User deleted successfully');
@@ -117,7 +117,7 @@ const AdminPanel = () => {
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to create user');
-        return; // Stop execution if there's an error
+        return; 
       }
   
       showGreenNotification('User created successfully');
@@ -130,7 +130,7 @@ const AdminPanel = () => {
         bio: '',
         img_url: '',
       });
-      getAllUsers(); // Refresh user list after creation
+      getAllUsers(); 
     } catch (error) {
       showRedNotification('Error creating user');
     }
@@ -161,13 +161,13 @@ const AdminPanel = () => {
   
       if (response.status === 409) {
         showRedNotification('Username or email already exists');
-        return; // Stop execution in case of conflict
+        return; 
       }
 
       if (!response.ok) {
-        const errorData = await response.json();
-        showRedNotification(errorData.message || 'Failed to update user');
-        return; // Stop execution if there's an error
+        const errorData = await response.text();
+        showRedNotification(errorData || 'Failed to update user');
+        return; 
       }
   
       showGreenNotification('User updated successfully');

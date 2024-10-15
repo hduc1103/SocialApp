@@ -3,13 +3,17 @@ package com.SocialWeb.service.impl;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.entity.PostEntity;
+import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
+import com.SocialWeb.entity.WebFriendEntity;
 import com.SocialWeb.repository.UserRepository;
+import com.SocialWeb.repository.WebFriendRepository;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.MessageService;
 import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.UserService;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +33,7 @@ import static com.SocialWeb.Message.*;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final WebFriendRepository webFriendRepository;
     private final MessageService messageService;
     private final PostService postService;
     private final PasswordEncoder passwordEncoder;
@@ -37,7 +42,8 @@ public class UserServiceImpl implements UserService {
     private final JavaMailSender mailSender;
     private final UserDetail userDetail;
 
-    public UserServiceImpl(UserRepository userRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail) {
+    public UserServiceImpl(UserRepository userRepository, WebFriendRepository webFriendRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail) {
+        this.webFriendRepository = webFriendRepository;
         this.messageService = messageService;
         this.userRepository = userRepository;
         this.postService = postService;
@@ -187,16 +193,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUserResponseById(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
-        return new UserResponse(
-                userEntity.getId(),
-                userEntity.getUsername(),
-                userEntity.getName(),
-                userEntity.getEmail(),
-                userEntity.getImg_url(),
-                userEntity.getBio(),
-                userEntity.getAddress()
-        );
+        try {
+            UserEntity userEntity = userRepository.findById(userId)
+                    .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+            return new UserResponse(
+                    userEntity.getId(),
+                    userEntity.getUsername(),
+                    userEntity.getName(),
+                    userEntity.getEmail(),
+                    userEntity.getImg_url(),
+                    userEntity.getBio(),
+                    userEntity.getAddress()
+            );
+        } catch (NoSuchElementException e) {
+            throw e;
+        } catch (Exception e) {
+            System.err.println("Unexpected error while fetching user: " + e.getMessage());
+            throw new RuntimeException("An unexpected error occurred while fetching user details", e);
+        }
     }
 
     @Override
@@ -207,25 +222,33 @@ public class UserServiceImpl implements UserService {
         deleteUser(userEntity);
     }
 
-    @Override
     public String addFriend(String token, Long userId2) {
         try {
             String username = extractUsername(token);
+
             UserEntity userEntity1 = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
+                    .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
+
             UserEntity userEntity2 = userRepository.findById(userId2)
-                    .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId2));
+                    .orElseThrow(() -> new NoSuchElementException("User not found: " + userId2));
 
-            userEntity1.getFriends().add(userEntity2);
-            userEntity2.getFriends().add(userEntity1);
+            boolean friendshipExists = webFriendRepository.existsByUserId1AndUserId2(userEntity1.getId(), userEntity2.getId());
+            if (friendshipExists) {
+                return "Friendship request already sent.";
+            }
 
-            userRepository.save(userEntity1);
-            userRepository.save(userEntity2);
+            WebFriendEntity webFriend = WebFriendEntity.builder()
+                    .userId1(userEntity1.getId())
+                    .userId2(userEntity2.getId())
+                    .user1Accepted(1L)
+                    .user2Accepted(0L)
+                    .build();
+            webFriendRepository.save(webFriend);
 
-            return FRIEND_ADDED;
+            return "Friend request sent successfully!";
         } catch (Exception e) {
-            System.err.println(UNEXPECTED_ERROR + e.getMessage());
-            return UNEXPECTED_ERROR + e.getMessage();
+            System.err.println("Unexpected error: " + e.getMessage());
+            return "Unexpected error: " + e.getMessage();
         }
     }
 
@@ -234,9 +257,11 @@ public class UserServiceImpl implements UserService {
         if (updateData.containsKey("new_username") && existsByUsername(updateData.get("new_username"))) {
             throw new IllegalArgumentException("Username already exists");
         }
+
         if (updateData.containsKey("new_email") && existByEmail(updateData.get("new_email"))) {
             throw new IllegalArgumentException("Email already exists");
         }
+
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
 
@@ -258,21 +283,17 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(userEntity);
 
-        String decodedImgUrl = null;
-        if (userEntity.getImg_url() != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
-        }
-
         return UserResponse.builder()
                 .id(userEntity.getId())
                 .username(userEntity.getUsername())
                 .name(userEntity.getName())
                 .email(userEntity.getEmail())
-                .img_url(decodedImgUrl)
+                .img_url(userEntity.getImg_url())
                 .bio(userEntity.getBio())
                 .address(userEntity.getAddress())
                 .build();
     }
+
 
     @Override
     public UserResponse updateUserByToken(String token, Map<String, String> updateData) {
@@ -358,12 +379,17 @@ public class UserServiceImpl implements UserService {
     public boolean checkFriendStatus(String token, Long userId2) {
         try {
             String username = extractUsername(token);
+
             UserEntity userEntity1 = userRepository.findByUsername(username)
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
-            int count = userRepository.countFriendship(userEntity1.getId(), userId2);
+            Optional<WebFriendEntity> friendship = webFriendRepository.findByUserId1AndUserId2(userEntity1.getId(), userId2)
+                    .or(() -> webFriendRepository.findByUserId1AndUserId2(userId2, userEntity1.getId()));
 
-            return count == 2;
+            return friendship.isPresent()
+                    && friendship.get().getUser1Accepted() == 1L
+                    && friendship.get().getUser2Accepted() == 1L;
+
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
             return false;
@@ -377,7 +403,7 @@ public class UserServiceImpl implements UserService {
             UserEntity userEntity1 = userRepository.findByUsername(username)
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
-            userRepository.unfriend(userEntity1.getId(), userId2);
+            webFriendRepository.unfriend(userEntity1.getId(), userId2);
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
         }
@@ -395,7 +421,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteRelationship(long userId) {
-        userRepository.deleteRelationship(userId);
+        webFriendRepository.deleteRelationship(userId);
     }
 
     @Override
@@ -409,7 +435,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private List<UserResponse> getFriends(long userId) {
-        List<Long> friendIds = userRepository.findFriendsByUserId(userId);
+        List<Long> friendIds = webFriendRepository.findFriendsByUserId(userId);
 
         return friendIds.stream()
                 .map(friendId -> {

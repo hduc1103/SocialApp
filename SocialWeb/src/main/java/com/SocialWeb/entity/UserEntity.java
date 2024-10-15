@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "web_user")
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,11 +33,6 @@ public class UserEntity {
 
     private String bio;
     private String address;
-
-    @ManyToMany
-    @JoinTable(name = "web_friends", joinColumns = @JoinColumn(name = "user_id1"), inverseJoinColumns = @JoinColumn(name = "user_id2"))
-    @JsonIgnore
-    private List<UserEntity> friends;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference("user-posts")
