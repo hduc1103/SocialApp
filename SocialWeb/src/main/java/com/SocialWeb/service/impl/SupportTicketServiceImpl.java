@@ -38,16 +38,12 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     @Override
     public void addTicketCommentByToken(String token, Long ticketId, String text) {
         String username = extractUsername(token);
-
-        // Find the user by username
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
 
-        // Find the support ticket by id
         SupportTicketEntity supportTicketEntity = supportTicketRepository.findById(ticketId)
                 .orElseThrow(() -> new NoSuchElementException("Support ticket not found: " + ticketId));
 
-        // Build the ticket comment entity
         TicketCommentEntity ticketCommentEntity = TicketCommentEntity.builder()
                 .text(text)
                 .user(userEntity)
@@ -56,14 +52,9 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .updatedAt(new Date())
                 .build();
 
-        // Save the ticket comment
         ticketCommentRepository.save(ticketCommentEntity);
     }
 
-    @Override
-    public void createTicket(SupportTicketEntity supportTicketEntity) {
-        supportTicketRepository.save(supportTicketEntity);
-    }
 
     @Override
     public void updateSupportTicket(String token, String content, Long ticketId) {
@@ -93,11 +84,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     @Override
-    public void addTicketComment(TicketCommentEntity ticketCommentEntity) {
-        ticketCommentRepository.save(ticketCommentEntity);
-    }
-
-    @Override
     public void updateTicketComment(Long comment_id, String new_content) {
         TicketCommentEntity ticketCommentEntity = ticketCommentRepository.findById(comment_id).orElseThrow();
         ticketCommentEntity.setText(new_content);
@@ -112,18 +98,8 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     @Override
-    public List<SupportTicketEntity> getAllTicketsByUserId(Long userId) {
-        return supportTicketRepository.findByUserId(userId);
-    }
-
-    @Override
     public void deleteSupportTicket(Long ticketId) {
         supportTicketRepository.delete(supportTicketRepository.findById(ticketId).orElseThrow());
-    }
-
-    @Override
-    public List<SupportTicketEntity> getAllSupportTickets() {
-        return supportTicketRepository.findAll();
     }
 
     @Override

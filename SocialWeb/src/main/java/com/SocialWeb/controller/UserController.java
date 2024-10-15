@@ -1,24 +1,27 @@
 package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.request.AuthRequest;
-import com.SocialWeb.domain.response.*;
-import com.SocialWeb.service.interfaces.SupportTicketService;
+import com.SocialWeb.domain.response.AuthResponse;
+import com.SocialWeb.domain.response.SupportTicketResponse;
+import com.SocialWeb.domain.response.UserResponse;
+import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.security.UserDetail;
+import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.service.interfaces.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import com.SocialWeb.security.JwtUtil;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static com.SocialWeb.Message.*;
 
@@ -310,6 +313,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @GetMapping("/get-username")
     public ResponseEntity<Map<String, String>> getUsername(@RequestParam("userId") long userId) {
         try {

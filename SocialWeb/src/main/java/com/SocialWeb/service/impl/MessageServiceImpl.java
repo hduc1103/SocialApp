@@ -3,9 +3,6 @@ package com.SocialWeb.service.impl;
 import com.SocialWeb.entity.MessageEntity;
 import com.SocialWeb.mongorepository.MessageRepository;
 import com.SocialWeb.service.interfaces.MessageService;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;

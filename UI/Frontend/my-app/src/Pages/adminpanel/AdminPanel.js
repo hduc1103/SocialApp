@@ -77,7 +77,58 @@ const AdminPanel = () => {
       showRedNotification('Error fetching user');
     }
   };
-  
+  const fetchUserPosts = async (userId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/post/get-user-post?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to fetch user posts');
+        return;
+      }
+
+      const posts = await response.json();
+      const postsWithLikes = await fetchPostLikeCounts(posts);
+    
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+      showRedNotification('Error fetching user posts');
+    }
+  };
+  const fetchPostLikeCounts = async (posts) => {
+    const token = localStorage.getItem('token');
+    const updatedPosts = await Promise.all(
+      posts.map(async (post) => {
+        try {
+          const response = await fetch(`${BASE_URL}/post/number-of-likes?postId=${post.id}`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            showRedNotification(errorData.message || `Failed to fetch like count for post ${post.id}`);
+            return { ...post, likeCount: 0 };
+          }
+
+          const likeCount = await response.json();
+          return { ...post, likeCount };
+        } catch (error) {
+          console.error(`Error fetching like count for post ${post.id}:`, error);
+          return { ...post, likeCount: 0 };
+        }
+      })
+    );
+    return updatedPosts;
+  };
   const deleteUser = async () => {
     const token = localStorage.getItem('token'); 
     try {

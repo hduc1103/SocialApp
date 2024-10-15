@@ -294,7 +294,6 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-
     @Override
     public UserResponse updateUserByToken(String token, Map<String, String> updateData) {
         String username = extractUsername(token);
@@ -488,13 +487,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserEntity> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
-    }
-
-
-    @Override
-    public String getImageUrl(long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
-        return userEntity.getImg_url();
     }
 
     @Override

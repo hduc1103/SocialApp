@@ -55,8 +55,6 @@ public interface UserService {
 
     Optional<UserEntity> getUserByUsername(String username);
 
-    String getImageUrl(long userId);
-
     void saveUser(UserEntity userEntity);
 
     void deleteUser(UserEntity userEntity);

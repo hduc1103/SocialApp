@@ -77,7 +77,7 @@ const AdminTicketPage = () => {
       <h2 className="support-tickets-header">Support Tickets Management</h2>
       <div className="support-ticket-container">
         {tickets.length > 0 ? (
-          tickets.map((ticket) => (
+          tickets.slice().reverse().map((ticket) => (
             <div key={ticket.id} className="support-ticket-item">
               <h3 className="admin-ticket-title" onClick={() => handleTicketClick(ticket)}>
                 {ticket.title}

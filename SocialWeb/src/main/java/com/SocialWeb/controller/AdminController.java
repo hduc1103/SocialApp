@@ -50,7 +50,7 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.OK).body(userResponse);
         } catch (NoSuchElementException e) {
             System.out.println("here");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+ userId.toString()+ " not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + userId.toString() + " not found");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
