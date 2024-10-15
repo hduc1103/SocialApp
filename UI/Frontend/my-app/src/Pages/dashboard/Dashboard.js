@@ -1,33 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { BASE_URL } from '../../config';
+import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import Post from '../../components/post/Post';
 import './dashboard.scss';
 
 const Dashboard = () => {
   const [friendPosts, setFriendPosts] = useState([]);
   const [error, setError] = useState('');
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const token = localStorage.getItem('token');
-  const userId =localStorage.getItem('userId')
-  console.log(userId)
+  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
+      showRedNotification('You must log in to view your dashboard');
+      return;
     }
     retrieveFriendsPosts();
   }, []);
 
   const retrieveFriendsPosts = async () => {
     try {
-      if (!token) {
-        throw new Error('User not logged in');
-      }
-
-      const response = await fetch(`${BASE_URL}/post/retrieveFriendsPosts?userId=${userId}`, {
+      const response = await fetch(`${BASE_URL}/post/retrieve-friends-posts?userId=${userId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -35,11 +30,21 @@ const Dashboard = () => {
         },
       });
 
-      if(response.status=== 401){
-        navigate('/login')
-      } else if(response.status=== 403){
-        navigate('/login')
-        alert("Your token expired, please log in!")
+      if (response.status === 401) {
+        navigate('/login');
+        showRedNotification('Unauthorized access, please log in again');
+        return;
+      }
+
+      if (response.status === 403) {
+        navigate('/login');
+        showRedNotification('Session expired, please log in again');
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to retrieve friends posts');
       }
 
       const posts = await response.json();
@@ -48,6 +53,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error fetching friends posts:', error);
       setError('Failed to fetch posts. Please try again later.');
+      showRedNotification('Error fetching friends posts');
     }
   };
 
@@ -55,7 +61,7 @@ const Dashboard = () => {
     const updatedPosts = await Promise.all(
       posts.map(async (post) => {
         try {
-          const response = await fetch(`${BASE_URL}/post/numberOfLikes?postId=${post.id}`, {
+          const response = await fetch(`${BASE_URL}/post/number-of-likes?postId=${post.id}`, {
             method: 'GET',
             headers: {
               Authorization: `Bearer ${token}`,
@@ -70,21 +76,20 @@ const Dashboard = () => {
           return { ...post, likeCount };
         } catch (error) {
           console.error(`Error fetching like count for post ${post.id}:`, error);
-          return { ...post, likeCount: 0 };
+          return { ...post, likeCount: 0 }; 
         }
       })
     );
     return updatedPosts;
   };
+
   return (
     <div className="dashboard">
       <h2>Friends' Recent Posts</h2>
       {error && <p className="error-message">{error}</p>}
       <div className="posts-container">
         {friendPosts.length > 0 ? (
-          friendPosts.map((post) => (
-            <Post key={post.id} post={post} /> 
-          ))
+          friendPosts.map((post) => <Post key={post.id} post={post} />)
         ) : (
           <p>No recent posts from friends.</p>
         )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BASE_URL } from '../../config';
+import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import { TiDeleteOutline } from "react-icons/ti";
 import './postdetailmodal.scss';
 
@@ -15,7 +15,7 @@ const PostDetailModal = ({ postId, onClose }) => {
   useEffect(() => {
     const fetchPostDetail = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/post/getPostById?postId=${postId}`, {
+        const response = await fetch(`${BASE_URL}/post/get-post-by-id?postId=${postId}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -23,13 +23,17 @@ const PostDetailModal = ({ postId, onClose }) => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch post details');
+          const errorData = await response.json();
+          showRedNotification(errorData.message || 'Failed to fetch post details');
+          return;
         }
 
         const data = await response.json();
         setPost(data);
         setComments(data.comments || []);
-        const likeResponse = await fetch(`${BASE_URL}/post/numberOfLikes?postId=${postId}`, {
+        showGreenNotification('Post details fetched successfully');
+
+        const likeResponse = await fetch(`${BASE_URL}/post/number-of-likes?postId=${postId}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -37,7 +41,9 @@ const PostDetailModal = ({ postId, onClose }) => {
         });
 
         if (!likeResponse.ok) {
-          throw new Error('Failed to fetch like count');
+          const likeErrorData = await likeResponse.json();
+          showRedNotification(likeErrorData.message || 'Failed to fetch like count');
+          throw new Error(likeErrorData.message || 'Failed to fetch like count');
         }
 
         const likeData = await likeResponse.json();
@@ -52,7 +58,7 @@ const PostDetailModal = ({ postId, onClose }) => {
 
   const handleComment = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/interact/addComment?postId=${postId}`, {
+      const response = await fetch(`${BASE_URL}/interact/add-comment?postId=${postId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,14 +68,17 @@ const PostDetailModal = ({ postId, onClose }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add comment');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to add comment');
+        return;
       }
 
       const newComment = await response.json();
       setComments((prevComments) => [...prevComments, newComment]);
       setComment('');
+      showGreenNotification('Comment added successfully');
 
-      const responseUsername = await fetch(`${BASE_URL}/user/getUserName?userId=${newComment.user_id}`, {
+      const responseUsername = await fetch(`${BASE_URL}/user/get-username?userId=${newComment.user_id}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -106,11 +115,13 @@ const PostDetailModal = ({ postId, onClose }) => {
         });
 
         if (!dislikeResponse.ok) {
-          throw new Error('Failed to dislike the post');
+          return;
         }
         setLikeCount((prev) => prev - 1);
       } else if (!response.ok) {
-        throw new Error('Failed to like the post');
+        const likeErrorData = await response.json();
+        showRedNotification(likeErrorData.message || 'Failed to like the post');
+        return;
       } else {
         setLikeCount((prev) => prev + 1);
       }

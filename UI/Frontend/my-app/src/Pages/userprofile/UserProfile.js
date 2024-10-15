@@ -27,282 +27,340 @@ const UserProfile = () => {
   const { userId } = useParams();
 
   const loggedInUserId = localStorage.getItem('userId');
-  const fetchPostAuthor = async (new_post_userId) => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${BASE_URL}/user/getUsername?userId=${new_post_userId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch post author');
-      }
-
-      const data = await response.json();
-      setAuthor(data.username);
-      setAuthorImgUrl(data.imgUrl);
-      return data;
-    } catch (error) {
-      console.error('Error fetching post author:', error);
-    }
-  };
-
-  const handleNewPost = (content) => {
-    const token = localStorage.getItem('token');
-    fetch(`${BASE_URL}/post/createPost`, {
-      method: 'POST',
+const fetchPostAuthor = async (new_post_userId) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${BASE_URL}/user/get-username?userId=${new_post_userId}`, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ content }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        fetchPostAuthor(data.userId).then((authorData) => {
-          const newPost = {
-            ...data,
-            likeCount: 0,
-            author: authorData.username,
-            authorImgUrl: authorData.imgUrl
-          };
-          setUserPosts([...userPosts, newPost]);
-        });
-      })
-      .catch(err => showRedNotification(err));
-  };
+    });
 
-  const handleUpdateProfile = async (updatedDetails) => {
-    const token = localStorage.getItem('token');
-    try {
-      const updateData = Object.keys(updatedDetails).reduce((acc, key) => {
-        if (updatedDetails[key]) {
-          acc[key] = updatedDetails[key];
-        }
-        return acc;
-      }, {});
+    if (!response.ok) {
+      const errorData = await response.json();
+      showRedNotification(errorData.message || 'Failed to fetch post author');
+      return null; 
+    }
 
-      if (Object.keys(updateData).length === 0) {
+    const data = await response.json();
+    setAuthor(data.username);
+    setAuthorImgUrl(data.imgUrl);
+    return data;
+  } catch (error) {
+    console.error('Error fetching post author:', error);
+    showRedNotification('Error fetching post author');
+    return null;
+  }
+};
+
+const handleNewPost = (content) => {
+  const token = localStorage.getItem('token');
+  fetch(`${BASE_URL}/post/create-post`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content }),
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to create post');
         return;
       }
-
-      const response = await fetch(`${BASE_URL}/user/updateUser`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      if (response.status === 409) {
-        showRedNotification('Username or email already exists');
-      }
-
       const data = await response.json();
-      showGreenNotification("Profile updated")
-      setUserDetails(data);
-      setIsUpdateModalOpen(false);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleUpdateProfileImage = async (profilePicture) => {
-    const token = localStorage.getItem('token');
-    try {
-      const formData = new FormData();
-      formData.append('profilePicture', profilePicture);
-
-      const response = await fetch(`${BASE_URL}/user/updateProfileImage`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        showRedNotification('Failed to update profile image');
+      const authorData = await fetchPostAuthor(data.userId);
+      if (authorData) {
+        const newPost = {
+          ...data,
+          likeCount: 0,
+          author: authorData.username,
+          authorImgUrl: authorData.imgUrl,
+        };
+        setUserPosts((prevPosts) => [...prevPosts, newPost]);
+        showGreenNotification('Post created successfully');
       }
-
-      const updatedData = await response.json();
-      showGreenNotification("Profile image updated")
-      setUserDetails((prevDetails) => ({
-        ...prevDetails,
-        img_url: updatedData.img_url,
-      }));
-    } catch (error) {
-      showRedNotification(error);
-    }
-  };
-  
-  const handlePasswordChange = (passwordDetails) => {
-    const token = localStorage.getItem('token');
-    fetch(`${BASE_URL}/user/changePassword`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        'old-password': passwordDetails.old_password,
-        'new-password': passwordDetails.new_password,
-      }),
     })
-      .then((response) => {
-        if (response.ok) {
-          showGreenNotification('Password changed successfully');
-          setIsPasswordModalOpen(false);
-        } else if (response.status === 401) {
-          showRedNotification('Invalid old password');
-        } else {
-          showRedNotification('Failed to change password');
-        }
-      })
-      .catch(() => {
-        showRedNotification('Failed to change password');
-      });
-  };
+    .catch((err) => {
+      console.error(err);
+      showRedNotification('Error creating post');
+    });
+};
 
-  const checkFriendshipStatus = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}/user/checkFriendStatus?userId2=${userId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to check friendship status');
+const handleUpdateProfile = async (updatedDetails) => {
+  const token = localStorage.getItem('token');
+  try {
+    const updateData = Object.keys(updatedDetails).reduce((acc, key) => {
+      if (updatedDetails[key]) {
+        acc[key] = updatedDetails[key];
       }
+      return acc;
+    }, {});
 
-      const isFriendStatus = await response.json();
-      setIsFriend(isFriendStatus);
-    } catch (error) {
-      console.error('Error checking friendship status:', error);
-    }
-  };
-
-  const handleAddFriend = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}/user/addFriend?userId2=${userId}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add friend');
-      }
-      setIsFriend(1);
-    } catch (error) {
-      console.error('Error: ', error);
-    }
-  }
-  const Handleunfriend = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}/user/unfriend?userId2=${userId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to unfriend');
-      }
-      setIsFriend(0);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
+    if (Object.keys(updateData).length === 0) {
       return;
     }
 
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch(`${BASE_URL}/user/getUserData?userId=${userId}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    const response = await fetch(`${BASE_URL}/user/update-user`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch user profile');
-        }
-
-        const data = await response.json();
-        setUserDetails(data);
-      } catch (error) {
-        console.error(error);
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (response.status === 409) {
+        showRedNotification('Username or email already exists');
+      } else {
+        showRedNotification(errorData.message || 'Failed to update profile');
       }
-    };
-
-    const fetchUserPosts = async () => {
-      try {
-        const response = await fetch(`${BASE_URL}/post/getUserPost?userId=${userId}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch user posts');
-        }
-
-        const posts = await response.json();
-        const postsWithLikes = await fetchPostLikeCounts(posts);
-        setUserPosts(postsWithLikes);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const fetchPostLikeCounts = async (posts) => {
-      const updatedPosts = await Promise.all(
-        posts.map(async (post) => {
-          try {
-            const response = await fetch(`${BASE_URL}/post/numberOfLikes?postId=${post.id}`, {
-              method: 'GET',
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            if (!response.ok) {
-              throw new Error('Failed to fetch like count');
-            }
-
-            const likeCount = await response.json();
-            return { ...post, likeCount };
-          } catch (error) {
-            console.error(`Error fetching like count for post ${post.id}:`, error);
-            return { ...post, likeCount: 0 };
-          }
-        })
-      );
-      return updatedPosts;
-    };
-
-    fetchUserProfile();
-    fetchUserPosts();
-    if (userId !== loggedInUserId) {
-      checkFriendshipStatus();
+      return;
     }
-  }, [navigate, userId]);
+
+    const data = await response.json();
+    showGreenNotification('Profile updated successfully');
+    setUserDetails(data);
+    setIsUpdateModalOpen(false);
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    showRedNotification('Error updating profile');
+  }
+};
+
+const handleUpdateProfileImage = async (profilePicture) => {
+  const token = localStorage.getItem('token');
+  try {
+    const formData = new FormData();
+    formData.append('profilePicture', profilePicture);
+
+    const response = await fetch(`${BASE_URL}/user/update-profile-image`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      showRedNotification(errorData.message || 'Failed to update profile image');
+      return;
+    }
+
+    const updatedData = await response.json();
+    showGreenNotification('Profile image updated successfully');
+    setUserDetails((prevDetails) => ({
+      ...prevDetails,
+      img_url: updatedData.img_url,
+    }));
+  } catch (error) {
+    console.error('Error updating profile image:', error);
+    showRedNotification('Error updating profile image');
+  }
+};
+
+const handlePasswordChange = (passwordDetails) => {
+  const token = localStorage.getItem('token');
+  fetch(`${BASE_URL}/user/change-password`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      'old-password': passwordDetails.old_password,
+      'new-password': passwordDetails.new_password,
+    }),
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 401) {
+          showRedNotification('Invalid old password');
+        } else {
+          showRedNotification(errorData.message || 'Failed to change password');
+        }
+        return;
+      }
+      showGreenNotification('Password changed successfully');
+      setIsPasswordModalOpen(false);
+    })
+    .catch((error) => {
+      console.error('Error changing password:', error);
+      showRedNotification('Failed to change password');
+    });
+};
+
+const checkFriendshipStatus = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${BASE_URL}/user/check-friend-status?userId2=${userId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      showRedNotification(errorData.message || 'Failed to check friendship status');
+      return;
+    }
+
+    const isFriendStatus = await response.json();
+    setIsFriend(isFriendStatus);
+  } catch (error) {
+    console.error('Error checking friendship status:', error);
+    showRedNotification('Error checking friendship status');
+  }
+};
+
+const handleAddFriend = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${BASE_URL}/user/add-friend?userId2=${userId}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      showRedNotification(errorData.message || 'Failed to add friend');
+      return;
+    }
+
+    setIsFriend(1);
+    showGreenNotification('Friend added successfully');
+  } catch (error) {
+    console.error('Error adding friend:', error);
+    showRedNotification('Error adding friend');
+  }
+};
+
+const Handleunfriend = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${BASE_URL}/user/unfriend?userId2=${userId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      showRedNotification(errorData.message || 'Failed to unfriend');
+      return;
+    }
+
+    setIsFriend(0);
+    showGreenNotification('Unfriended successfully');
+  } catch (error) {
+    console.error('Error unfriending:', error);
+    showRedNotification('Error unfriending');
+  }
+};
+
+const fetchUserProfile = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${BASE_URL}/user/get-user-data?userId=${userId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      showRedNotification(errorData.message || 'Failed to fetch user profile');
+      return;
+    }
+
+    const data = await response.json();
+    setUserDetails(data);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    showRedNotification('Error fetching user profile');
+  }
+};
+
+const fetchUserPosts = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${BASE_URL}/post/get-user-post?userId=${userId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      showRedNotification(errorData.message || 'Failed to fetch user posts');
+      return;
+    }
+
+    const posts = await response.json();
+    const postsWithLikes = await fetchPostLikeCounts(posts);
+    setUserPosts(postsWithLikes);
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    showRedNotification('Error fetching user posts');
+  }
+};
+
+const fetchPostLikeCounts = async (posts) => {
+  const token = localStorage.getItem('token');
+  const updatedPosts = await Promise.all(
+    posts.map(async (post) => {
+      try {
+        const response = await fetch(`${BASE_URL}/post/number-of-likes?postId=${post.id}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          showRedNotification(errorData.message || `Failed to fetch like count for post ${post.id}`);
+          return { ...post, likeCount: 0 };
+        }
+
+        const likeCount = await response.json();
+        return { ...post, likeCount };
+      } catch (error) {
+        console.error(`Error fetching like count for post ${post.id}:`, error);
+        return { ...post, likeCount: 0 };
+      }
+    })
+  );
+  return updatedPosts;
+};
+
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    navigate('/login');
+    return;
+  }
+
+  fetchUserProfile();
+  fetchUserPosts();
+  if (userId !== loggedInUserId) {
+    checkFriendshipStatus();
+  }
+}, [navigate, userId]);
+
 
   return (
     <div className="user-profile">

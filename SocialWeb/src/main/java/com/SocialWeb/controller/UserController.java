@@ -2,22 +2,14 @@ package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.request.AuthRequest;
 import com.SocialWeb.domain.response.*;
-import com.SocialWeb.entity.PostEntity;
-import com.SocialWeb.entity.SupportTicketEntity;
-import com.SocialWeb.entity.TicketCommentEntity;
-import com.SocialWeb.entity.UserEntity;
-import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.UserService;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.SocialWeb.Message.*;
 
@@ -37,20 +28,16 @@ public class UserController {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
     private final SupportTicketService supportTicketService;
     private final UserDetail userDetail;
-    private final PostService postService;
 
 
-    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, SupportTicketService supportTicketService, UserDetail userDetail, PostService postService) {
+    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, SupportTicketService supportTicketService, UserDetail userDetail) {
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
         this.supportTicketService = supportTicketService;
         this.userDetail = userDetail;
-        this.postService = postService;
 
     }
 
@@ -67,7 +54,7 @@ public class UserController {
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
 
-    @GetMapping("/getUserId")
+    @GetMapping("/get-user-id")
     public ResponseEntity<Long> getUserId(@RequestHeader("Authorization") String token) {
         try {
             Long userId = userService.getUserIdByToken(token);
@@ -79,7 +66,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/getUserRole")
+    @GetMapping("/get-user-role")
     public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
         try {
             String role = userService.getUserRoleByToken(token);
@@ -91,7 +78,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/changePassword")
+    @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> passwordData) {
         try {
             userService.changeUserPassword(token, passwordData);
@@ -103,12 +90,7 @@ public class UserController {
         }
     }
 
-    private String generateOtp() {
-        Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000));
-    }
-
-    @PostMapping("/forgetPassword")
+    @PostMapping("/forget-password")
     public ResponseEntity<Void> forgetPassword(@RequestBody Map<String, String> email) {
         try {
             userService.sendOtpForPasswordReset(email.get("email"));
@@ -120,7 +102,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/verifyOtp")
+    @PostMapping("/verify-otp")
     public ResponseEntity<Void> verifyOtp(@RequestBody String otp) {
         if (userService.verifyOtp(otp)) {
             return ResponseEntity.status(HttpStatus.OK).build();
@@ -128,7 +110,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    @PostMapping("/resetPassword")
+    @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@RequestBody Map<String, String> requestData) {
         try {
             userService.resetUserPassword(requestData.get("email"), requestData.get("new_password"));
@@ -142,8 +124,7 @@ public class UserController {
         }
     }
 
-    // sua catch loi tren frontend
-    @PostMapping("/createUser")
+    @PostMapping("/create-user")
     public ResponseEntity<?> createUser(@RequestBody Map<String, String> new_account) {
         try {
             String jwt = userService.createNewUser(new_account);
@@ -157,7 +138,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/updateUser")
+    @PutMapping("/update-user")
     public ResponseEntity<UserResponse> updateUser(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> updateData) {
         try {
             UserResponse updatedUser = userService.updateUserByToken(token, updateData);
@@ -171,7 +152,7 @@ public class UserController {
         }
     }
 
-    @PutMapping(value = "/updateProfileImage", consumes = "multipart/form-data")
+    @PutMapping(value = "/update-profile-image", consumes = "multipart/form-data")
     public ResponseEntity<Void> updateProfileImage(
             @RequestHeader("Authorization") String token,
             @RequestParam("profilePicture") MultipartFile profilePicture) {
@@ -183,37 +164,29 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/deleteUser")
+    @DeleteMapping("/delete-user")
     public ResponseEntity<Void> deleteUser(@RequestHeader("Authorization") String token) {
         try {
             userService.deleteUserByToken(token);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();  // 204 No Content on successful deletion
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // 404 if user not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
-    @GetMapping("/getUserData")
+    @GetMapping("/get-user-data")
     public ResponseEntity<UserResponse> getUserInfo(@RequestParam("userId") long userId) {
-        UserEntity userEntity = userService.getUserById(userId).orElseThrow();
-
-        String decodedImgUrl = null;
-        if (userEntity.getImg_url() != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
+        try {
+            UserResponse userResponse = userService.getUserInfo(userId);
+            return ResponseEntity.ok(userResponse);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        UserResponse userResponse = new UserResponse(
-                userEntity.getId(),
-                userEntity.getUsername(),
-                userEntity.getName(),
-                userEntity.getEmail(),
-                decodedImgUrl,
-                userEntity.getBio(),
-                userEntity.getAddress()
-        );
-        return ResponseEntity.ok(userResponse);
     }
 
-    @PostMapping("/addFriend")
+    @PostMapping("/add-friend")
     public ResponseEntity<String> addFriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
         try {
             String response = userService.addFriend(token, userId2);
@@ -226,7 +199,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/checkFriendStatus")
+    @GetMapping("/check-friend-status")
     public ResponseEntity<Boolean> checkFriendStatus(@RequestHeader("Authorization") String token,
                                                      @RequestParam Long userId2) {
         try {
@@ -247,7 +220,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/getAllFriends")
+    @GetMapping("/get-all-friends")
     public ResponseEntity<List<UserResponse>> getAllFriends(@RequestHeader("Authorization") String token) {
         try {
             List<UserResponse> friends = userService.getAllFriends(token);
@@ -269,7 +242,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/createSupportTicket")
+    @PostMapping("/create-support-ticket")
     public ResponseEntity<Void> createSupportTicket(
             @RequestHeader("Authorization") String token,
             @RequestBody Map<String, Object> requestBody) {
@@ -281,7 +254,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/updateSupportTicket")
+    @PutMapping("/update-support-ticket")
     public ResponseEntity<Void> updateSupportTicket(
             @RequestHeader("Authorization") String token,
             @RequestBody String content,
@@ -304,7 +277,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PostMapping("/addTicketComment")
+    @PostMapping("/add-ticket-comment")
     public ResponseEntity<Void> addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
         try {
             supportTicketService.addTicketCommentByToken(token, ticket_id, text);
@@ -316,17 +289,17 @@ public class UserController {
         }
     }
 
-    @PutMapping("/updateTicketComment")
+    @PutMapping("/update-ticket-comment")
     public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text) {
         supportTicketService.updateTicketComment(comment_id, text);
     }
 
-    @DeleteMapping("/deleteTicketComment")
+    @DeleteMapping("/delete-ticket-comment")
     public void deleteTicketComment(@RequestParam Long comment_id) {
         supportTicketService.deleteTicketComment(comment_id);
     }
 
-    @GetMapping("/getAllUserTicket")
+    @GetMapping("/get-all-user-ticket")
     public ResponseEntity<List<SupportTicketResponse>> getAllUserTicket(@RequestHeader("Authorization") String token) {
         try {
             List<SupportTicketResponse> tickets = supportTicketService.getAllTicketsByToken(token);
@@ -337,16 +310,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-    @GetMapping("/getUsername")
+    @GetMapping("/get-username")
     public ResponseEntity<Map<String, String>> getUsername(@RequestParam("userId") long userId) {
-        Map<String, String> response = new HashMap<>();
-        response.put("username", userService.getUserName(userId));
-        String decodedImgUrl = null;
-        if (userService.getImageUrl(userId) != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userService.getImageUrl(userId)));
+        try {
+            Map<String, String> response = userService.getUsernameAndImage(userId);
+            return ResponseEntity.ok(response);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        response.put("imgUrl", decodedImgUrl);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 }

@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Value("${upload.path}")
     private String uploadDir;
 
-    public UserServiceImpl(UserRepository userRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail, String uploadDir) {
+    public UserServiceImpl(UserRepository userRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail) {
         this.messageService = messageService;
         this.userRepository = userRepository;
         this.postService = postService;
@@ -53,7 +53,6 @@ public class UserServiceImpl implements UserService {
         this.jwtUtil = jwtUtil;
         this.mailSender = mailSender;
         this.userDetail = userDetail;
-        this.uploadDir = uploadDir;
     }
 
     private String extractUsername(String token) {
@@ -66,12 +65,6 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
         return user.getId();
-    }
-
-    @Override
-    public long getUserId(String username) {
-        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
-        return userEntity.getId();
     }
 
     @Override
@@ -240,16 +233,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity findUserbyUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow();
-    }
-
-    @Override
-    public UserEntity findUserbyEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    @Override
     public UserResponse updateUser(Long userId, Map<String, String> updateData) {
         if (updateData.containsKey("new_username") && existsByUsername(updateData.get("new_username"))) {
             throw new IllegalArgumentException("Username already exists");
@@ -299,22 +282,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateUserByToken(String token, Map<String, String> updateData) {
         String username = extractUsername(token);
-
-        // Fetch user entity by username
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
 
         Long userId = userEntity.getId();
-
-        // Validate new username and email if provided
         if (updateData.containsKey("new_username") && existsByUsername(updateData.get("new_username"))) {
             throw new IllegalArgumentException("Username already exists");
         }
         if (updateData.containsKey("new_email") && existByEmail(updateData.get("new_email"))) {
             throw new IllegalArgumentException("Email already exists");
         }
-
-        // Update user fields
         if (updateData.containsKey("new_name")) {
             userEntity.setName(updateData.get("new_name"));
         }
@@ -330,17 +307,11 @@ public class UserServiceImpl implements UserService {
         if (updateData.containsKey("new_address")) {
             userEntity.setAddress(updateData.get("new_address"));
         }
-
-        // Save updated user
         userRepository.save(userEntity);
-
-        // Decode img_url if present
         String decodedImgUrl = null;
         if (userEntity.getImg_url() != null) {
             decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
         }
-
-        // Return updated user response
         return UserResponse.builder()
                 .id(userEntity.getId())
                 .username(userEntity.getUsername())
@@ -353,9 +324,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String decodeFileName(String encodedFileName) {
-        byte[] decodedBytes = Base64.getDecoder().decode(encodedFileName);
-        return new String(decodedBytes);
+    public UserResponse getUserInfo(long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
+
+        String decodedImgUrl = null;
+        if (userEntity.getImg_url() != null) {
+            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
+        }
+
+        return new UserResponse(
+                userEntity.getId(),
+                userEntity.getUsername(),
+                userEntity.getName(),
+                userEntity.getEmail(),
+                decodedImgUrl,
+                userEntity.getBio(),
+                userEntity.getAddress()
+        );
     }
 
     @Override
@@ -364,7 +350,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Profile picture is required");
         }
 
-        String username = extractUsername(token);  // Extract the username from the token inside the service
+        String username = extractUsername(token);
 
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
@@ -418,7 +404,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUserByToken(String token) {
-        String username = extractUsername(token);  // Extract username from token
+        String username = extractUsername(token);
         UserEntity userEntity = getUserByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
@@ -433,7 +419,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllFriends(String token) {
-        String username = extractUsername(token);  // Extract username from token
+        String username = extractUsername(token);
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
@@ -472,7 +458,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, Object> searchCombined(String keyword) {
         List<UserEntity> userEntities = userRepository.searchUsersByUsername(keyword);
-        List<PostEntity> postEntities = postService.searchPostsByKeyWord(keyword);  // Assuming postService is available in UserService
+        List<PostEntity> postEntities = postService.searchPostsByKeyWord(keyword);
 
         List<UserResponse> userResponses = userEntities.stream()
                 .map(user -> UserResponse.builder()
@@ -503,10 +489,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username);
     }
 
-    @Override
-    public Optional<UserEntity> getUserById(Long userId) {
-        return userRepository.findById(userId);
-    }
 
     @Override
     public String getImageUrl(long userId) {
@@ -535,7 +517,6 @@ public class UserServiceImpl implements UserService {
                 .roles(new ArrayList<>(List.of("USER")))
                 .build();
 
-        // Save the user
         saveUser(userEntity);
 
         authenticationManager.authenticate(
@@ -577,9 +558,21 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow();
         return userEntity.getName();
     }
-
     @Override
-    public boolean userExistByEmail(String email){
-        return userRepository.existsByEmail(email);
+    public Map<String, String> getUsernameAndImage(long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
+
+        Map<String, String> response = new HashMap<>();
+        response.put("username", userEntity.getUsername());
+
+        String decodedImgUrl = null;
+        if (userEntity.getImg_url() != null) {
+            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
+        }
+        response.put("imgUrl", decodedImgUrl);
+
+        return response;
     }
+
 }

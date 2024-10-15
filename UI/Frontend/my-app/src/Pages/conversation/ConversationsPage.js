@@ -37,7 +37,7 @@ const ConversationsPage = () => {
         try {
           const usernamesMap = {};
           for (const id of userIds) {
-            const response = await fetch(`${BASE_URL}/user/getUsername?userId=${id}`, {
+            const response = await fetch(`${BASE_URL}/user/get-username?userId=${id}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -64,7 +64,7 @@ const ConversationsPage = () => {
   const fetchFriends = async () => {
     if (userId && token) {
       try {
-        const response = await fetch(`${BASE_URL}/user/getAllFriends`, {
+        const response = await fetch(`${BASE_URL}/user/get-all-friends`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

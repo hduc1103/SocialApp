@@ -1,17 +1,18 @@
 package com.SocialWeb.service.impl;
 
+import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
+import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.SocialWeb.Message.*;
 
@@ -20,17 +21,45 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository) {
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, JwtUtil jwtUtil) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    public List<PostEntity> getPostsByUser(long userId) {
+    private String extractUsername(String token) {
+        String jwtToken = token.substring(7);
+        return jwtUtil.extractUsername(jwtToken);
+    }
+
+    @Override
+    public List<PostResponse> getUserPosts(long userId) {
         UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + userId));
-        return postRepository.findByUser(userEntity);
+                .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
+
+        List<PostEntity> postEntities = postRepository.findByUser(userEntity);
+
+        return postEntities.stream()
+                .map(postEntity -> PostResponse.builder()
+                        .id(postEntity.getId())
+                        .content(postEntity.getContent())
+                        .createdAt(postEntity.getCreatedAt())
+                        .updatedAt(postEntity.getUpdatedAt())
+                        .userId(postEntity.getUser().getId())
+                        .comments(postEntity.getComments().stream()
+                                .map(commentEntity -> CommentResponse.builder()
+                                        .id(commentEntity.getId())
+                                        .user_id(commentEntity.getUser().getId())
+                                        .text(commentEntity.getText())
+                                        .createdAt(commentEntity.getCreatedAt())
+                                        .updatedAt(commentEntity.getUpdatedAt())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -39,7 +68,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostResponse createPost(String username, String content) {
+    public PostResponse createPost(String token, Map<String, String> postData) {
+        String username = extractUsername(token);
+        String content = postData.get("content");
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         PostEntity postEntity = new PostEntity();
         postEntity.setUser(userEntity);
@@ -84,7 +115,27 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostEntity> retrieveRecentFriendPosts(Long userId) {
-        return postRepository.retrieveRecentFriendPosts(userId);
+    public List<PostResponse> retrieveFriendsPosts(Long userId) {
+        List<PostEntity> postEntities = postRepository.retrieveRecentFriendPosts(userId);
+
+        return postEntities.stream()
+                .map(postEntity -> PostResponse.builder()
+                        .id(postEntity.getId())
+                        .content(postEntity.getContent())
+                        .createdAt(postEntity.getCreatedAt())
+                        .updatedAt(postEntity.getUpdatedAt())
+                        .userId(postEntity.getUser().getId())
+                        .comments(postEntity.getComments().stream()
+                                .map(commentEntity -> CommentResponse.builder()
+                                        .id(commentEntity.getId())
+                                        .user_id(commentEntity.getUser().getId())
+                                        .text(commentEntity.getText())
+                                        .createdAt(commentEntity.getCreatedAt())
+                                        .updatedAt(commentEntity.getUpdatedAt())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
+
 }

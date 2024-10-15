@@ -1,74 +1,73 @@
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+.view-ticket-support-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.view-ticket-support-modal-content {
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 600px;
+  color: #e0e0e0;
+  position: relative;
+
+  h1 {
+    color: #fff;
+    margin-bottom: 20px;
   }
-  
-  .modal-content {
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 10px;
-    width: 80%;
-    max-width: 600px;
-    color: #e0e0e0;
-    position: relative;
-  
-    h1 {
-      color: #fff;
-      margin-bottom: 20px;
-    }
-  
-    .close-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 24px;
-      color: #fff;
-      cursor: pointer;
-    }
-  
-    .error-message {
-      color: red;
-      margin-bottom: 15px;
-    }
-  
-    .tickets-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-  
-      .ticket-item {
-        background-color: #2a2a2a;
-        padding: 15px;
-        border-radius: 8px;
-  
-        p {
-          margin: 5px 0;
-          color: #b0b0b0;
-  
-          strong {
-            color: #e0e0e0;
-          }
+
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .error-message {
+    color: red;
+    margin-bottom: 15px;
+  }
+
+  .tickets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .ticket-item {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 8px;
+
+      p {
+        margin: 5px 0;
+        color: #b0b0b0;
+
+        strong {
+          color: #e0e0e0;
         }
-  
-        ul {
-          list-style: disc;
-          padding-left: 20px;
-  
-          li {
-            color: #ccc;
-          }
+      }
+
+      ul {
+        list-style: disc;
+        padding-left: 20px;
+
+        li {
+          color: #ccc;
         }
       }
     }
   }
-  
+}

@@ -34,46 +34,9 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/login").permitAll()
-                        .requestMatchers("user/forgetPassword").permitAll()
-                        .requestMatchers("user/verifyOtp").permitAll()
-                        .requestMatchers("/user/resetPassword").permitAll()
-                        .requestMatchers("/chat/**").authenticated()
-                        .requestMatchers("/interact/**").authenticated()
-                        .requestMatchers("/post/numberOfLikes").permitAll()
-                        .requestMatchers("/post/getUserPost").authenticated()
-                        .requestMatchers("/post/createPost").authenticated()
-                        .requestMatchers("/post/deletePost").authenticated()
-                        .requestMatchers("/post/updatePost").authenticated()
-                        .requestMatchers("/post/getPostById").authenticated()
-                        .requestMatchers("/post/retrieveFriendsPosts").authenticated()
-                        .requestMatchers("/user/createUser").permitAll()
-                        .requestMatchers("/user/deleteUSer").permitAll()
-                        .requestMatchers("/user/search").permitAll()
-                        .requestMatchers("/user/createUser").permitAll()
-                        .requestMatchers("/user/getUserData").authenticated()
-                        .requestMatchers("/user/addFriend").authenticated()
-                        .requestMatchers("/user/checkFriendStatus").authenticated()
-                        .requestMatchers("/user/unfriend").authenticated()
-                        .requestMatchers("/user/getAllFriends").authenticated()
-                        .requestMatchers("/user/updateUser").authenticated()
-                        .requestMatchers("/user/createSupportTicket").authenticated()
-                        .requestMatchers("/user/updateSupportTicket").authenticated()
-                        .requestMatchers("/user/getUserId").authenticated()
-                        .requestMatchers("/user/getUserRole").authenticated()
-                        .requestMatchers("/user/addTicketComment").authenticated()
-                        .requestMatchers("/user/createSupportTicket").authenticated()
-                        .requestMatchers("/user/getAllUserTicket").authenticated()
-                        .requestMatchers("/user/addTicketComment").authenticated()
-                        .requestMatchers("/user/getUsername").authenticated()
-                        .requestMatchers("/user/*/close").authenticated()
-                        .requestMatchers("user/changePassword").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/ws/**", "/websocket/**", "/sockjs/**").permitAll()
-                        .requestMatchers("/chat-websocket/**").permitAll()
-                        .requestMatchers("/topic/**").permitAll()
-                        .requestMatchers("/app/**").permitAll()
-                        .requestMatchers("/user/updateProfileImage").authenticated()
+                        .requestMatchers("/user/login","/user/forgetPassword","/user/verifyOtp","/user/resetPassword", "/user/search", "/user/createUser", "/post/numberOfLikes").permitAll()
+                        .requestMatchers("/ws/**","/app/**").permitAll()
+                        .requestMatchers("/chat/**", "/post/**", "/user/**", "/interact/**").authenticated()
                         .requestMatchers("/admin/**").hasAuthority("ADMIN"))
                 .cors(withDefaults())
                 .headers(AbstractHttpConfigurer::disable)
@@ -86,7 +49,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3001");
+        configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);

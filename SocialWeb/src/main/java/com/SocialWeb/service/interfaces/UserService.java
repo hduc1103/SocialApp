@@ -13,18 +13,13 @@ public interface UserService {
 
     Long getUserIdByToken(String token);
 
-    long getUserId(String username);
-
     String addFriend(String token, Long userId2);
 
-    UserEntity findUserbyUsername(String username);
-
-    UserEntity findUserbyEmail(String email);
     UserResponse updateUser(Long userId, Map<String, String> updateData);
 
     UserResponse updateUserByToken(String token, Map<String, String> updateData);
 
-    String decodeFileName(String encodedFileName);
+    UserResponse getUserInfo(long userId);
 
     void updateProfileImage(String username, MultipartFile profilePicture) throws IOException;
 
@@ -60,8 +55,6 @@ public interface UserService {
 
     Optional<UserEntity> getUserByUsername(String username);
 
-    Optional<UserEntity> getUserById(Long userId);
-
     String getImageUrl(long userId);
 
     void saveUser(UserEntity userEntity);
@@ -78,7 +71,7 @@ public interface UserService {
 
     String getUserName(long userId);
 
-    boolean userExistByEmail(String email);
-
     void createUser(Map<String, String> newAccount);
+
+    Map<String, String> getUsernameAndImage(long userId);
 }

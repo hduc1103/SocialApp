@@ -44,7 +44,7 @@ const ChatPage = () => {
           const detailsMap = {};
           for (const id of userIds) {
             if (id !== senderId) {
-              const response = await fetch(`${BASE_URL}/user/getUsername?userId=${id}`, {
+              const response = await fetch(`${BASE_URL}/user/get-username?userId=${id}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },

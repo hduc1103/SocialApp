@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.scss';
-import { BASE_URL, showRedNotification } from '../../config';
+import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import EmailModal from '../../components/emailmodal/EmailModal';
 import OtpModal from '../../components/otpmodal/OtpModal';
 import NewPasswordModal from '../../components/newpasswordmodal/NewPasswordModal';
@@ -11,7 +11,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(''); 
+  const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -24,7 +24,7 @@ const Login = () => {
 
     if (isSignUp) {
       try {
-        const signUpResponse = await fetch(`${BASE_URL}/user/createUser`, {
+        const signUpResponse = await fetch(`${BASE_URL}/user/create-user`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -33,12 +33,16 @@ const Login = () => {
         });
 
         if (!signUpResponse.ok) {
-          throw new Error('Failed to sign up');
+          const errorData = await signUpResponse.json();
+          showRedNotification(errorData.message || 'Failed to sign up');
+          return;
         }
+
+        showGreenNotification('Sign up successful! Please log in.');
         setIsSignUp(false);
         setError('');
       } catch (error) {
-        setError('Failed to sign up. Please try again.');
+        showRedNotification('Failed to sign up. Please try again.');
         console.error('Sign-up error:', error);
       }
     } else {
@@ -52,14 +56,16 @@ const Login = () => {
         });
 
         if (!loginResponse.ok) {
-          throw new Error('Invalid credentials');
+          const errorData = await loginResponse.json();
+          showRedNotification(errorData.message || 'Invalid credentials');
+          return;
         }
 
         const loginData = await loginResponse.json();
         const token = loginData.jwt;
         localStorage.setItem('token', token);
 
-        const roleResponse = await fetch(`${BASE_URL}/user/getUserRole`, {
+        const roleResponse = await fetch(`${BASE_URL}/user/get-user-role`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -67,20 +73,29 @@ const Login = () => {
         });
 
         if (!roleResponse.ok) {
-          throw new Error('Failed to fetch user role');
+          showRedNotification('Failed to fetch user role');
+          return;
         }
 
         const role = await roleResponse.text();
         localStorage.setItem('role', role);
 
-        const userIdResponse = await fetch(`${BASE_URL}/user/getUserId`, {
+        const userIdResponse = await fetch(`${BASE_URL}/user/get-user-id`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+
+        if (!userIdResponse.ok) {
+          showRedNotification('Failed to fetch user ID');
+          return;
+        }
+
         const userId = await userIdResponse.text();
         localStorage.setItem('userId', userId);
+
+        showGreenNotification('Login successful!');
 
         if (role === 'ADMIN') {
           navigate('/adminpanel');
@@ -88,17 +103,17 @@ const Login = () => {
           navigate(`/userprofile/${userId}`);
         }
       } catch (error) {
-        setError('Invalid credentials');
+        showRedNotification('Invalid credentials');
         console.error('Login error:', error);
       }
     }
   };
 
   const handleEmailSubmit = async (submittedEmail) => {
-    setEmail(submittedEmail);  
+    setEmail(submittedEmail);
 
     try {
-      const response = await fetch(`${BASE_URL}/user/forgetPassword`, {
+      const response = await fetch(`${BASE_URL}/user/forget-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,20 +122,21 @@ const Login = () => {
       });
 
       if (!response.ok) {
-        showRedNotification("Email not found");
-        throw new Error('Email not found');
+        showRedNotification('Email not found');
+        return;
       }
 
       setShowEmailModal(false);
-      setShowOtpModal(true);  
+      setShowOtpModal(true);
     } catch (error) {
-      setError('Failed to send OTP. Please try again.');
+      showRedNotification('Failed to send OTP. Please try again.');
+      console.error('Error sending OTP:', error);
     }
   };
 
   const handleOtpSubmit = async (otp) => {
     try {
-      const response = await fetch(`${BASE_URL}/user/verifyOtp`, {
+      const response = await fetch(`${BASE_URL}/user/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
@@ -130,34 +146,37 @@ const Login = () => {
 
       if (!response.ok) {
         showRedNotification('Invalid OTP');
-        throw new Error('Invalid OTP');
+        return;
       }
 
       setShowOtpModal(false);
-      setShowPasswordModal(true);  
+      setShowPasswordModal(true);
     } catch (error) {
-      setError('Invalid OTP. Please try again.');
+      showRedNotification('Invalid OTP. Please try again.');
+      console.error('OTP verification error:', error);
     }
   };
 
   const handleNewPasswordSubmit = async (newPassword) => {
     try {
-      const response = await fetch(`${BASE_URL}/user/resetPassword`, {
+      const response = await fetch(`${BASE_URL}/user/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, new_password: newPassword }),  
+        body: JSON.stringify({ email, new_password: newPassword }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to reset password');
+        showRedNotification('Failed to reset password');
+        return;
       }
 
       setShowPasswordModal(false);
-      setError('');
+      showGreenNotification('Password reset successful! Please log in.');
     } catch (error) {
-      setError('Failed to reset password. Please try again.');
+      showRedNotification('Failed to reset password. Please try again.');
+      console.error('Password reset error:', error);
     }
   };
 

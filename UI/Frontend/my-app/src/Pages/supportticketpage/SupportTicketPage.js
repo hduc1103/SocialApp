@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BASE_URL } from '../../config';
+import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import './supportticketpage.scss';
 
 const SupportTicketPage = ({ userId }) => {
@@ -8,7 +8,6 @@ const SupportTicketPage = ({ userId }) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [error, setError] = useState('');
   const [usernames, setUsernames] = useState({});
   const [showCommentBox, setShowCommentBox] = useState({});
   const navigate = useNavigate();
@@ -23,7 +22,6 @@ const SupportTicketPage = ({ userId }) => {
   ];
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       return;
@@ -32,28 +30,28 @@ const SupportTicketPage = ({ userId }) => {
   }, []);
 
   const handleOptionChange = (option) => {
-    if (selectedOptions.includes(option)) {
-      setSelectedOptions(selectedOptions.filter((opt) => opt !== option));
-    } else {
-      setSelectedOptions([...selectedOptions, option]);
-    }
+    setSelectedOptions((prevOptions) =>
+      prevOptions.includes(option)
+        ? prevOptions.filter((opt) => opt !== option)
+        : [...prevOptions, option]
+    );
   };
 
   const handleSubmitTicket = async () => {
-    if (title.trim() === '') {
-      setError('Title cannot be empty');
+    if (!title.trim()) {
+      showRedNotification('Title cannot be empty');
       return;
     }
 
     if (selectedOptions.length === 0) {
-      setError('Please select at least one option');
+      showRedNotification('Please select at least one option');
       return;
     }
 
     try {
       const content = selectedOptions.join('; ');
 
-      const response = await fetch(`${BASE_URL}/user/createSupportTicket`, {
+      const response = await fetch(`${BASE_URL}/user/create-support-ticket`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -66,22 +64,24 @@ const SupportTicketPage = ({ userId }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit ticket');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to submit ticket');
+        return;
       }
 
       await getAllUserTicket();
       setTitle('');
       setSelectedOptions([]);
-      setError('');
+      showGreenNotification('Ticket submitted successfully');
     } catch (err) {
       console.error(err);
-      setError('Failed to submit ticket');
+      showRedNotification('Failed to submit ticket');
     }
   };
 
   const getAllUserTicket = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/user/getAllUserTicket`, {
+      const response = await fetch(`${BASE_URL}/user/get-all-user-ticket`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -89,16 +89,19 @@ const SupportTicketPage = ({ userId }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch user tickets');
-      } else if(response.status=== 401){
-        navigate('/login')
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to fetch user tickets');
+        if (response.status === 401) {
+          navigate('/login');
+        }
+        return;
       }
 
       const data = await response.json();
       setTickets(data);
 
       const userIds = Array.from(
-        new Set(data.flatMap(ticket => ticket.comments.map(comment => comment.userId)))
+        new Set(data.flatMap((ticket) => ticket.comments.map((comment) => comment.userId)))
       );
 
       const usernamesMap = {};
@@ -112,13 +115,13 @@ const SupportTicketPage = ({ userId }) => {
       setUsernames(usernamesMap);
     } catch (error) {
       console.error('Error fetching user tickets:', error);
-      setError('Failed to fetch user tickets');
+      showRedNotification('Failed to fetch user tickets');
     }
   };
 
   const fetchUsername = async (userId) => {
     try {
-      const response = await fetch(`${BASE_URL}/user/getUsername?userId=${userId}`, {
+      const response = await fetch(`${BASE_URL}/user/get-username?userId=${userId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -138,32 +141,34 @@ const SupportTicketPage = ({ userId }) => {
   };
 
   const handleAddComment = async (ticketId) => {
-    if (newComment.trim() === '') {
-      setError('Comment cannot be empty');
+    if (!newComment.trim()) {
+      showRedNotification('Comment cannot be empty');
       return;
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/user/addTicketComment?ticket_id=${ticketId}`, {
+      const response = await fetch(`${BASE_URL}/user/add-ticket-comment?ticket_id=${ticketId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newComment),
+        body: JSON.stringify({ text: newComment }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add comment');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to add comment');
+        return;
       }
 
       await getAllUserTicket();
       setNewComment('');
-      setError('');
+      showGreenNotification('Comment added successfully');
       setShowCommentBox({ ...showCommentBox, [ticketId]: false });
     } catch (err) {
       console.error(err);
-      setError('Failed to add comment');
+      showRedNotification('Failed to add comment');
     }
   };
 
@@ -178,13 +183,16 @@ const SupportTicketPage = ({ userId }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to close ticket');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to close ticket');
+        return;
       }
 
       await getAllUserTicket();
+      showGreenNotification('Ticket closed successfully');
     } catch (err) {
       console.error(err);
-      setError('Failed to close ticket');
+      showRedNotification('Failed to close ticket');
     }
   };
 
@@ -197,7 +205,7 @@ const SupportTicketPage = ({ userId }) => {
 
   return (
     <div className="support-ticket-page">
-      <h2 className='support-ticket-page-h2'>Create a Support Ticket</h2>
+      <h2 className="support-ticket-page-h2">Create a Support Ticket</h2>
       <div className="ticket-form">
         <input
           type="text"
@@ -220,12 +228,12 @@ const SupportTicketPage = ({ userId }) => {
           ))}
         </div>
         <button onClick={handleSubmitTicket}>Submit Ticket</button>
-        {error && <p className="error">{error}</p>}
       </div>
-      <div className="ticket-list">
-        <h3>Your Tickets</h3>
-        {tickets.length > 0 ? (
-          tickets.map((ticket) => (
+
+      {tickets.length > 0 ? (
+        <div className="ticket-list">
+          <h3>Your Tickets</h3>
+          {tickets.map((ticket) => (
             <div key={ticket.id} className={`ticket-item ${ticket.closed ? 'closed' : ''}`}>
               <h4>{ticket.title}</h4>
               <ul className="ticket-content-list">
@@ -238,10 +246,7 @@ const SupportTicketPage = ({ userId }) => {
                 {ticket.comments.map((comment) => (
                   <div key={comment.id} className="user-comment-item">
                     <p>
-                      <strong>
-                        {usernames[comment.userId] || 'Unknown User'}:
-                      </strong>{' '}
-                      {comment.text}
+                      <strong>{usernames[comment.userId] || 'Unknown User'}:</strong> {comment.text}
                     </p>
                     <p className="comment-date">
                       Posted on: {new Date(comment.createdAt).toLocaleString()}
@@ -268,11 +273,11 @@ const SupportTicketPage = ({ userId }) => {
                 <button onClick={() => handleCloseTicket(ticket.id)}>Close Ticket</button>
               )}
             </div>
-          ))
-        ) : (
-          <p>No tickets yet.</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p>No tickets yet.</p>
+      )}
     </div>
   );
 };

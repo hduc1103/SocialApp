@@ -3,14 +3,15 @@ package com.SocialWeb.service.interfaces;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
 import java.util.List;
+import java.util.Map;
 
 public interface PostService {
 
-    List<PostEntity> getPostsByUser(long userId);
+    List<PostResponse> getUserPosts(long userId);
 
     PostEntity getPostById(long postId);
 
-    PostResponse createPost(String username, String content);
+    PostResponse createPost(String token, Map<String, String> postData);
 
     long numberOfLikes(long postId);
 
@@ -20,5 +21,5 @@ public interface PostService {
 
     List<PostEntity> searchPostsByKeyWord(String keyword);
 
-    List<PostEntity> retrieveRecentFriendPosts(Long userId);
+    List<PostResponse> retrieveFriendsPosts(Long userId);
 }

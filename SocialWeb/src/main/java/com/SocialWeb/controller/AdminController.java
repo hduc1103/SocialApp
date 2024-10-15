@@ -1,27 +1,20 @@
 package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.response.SupportTicketResponse;
-import com.SocialWeb.domain.response.TicketCommentResponse;
 import com.SocialWeb.domain.response.UserResponse;
-import com.SocialWeb.entity.SupportTicketEntity;
-import com.SocialWeb.entity.TicketCommentEntity;
-import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.security.JwtUtil;
-import com.SocialWeb.service.interfaces.MessageService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
 
-import static com.SocialWeb.Message.*;
+import static com.SocialWeb.Message.D_USER;
+import static com.SocialWeb.Message.USER_CREATED;
 
 @RestController
 @RequestMapping("/admin")
@@ -44,30 +37,30 @@ public class AdminController {
         return jwtUtil.extractUsername(jwtToken);
     }
 
-    @GetMapping("/allUsers")
-public List<UserResponse> getAllUsers() {
-    return userService.getAllUserResponses();
-}
+    @GetMapping("/all-users")
+    public List<UserResponse> getAllUsers() {
+        return userService.getAllUserResponses();
+    }
 
-@GetMapping("/oneUser")
-public ResponseEntity<UserResponse> getOneUser(@RequestParam("userId") Long userId) {
-    UserResponse userResponse = userService.getUserResponseById(userId);
-    return ResponseEntity.status(HttpStatus.OK).body(userResponse);
-}
+    @GetMapping("/one-user")
+    public ResponseEntity<UserResponse> getOneUser(@RequestParam("userId") Long userId) {
+        UserResponse userResponse = userService.getUserResponseById(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(userResponse);
+    }
 
-@DeleteMapping("/deleteUser")
-public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId) {
-    userService.deleteUserById(userId);
-    return ResponseEntity.ok(D_USER);
-}
+    @DeleteMapping("/delete-user")
+    public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok(D_USER);
+    }
 
-    @PutMapping("/updateUser")
+    @PutMapping("/update-user")
     public ResponseEntity<UserResponse> updateUser(@RequestParam("userId") Long userId, @RequestBody Map<String, String> updateData) {
         UserResponse updatedUser = userService.updateUser(userId, updateData);
         return ResponseEntity.ok(updatedUser);
     }
 
-    @PostMapping("/createUser")
+    @PostMapping("/create-user")
     public ResponseEntity<?> createUser(@RequestBody Map<String, String> newAccount) {
         try {
             userService.createUser(newAccount);
@@ -79,7 +72,7 @@ public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId) {
         }
     }
 
-    @GetMapping("/getAllSupportTicket")
+    @GetMapping("/get-all-support-ticket")
     public ResponseEntity<List<SupportTicketResponse>> getAllSupportTicket() {
         try {
             List<SupportTicketResponse> supportTicketResponses = supportTicketService.getAllSupportTicketResponses();
@@ -89,7 +82,7 @@ public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId) {
         }
     }
 
-    @PostMapping("/addTicketComment")
+    @PostMapping("/add-ticket-comment")
     public ResponseEntity<?> addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
         try {
             String username = extractUsername(token);
@@ -100,8 +93,7 @@ public ResponseEntity<?> deleteUser(@RequestParam("userId") Long userId) {
         }
     }
 
-
-    @GetMapping("/AdmingetUsername")
+    @GetMapping("/get-username")
     public ResponseEntity<String> getUsername(@RequestParam Long userId) {
         String username = userService.getUserName(userId);
         return ResponseEntity.ok(username);

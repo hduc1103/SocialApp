@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BASE_URL, PUBLIC_URL } from '../../config';
+import { BASE_URL, PUBLIC_URL, showRedNotification, showGreenNotification } from '../../config';
 import { useNavigate } from 'react-router-dom';
 import { FaEllipsisH } from 'react-icons/fa';
 import { BiSolidLike } from "react-icons/bi";
@@ -38,7 +38,7 @@ const Post = ({ post }) => {
   const fetchPostAuthor = async (userId) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/user/getUsername?userId=${userId}`, {
+      const response = await fetch(`${BASE_URL}/user/get-username?userId=${userId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -46,7 +46,9 @@ const Post = ({ post }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch post author');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to fetch post author');
+        return;
       }
 
       const data = await response.json();
@@ -63,7 +65,7 @@ const Post = ({ post }) => {
       const usernames = {};
       const img_url = {};
       for (const comment of comments) {
-        const response = await fetch(`${BASE_URL}/user/getUsername?userId=${comment.user_id}`, {
+        const response = await fetch(`${BASE_URL}/user/get-username?userId=${comment.user_id}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -73,6 +75,10 @@ const Post = ({ post }) => {
           const data = await response.json();
           usernames[comment.id] = data.username;
           img_url[comment.id] = data.imgUrl;
+        } else {
+          const errorData = await response.json();
+          showRedNotification(errorData.message || 'Failed to fetch username');
+          return;
         }
       }
       setCommentUsernames(usernames);
@@ -85,7 +91,7 @@ const Post = ({ post }) => {
   const handleDeleteComment = async (commentId) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/interact/deleteComment?cmtId=${commentId}`, {
+      const response = await fetch(`${BASE_URL}/interact/delete-comment?cmtId=${commentId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -93,9 +99,12 @@ const Post = ({ post }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete comment');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to delete comment');
+        return;
       }
       setComments(comments.filter((c) => c.id !== commentId));
+      showGreenNotification('Comment deleted successfully');
     } catch (error) {
       console.error('Error deleting comment:', error);
     }
@@ -104,7 +113,7 @@ const Post = ({ post }) => {
   const handleUpdateComment = async (commentId) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/interact/updateComment?commentId=${commentId}`, {
+      const response = await fetch(`${BASE_URL}/interact/update-comment?commentId=${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -114,16 +123,19 @@ const Post = ({ post }) => {
       });
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to update comment');
+        return;
       }
 
       const updatedComments = comments.map((comment) =>
         comment.id === commentId ? { ...comment, text: updatedComment } : comment
       );
-      
+
       setComments(updatedComments);
       setEditingCommentId(null);
       setUpdatedComment('');
+      showGreenNotification('Comment updated successfully');
     } catch (error) {
       console.error('Failed to update comment:', error);
     }
@@ -148,11 +160,15 @@ const Post = ({ post }) => {
         });
 
         if (!dislikeResponse.ok) {
-          throw new Error('Failed to dislike the post');
+          const errorData = await dislikeResponse.json();
+          showRedNotification(errorData.message || 'Failed to dislike the post');
+          return;
         }
         setLikes(likes - 1);
       } else if (!response.ok) {
-        throw new Error('Failed to like the post');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to like the post');
+        return;
       } else {
         setLikes(likes + 1);
       }
@@ -166,7 +182,7 @@ const Post = ({ post }) => {
     if (comment.trim()) {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`${BASE_URL}/interact/addComment?postId=${post.id}`, {
+        const response = await fetch(`${BASE_URL}/interact/add-comment?postId=${post.id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -176,14 +192,17 @@ const Post = ({ post }) => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to add comment');
+          const errorData = await response.json();
+          showRedNotification(errorData.message || 'Failed to add comment');
+          return;
         }
 
         let newComment = await response.json();
-        newComment = { ...newComment, user_id: parseInt(userId, 10) }; 
+        newComment = { ...newComment, user_id: parseInt(userId, 10) };
         setComments([...comments, newComment]);
         setComment('');
         fetchUsernamesForComments([newComment]);
+        showGreenNotification('Comment added successfully');
       } catch (error) {
         console.error('Error adding comment:', error);
       }
@@ -193,7 +212,7 @@ const Post = ({ post }) => {
   const handleDeletePost = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/post/deletePost?postId=${post.id}`, {
+      const response = await fetch(`${BASE_URL}/post/delete-post?postId=${post.id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -201,8 +220,11 @@ const Post = ({ post }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete post');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to delete post');
+        return;
       }
+      showGreenNotification('Post deleted successfully');
       console.log('Post deleted');
     } catch (error) {
       console.error('Error deleting post:', error);
@@ -212,7 +234,7 @@ const Post = ({ post }) => {
   const handleUpdatePost = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/post/updatePost?postId=${post.id}`, {
+      const response = await fetch(`${BASE_URL}/post/update-post?postId=${post.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -222,12 +244,14 @@ const Post = ({ post }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update post');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to update post');
+        return;
       }
 
       post.content = updatedContent;
       setIsEditing(false);
-      console.log('Post updated successfully');
+      showGreenNotification('Post updated successfully');
     } catch (error) {
       console.error('Error updating post:', error);
     }
@@ -261,7 +285,7 @@ const Post = ({ post }) => {
       ) : (
         <p className="post-content">{post.content}</p>
       )}
-      {(post.userId === parseInt(userId) || role ==='ADMIN') && (
+      {(post.userId === parseInt(userId) || role === 'ADMIN') && (
         <div className="post-options">
           <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
             <FaEllipsisH />
@@ -322,7 +346,7 @@ const Post = ({ post }) => {
                     <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
                   </div>
                   <span className="comment-text">{comment.text}</span>
-                  {(comment.user_id === parseInt(userId) || role ==='ADMIN') && (
+                  {(comment.user_id === parseInt(userId) || role === 'ADMIN') && (
                     <div className="comment-options">
                       <button
                         className="three-dot-button"

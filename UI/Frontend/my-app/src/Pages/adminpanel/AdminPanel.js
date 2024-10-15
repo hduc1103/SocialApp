@@ -30,9 +30,8 @@ const AdminPanel = () => {
 
   const getAllUsers = async () => {
     const token = localStorage.getItem('token'); 
-  
     try {
-      const response = await fetch(`${BASE_URL}/admin/allUsers`, {
+      const response = await fetch(`${BASE_URL}/admin/all-users`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`, 
@@ -41,22 +40,23 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        showRedNotification('Failed to fetch users');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to fetch users');
+        return; 
       }
   
       const data = await response.json();
       setUsers(data);
+      showGreenNotification('Users fetched successfully');
     } catch (error) {
-      showRedNotification('Error fetching users:', error);
+      showRedNotification('Error fetching users');
     }
   };
-  
-  
+
   const getOneUser = async () => {
     const token = localStorage.getItem('token'); 
-  
     try {
-      const response = await fetch(`${BASE_URL}/admin/oneUser?userId=${userId}`, {
+      const response = await fetch(`${BASE_URL}/admin/one-user?userId=${userId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`, 
@@ -65,21 +65,23 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        showRedNotification('Failed to fetch user details');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to fetch user details');
+        return; 
       }
   
       const data = await response.json();
       setUserDetails(data);
+      showGreenNotification('User details fetched successfully');
     } catch (error) {
-      showRedNotification('Error fetching user:', error);
+      showRedNotification('Error fetching user');
     }
   };
   
   const deleteUser = async () => {
     const token = localStorage.getItem('token'); 
-  
     try {
-      const response = await fetch(`${BASE_URL}/admin/deleteUser?userId=${userId}`, {
+      const response = await fetch(`${BASE_URL}/admin/delete-user?userId=${userId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`, 
@@ -88,21 +90,22 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        showRedNotification('Failed to delete user');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to delete user');
+        return; // Stop execution if there's an error
       }
   
       showGreenNotification('User deleted successfully');
       getAllUsers();
     } catch (error) {
-      showRedNotification('Error deleting user:', error);
+      showRedNotification('Error deleting user');
     }
   };
-  
+
   const createUser = async () => {
     const token = localStorage.getItem('token'); 
-  
     try {
-      const response = await fetch(`${BASE_URL}/admin/createUser`, {
+      const response = await fetch(`${BASE_URL}/admin/create-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +115,9 @@ const AdminPanel = () => {
       });
   
       if (!response.ok) {
-        showRedNotification('Failed to create user');
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to create user');
+        return; // Stop execution if there's an error
       }
   
       showGreenNotification('User created successfully');
@@ -125,11 +130,12 @@ const AdminPanel = () => {
         bio: '',
         img_url: '',
       });
+      getAllUsers(); // Refresh user list after creation
     } catch (error) {
-      showRedNotification('Error creating user:', error);
+      showRedNotification('Error creating user');
     }
   };
-  
+
   const updateUser = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -144,7 +150,7 @@ const AdminPanel = () => {
         return;
       }
   
-      const response = await fetch(`${BASE_URL}/admin/updateUser?userId=${updateData.userId}`, {
+      const response = await fetch(`${BASE_URL}/admin/update-user?userId=${updateData.userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -153,8 +159,15 @@ const AdminPanel = () => {
         body: JSON.stringify(updateDataPayload),
       });
   
-      if (response.status===409) {
-        showRedNotification('Username or gmail already exits');
+      if (response.status === 409) {
+        showRedNotification('Username or email already exists');
+        return; // Stop execution in case of conflict
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to update user');
+        return; // Stop execution if there's an error
       }
   
       showGreenNotification('User updated successfully');
@@ -166,12 +179,12 @@ const AdminPanel = () => {
         new_address: '',
         new_bio: '',
       });
+      getAllUsers(); 
     } catch (error) {
-      showRedNotification('Error updating user:', error);
+      showRedNotification('Error updating user');
     }
   };
-  
-  
+
   return (
     <div className="admin-panel">
       <h1>Admin Panel</h1>

@@ -16,31 +16,21 @@ import static com.SocialWeb.Message.*;
 public class InteractionController {
 
     private final InteractService interactService;
-    private final JwtUtil jwtUtil;
 
-    public InteractionController(InteractService interactService, JwtUtil jwtUtil){
+    public InteractionController(InteractService interactService){
         this.interactService = interactService;
-        this.jwtUtil = jwtUtil;
     }
 
-    private String extractUsername(String token) {
-        String jwtToken = token.substring(7);
-        return jwtUtil.extractUsername(jwtToken);
-    }
-
-    @PostMapping("/addComment")
+    @PostMapping("/add-comment")
     public ResponseEntity<?> addComment(@RequestHeader("Authorization") String token,
                                         @RequestParam Long postId,
                                         @RequestBody Map<String, String> text) {
-        String username = extractUsername(token);
-        String content = text.get("text");
-
-        CommentResponse commentResponse = interactService.addComment(postId, username, content);
+        CommentResponse commentResponse = interactService.addComment(postId, token, text);
         return ResponseEntity.status(HttpStatus.CREATED).body(commentResponse);
     }
 
 
-    @DeleteMapping("/deleteComment")
+    @DeleteMapping("/delete-comment")
     public ResponseEntity<?> deleteComment(@RequestParam Long cmtId) {
         String response = interactService.deleteComment(cmtId);
         if (response.startsWith(ERROR_MSG)) {
@@ -49,16 +39,14 @@ public class InteractionController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping("/updateComment")
+    @PutMapping("/update-comment")
     public void updateComment(@RequestParam Long commentId, @RequestBody Map<String, String> new_comment) {
-        String new_content = new_comment.get("text");
-        interactService.updateComment(commentId, new_content);
+        interactService.updateComment(commentId, new_comment);
     }
 
     @PostMapping("/like")
     public ResponseEntity<?> likePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
-        String username = extractUsername(token);
-        String result = interactService.likePost(username, postId);
+        String result = interactService.likePost(token, postId);
         if (result.equals(Y_LIKE)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }
@@ -67,16 +55,14 @@ public class InteractionController {
 
     @PostMapping("/dislike")
     public ResponseEntity<?> dislikePost(@RequestHeader("Authorization") String token, @RequestParam Long postId) {
-        String username = extractUsername(token);
-        String result = interactService.dislikePost(username, postId);
-
+        String result = interactService.dislikePost(token, postId);
         if (result.equals(N_LIKE)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    @GetMapping("/getCommentUser/{commentId}")
+    @GetMapping("/get-comment-user/{commentId}")
     public ResponseEntity<String> getCommentUser(@PathVariable long commentId) {
         return ResponseEntity.status(HttpStatus.OK).body(interactService.getCommentAuthor(commentId));
     }
