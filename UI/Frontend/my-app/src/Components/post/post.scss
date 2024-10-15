@@ -32,6 +32,19 @@
       transform: scale(1.1);
     }
   }
+  .post-updated-time
+ {
+  font-size: 0.85rem;  
+  color: #888888;      
+  margin-top: 5px;     
+  display: block;      
+}
+.comment-updated-time{
+  font-size: 0.7rem;
+  color: #888888;      
+  margin-top: 5px;     
+  display: block;   
+}
 
   .post-author {
     font-size: 1.2em;

@@ -6,6 +6,11 @@ import { BiSolidLike } from "react-icons/bi";
 
 import './post.scss';
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString(); 
+};
+
 const Post = ({ post }) => {
   const [likes, setLikes] = useState(post.likeCount || 0);
   const [comments, setComments] = useState(post.comments || []);
@@ -307,6 +312,7 @@ const Post = ({ post }) => {
           )}
         </div>
       )}
+      <p className="post-updated-time">{formatDate(post.updatedAt)}</p>
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
           <BiSolidLike /> {likes}
@@ -355,6 +361,8 @@ const Post = ({ post }) => {
                     <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
                   </div>
                   <span className="comment-text">{comment.text}</span>
+                  <br></br>
+                  <p className="comment-updated-time"> {formatDate(comment.updatedAt)}</p>
                   {(comment.user_id === parseInt(userId) || role === 'ADMIN') && (
                     <div className="comment-options">
                       <button

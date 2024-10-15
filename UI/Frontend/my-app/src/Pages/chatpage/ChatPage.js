@@ -2,15 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BASE_URL, showGreenNotification } from '../../config';
-
+import { BASE_URL, showGreenNotification, showRedNotification } from '../../config';
 import './chatpage.scss';
 
 const ChatPage = () => {
   const senderId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
   const { receiverId } = useParams();
-
+  
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
   const [receiverDetails, setReceiverDetails] = useState(null);
@@ -18,8 +17,36 @@ const ChatPage = () => {
   const stompClient = useRef(null);
   const navigate = useNavigate();
 
+  // Check friend status function
+  const checkFriendStatus = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/user/check-friend-status?userId2=${receiverId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const isFriend = await response.json();
+        if (!isFriend) {
+          showRedNotification('You are not friends with this user.');
+          navigate('/conversation');  // Redirect to conversation page
+        }
+      } else {
+        throw new Error('Failed to check friend status');
+      }
+    } catch (error) {
+      console.error('Error checking friend status:', error);
+      showRedNotification('Error checking friend status');
+      navigate('/conversation');  // Redirect if any error occurs
+    }
+  };
+
   useEffect(() => {
     if (senderId && receiverId && token) {
+      checkFriendStatus();  // Check friend status when the page loads
+
       const fetchReceiverDetails = async () => {
         try {
           const response = await fetch(`${BASE_URL}/user/get-username?userId=${receiverId}`, {
@@ -55,7 +82,7 @@ const ChatPage = () => {
         }
       };
 
-      fetchReceiverDetails(); // Fetch the receiver's details
+      fetchReceiverDetails(); 
       fetchChatHistory();
 
       const socket = new SockJS(`${BASE_URL}/ws`);

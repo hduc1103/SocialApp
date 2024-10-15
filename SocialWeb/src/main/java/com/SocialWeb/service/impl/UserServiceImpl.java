@@ -322,14 +322,13 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserInfo(long userId) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
-        String encodedImgUrl = userEntity.getImg_url();
 
         return new UserResponse(
                 userEntity.getId(),
                 userEntity.getUsername(),
                 userEntity.getName(),
                 userEntity.getEmail(),
-                encodedImgUrl,
+                userEntity.getImg_url(),
                 userEntity.getBio(),
                 userEntity.getAddress()
         );
@@ -417,17 +416,12 @@ public class UserServiceImpl implements UserService {
                     Optional<UserEntity> friendEntity = userRepository.findById(friendId);
                     if (friendEntity.isPresent()) {
                         UserEntity friend = friendEntity.get();
-                        String decodedImgUrl = null;
-
-                        if (friend.getImg_url() != null) {
-                            decodedImgUrl = new String(Base64.getDecoder().decode(friend.getImg_url()));
-                        }
 
                         return UserResponse.builder()
                                 .id(friend.getId())
                                 .name(friend.getName())
                                 .username(friend.getUsername())
-                                .img_url(decodedImgUrl)
+                                .img_url(friend.getImg_url())
                                 .build();
                     } else {
                         return null;

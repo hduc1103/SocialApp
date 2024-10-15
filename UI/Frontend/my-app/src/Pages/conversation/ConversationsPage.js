@@ -104,8 +104,8 @@ const ConversationsPage = () => {
             <ul className="friends-list">
               {friends.map((friend) => (
                 <li key={friend.userId} className="friend-item" onClick={() => startNewConversation(friend.id)}>
-                  <img src={`${PUBLIC_URL}/profile_img_upload/${friend.img_url}`} alt={`${friend.username}'s avatar`} className="friend-avatar" />
-                  <span className="friend-username">{friend.username}</span>
+                  <img src={`data:image/png;base64,${friend.img_url}`} alt={`${friend.username}'s avatar`} className="friend-avatar" />
+                  <span className="friend-username">{friend.name}</span>
                 </li>
               ))}
             </ul>

@@ -27,7 +27,7 @@ public class UserEntity {
     private String password;
     private String email;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "longtext")
     private String img_url;
 
     private String bio;
