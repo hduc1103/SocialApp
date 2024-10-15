@@ -10,7 +10,6 @@ import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.MessageService;
 import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,9 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,15 +37,12 @@ public class UserServiceImpl implements UserService {
     private final JavaMailSender mailSender;
     private final UserDetail userDetail;
 
-    @Value("${upload.path}")
-    private String uploadDir;
-
     public UserServiceImpl(UserRepository userRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail) {
         this.messageService = messageService;
         this.userRepository = userRepository;
         this.postService = postService;
-        this.passwordEncoder= passwordEncoder;
-        this.authenticationManager= authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.mailSender = mailSender;
         this.userDetail = userDetail;
@@ -59,6 +52,7 @@ public class UserServiceImpl implements UserService {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
     }
+
     @Override
     public Long getUserIdByToken(String token) {
         String username = extractUsername(token);
@@ -77,7 +71,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllUserResponses() {
-        List<UserEntity> userEntities = getAllUsers(); 
+        List<UserEntity> userEntities = getAllUsers();
         List<UserResponse> result = new ArrayList<>();
         for (UserEntity userEntity : userEntities) {
             result.add(new UserResponse(
@@ -92,6 +86,7 @@ public class UserServiceImpl implements UserService {
         }
         return result;
     }
+
     @Override
     public void changeUserPassword(String token, Map<String, String> passwordData) {
         String username = extractUsername(token);
@@ -107,7 +102,9 @@ public class UserServiceImpl implements UserService {
         userEntity.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(userEntity);
     }
-    private String serverOtp=null;
+
+    private String serverOtp = null;
+
     @Override
     public void sendOtpForPasswordReset(String email) {
         boolean userExists = userRepository.existsByEmail(email);
@@ -117,7 +114,6 @@ public class UserServiceImpl implements UserService {
         }
 
         String otp = generateOtp();
-        // Store the OTP securely in the service (or database if necessary)
         serverOtp = otp;
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -133,6 +129,7 @@ public class UserServiceImpl implements UserService {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
     }
+
     @Override
     public boolean verifyOtp(String otp) {
         if (serverOtp != null && serverOtp.equals(otp)) {
@@ -141,6 +138,7 @@ public class UserServiceImpl implements UserService {
         }
         return false;
     }
+
     @Override
     public void resetUserPassword(String email, String newPassword) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -151,11 +149,11 @@ public class UserServiceImpl implements UserService {
         userEntity.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(userEntity);
 
-        // Authenticate the user with the new password to validate
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userEntity.getUsername(), newPassword)
         );
     }
+
     @Override
     public String createNewUser(Map<String, String> newAccount) {
         if (existsByUsername(newAccount.get("username"))) {
@@ -179,12 +177,10 @@ public class UserServiceImpl implements UserService {
 
         saveUser(userEntity);
 
-        // Authenticate user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword)
         );
 
-        // Generate JWT token
         final UserDetails userDetails = userDetail.loadUserByUsername(userEntity.getUsername());
         return jwtUtil.generateToken(userDetails);
     }
@@ -202,12 +198,13 @@ public class UserServiceImpl implements UserService {
                 userEntity.getAddress()
         );
     }
+
     @Override
     public void deleteUserById(Long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
-                messageService.deleteAllUserMessage(userId);
-                deleteRelationship(userId);
-                deleteUser(userEntity);
+        messageService.deleteAllUserMessage(userId);
+        deleteRelationship(userId);
+        deleteUser(userEntity);
     }
 
     @Override
@@ -261,13 +258,11 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(userEntity);
 
-        // Decode img_url if present
         String decodedImgUrl = null;
         if (userEntity.getImg_url() != null) {
             decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
         }
 
-        // Return the updated user response
         return UserResponse.builder()
                 .id(userEntity.getId())
                 .username(userEntity.getUsername())
@@ -327,50 +322,37 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserInfo(long userId) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
-
-        String decodedImgUrl = null;
-        if (userEntity.getImg_url() != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
-        }
+        String encodedImgUrl = userEntity.getImg_url();
 
         return new UserResponse(
                 userEntity.getId(),
                 userEntity.getUsername(),
                 userEntity.getName(),
                 userEntity.getEmail(),
-                decodedImgUrl,
+                encodedImgUrl,
                 userEntity.getBio(),
                 userEntity.getAddress()
         );
     }
-
     @Override
-    public void updateProfileImage(String token, MultipartFile profilePicture) throws IOException {
+    public Map<String, String> updateProfileImage(String token, MultipartFile profilePicture) throws IOException {
         if (profilePicture == null || profilePicture.isEmpty()) {
             throw new IllegalArgumentException("Profile picture is required");
         }
 
         String username = extractUsername(token);
-
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
-        String fileName = profilePicture.getOriginalFilename();
-        String encodedFileName = Base64.getEncoder().encodeToString(fileName.getBytes());
-
-        saveProfileImage(profilePicture, fileName);
-
-        userEntity.setImg_url(encodedFileName);
+        String base64Image = Base64.getEncoder().encodeToString(profilePicture.getBytes());
+        userEntity.setImg_url(base64Image);
         userRepository.save(userEntity);
-    }
 
-    private void saveProfileImage(MultipartFile profilePicture, String fileName) throws IOException {
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        Path filePath = uploadPath.resolve(fileName);
-        Files.write(filePath, profilePicture.getBytes());
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", "Profile image updated successfully");
+        responseBody.put("img_url", base64Image);
+
+        return responseBody;
     }
 
     @Override
@@ -483,7 +465,6 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
-
     @Override
     public Optional<UserEntity> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
@@ -564,15 +545,16 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
 
         Map<String, String> response = new HashMap<>();
-        response.put("username", userEntity.getUsername());
+        response.put("username", userEntity.getName());
 
-        String decodedImgUrl = null;
+        String base64Image = null;
         if (userEntity.getImg_url() != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
+            base64Image = userEntity.getImg_url();
         }
-        response.put("imgUrl", decodedImgUrl);
+        response.put("imgUrl", base64Image);
 
         return response;
     }
 
 }
+

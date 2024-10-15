@@ -33,8 +33,8 @@ const Login = () => {
         });
 
         if (!signUpResponse.ok) {
-          const errorData = await signUpResponse.json();
-          showRedNotification(errorData.message || 'Failed to sign up');
+          const errorData = await signUpResponse.text();
+          showRedNotification(errorData || 'Failed to sign up');
           return;
         }
 

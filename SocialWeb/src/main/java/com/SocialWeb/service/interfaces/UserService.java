@@ -21,7 +21,7 @@ public interface UserService {
 
     UserResponse getUserInfo(long userId);
 
-    void updateProfileImage(String username, MultipartFile profilePicture) throws IOException;
+    Map<String, String> updateProfileImage(String username, MultipartFile profilePicture) throws IOException;
 
     String getUserRoleByToken(String token);
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BASE_URL, PUBLIC_URL, showRedNotification, showGreenNotification } from '../../config';
+import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import { useNavigate } from 'react-router-dom';
 import { FaEllipsisH } from 'react-icons/fa';
 import { BiSolidLike } from "react-icons/bi";
@@ -44,21 +44,30 @@ const Post = ({ post }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        showRedNotification(errorData.message || 'Failed to fetch post author');
+        let errorMessage = 'Failed to fetch post author';
+        
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          console.error('Error parsing response:', e);
+        }
+
+        showRedNotification(errorMessage);
         return;
       }
-
+  
       const data = await response.json();
       setAuthor(data.username);
       setAuthorImgUrl(data.imgUrl);
     } catch (error) {
       console.error('Error fetching post author:', error);
+      showRedNotification('An error occurred while fetching the post author.');
     }
   };
-
+  
   const fetchUsernamesForComments = async (comments) => {
     const token = localStorage.getItem('token');
     try {
@@ -265,7 +274,7 @@ const Post = ({ post }) => {
         style={{ cursor: 'pointer' }}
       >
         <img
-          src={authorImgUrl ? `${PUBLIC_URL}/profile_img_upload/${authorImgUrl}` : "https://via.placeholder.com/150"}
+          src={authorImgUrl ? `data:image/png;base64,${authorImgUrl}` : "https://via.placeholder.com/150"}
           alt="Author Profile"
           className="post-author-img"
         />
@@ -339,7 +348,7 @@ const Post = ({ post }) => {
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
                     <img
-                      src={cmtImg[comment.id] ? `${PUBLIC_URL}/profile_img_upload/${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
+                      src={cmtImg[comment.id]  ? `data:image/png;base64,${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
                       alt="Author Profile"
                       className="post-author-img"
                     />

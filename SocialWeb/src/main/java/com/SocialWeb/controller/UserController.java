@@ -153,12 +153,12 @@ public class UserController {
     }
 
     @PutMapping(value = "/update-profile-image", consumes = "multipart/form-data")
-    public ResponseEntity<Void> updateProfileImage(
+    public ResponseEntity<Map<String, String>> updateProfileImage(
             @RequestHeader("Authorization") String token,
             @RequestParam("profilePicture") MultipartFile profilePicture) {
         try {
-            userService.updateProfileImage(token, profilePicture);
-            return ResponseEntity.status(HttpStatus.OK).build();
+            Map<String, String> responseBody = userService.updateProfileImage(token, profilePicture);
+            return ResponseEntity.ok(responseBody);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

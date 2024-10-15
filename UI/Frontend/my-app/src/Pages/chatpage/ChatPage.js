@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { useParams } from 'react-router-dom';
-import { BASE_URL, PUBLIC_URL, showGreenNotification } from '../../config';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BASE_URL, showGreenNotification } from '../../config';
+
 import './chatpage.scss';
 
 const ChatPage = () => {
@@ -12,12 +13,29 @@ const ChatPage = () => {
 
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
-  const [userDetails, setUserDetails] = useState({});
+  const [receiverDetails, setReceiverDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const stompClient = useRef(null);
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (senderId && receiverId && token) {
+      const fetchReceiverDetails = async () => {
+        try {
+          const response = await fetch(`${BASE_URL}/user/get-username?userId=${receiverId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setReceiverDetails(data); 
+          }
+        } catch (error) {
+          console.error('Error fetching receiver details:', error);
+        }
+      };
+
       const fetchChatHistory = async () => {
         try {
           const response = await fetch(`${BASE_URL}/chat/conversation?senderId=${senderId}&receiverId=${receiverId}`, {
@@ -30,8 +48,6 @@ const ChatPage = () => {
           }
           const data = await response.json();
           setChatMessages(data);
-          const oponents = new Set(data.map(msg => msg.senderId));
-          fetchUserDetails(oponents);
         } catch (error) {
           console.error('Failed to load chat history:', error);
         } finally {
@@ -39,32 +55,9 @@ const ChatPage = () => {
         }
       };
 
-      const fetchUserDetails = async (userIds) => {
-        try {
-          const detailsMap = {};
-          for (const id of userIds) {
-            if (id !== senderId) {
-              const response = await fetch(`${BASE_URL}/user/get-username?userId=${id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-              if (response.ok) {
-                const data = await response.json();
-                detailsMap[id] = {
-                  username: data.username,
-                  imgUrl: data.imgUrl,
-                };
-              }
-            }
-          }
-          setUserDetails(detailsMap);
-        } catch (error) {
-          console.error('Error fetching user details:', error);
-        }
-      };
-
+      fetchReceiverDetails(); // Fetch the receiver's details
       fetchChatHistory();
+
       const socket = new SockJS(`${BASE_URL}/ws`);
       stompClient.current = new Client({
         webSocketFactory: () => socket,
@@ -81,7 +74,7 @@ const ChatPage = () => {
         }
       };
     } else {
-      console.error('Missing senderId, receiverId or token');
+      console.error('Missing senderId, receiverId, or token');
       setLoading(false);
     }
   }, [senderId, receiverId, token]);
@@ -92,7 +85,7 @@ const ChatPage = () => {
   };
 
   const onError = (error) => {
-    alert(error)
+    alert(error);
   };
 
   const onMessageReceived = (payload) => {
@@ -124,6 +117,21 @@ const ChatPage = () => {
 
   return (
     <div className="chat-container">
+      <div className="chat-header">
+        {receiverDetails && (
+          <div className="receiver-info">
+            <img
+              src={receiverDetails.imgUrl ? `data:image/png;base64,${receiverDetails.imgUrl}` : 'https://via.placeholder.com/40'}
+              alt="Receiver Avatar"
+              className="user-avatar-chat"
+              onClick={() => navigate(`/userprofile/${receiverId}`)}
+              style={{ cursor: 'pointer' }}
+            />
+            <span>{receiverDetails.username}</span>
+          </div>
+        )}
+      </div>
+
       <div className="chat-box">
         {loading ? (
           <div className="loading-message">Loading...</div>
@@ -135,18 +143,6 @@ const ChatPage = () => {
                   key={index}
                   className={`message ${msg.senderId === senderId ? 'sent' : 'received'}`}
                 >
-                  {msg.senderId !== senderId && userDetails[msg.senderId] && (
-                    <>
-                      <img
-                        src={userDetails[msg.senderId]?.imgUrl
-                          ? `${PUBLIC_URL}/profile_img_upload/${userDetails[msg.senderId].imgUrl}`
-                          : 'https://via.placeholder.com/40'}
-
-                        className="user-avatar-chat"
-                      />
-                      <strong>{userDetails[msg.senderId].username || 'Loading...'}:</strong>
-                    </>
-                  )}
                   {msg.senderId === senderId ? (
                     <strong>You:</strong>
                   ) : null}

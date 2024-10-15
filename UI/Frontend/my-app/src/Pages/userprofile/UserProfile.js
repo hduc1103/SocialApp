@@ -372,11 +372,12 @@ useEffect(() => {
       <div className="profile-header">
         <div className="profile-details">
           <div className="profile-picture-wrapper">
-            <img
-              src={userDetails?.img_url ? `${PUBLIC_URL}/profile_img_upload/${userDetails.img_url}` : "https://via.placeholder.com/150"}
-              alt="Profile"
-              className="profile-picture"
-            />
+          <img
+  src={userDetails?.img_url ? `data:image/png;base64,${userDetails.img_url}` : "https://via.placeholder.com/150"}
+  alt="Profile"
+  className="profile-picture"
+/>
+
             {userId === loggedInUserId && (
               <>
                 <input

@@ -26,7 +26,10 @@ public class UserEntity {
     private String username;
     private String password;
     private String email;
+
+    @Column(columnDefinition = "LONGTEXT")
     private String img_url;
+
     private String bio;
     private String address;
 
