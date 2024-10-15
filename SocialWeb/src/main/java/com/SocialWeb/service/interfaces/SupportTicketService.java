@@ -2,7 +2,6 @@ package com.SocialWeb.service.interfaces;
 
 import com.SocialWeb.domain.response.SupportTicketResponse;
 import com.SocialWeb.entity.SupportTicketEntity;
-import com.SocialWeb.entity.TicketCommentEntity;
 import java.util.List;
 import java.util.Map;
 

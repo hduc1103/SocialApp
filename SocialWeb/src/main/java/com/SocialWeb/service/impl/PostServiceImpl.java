@@ -8,7 +8,6 @@ import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.PostService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,7 +22,6 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    @Autowired
     public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, JwtUtil jwtUtil) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;

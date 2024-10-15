@@ -2,7 +2,6 @@ package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.entity.PostEntity;
-import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +16,9 @@ import java.util.NoSuchElementException;
 public class PostController {
 
     private final PostService postService;
-    private final JwtUtil jwtUtil;
 
-    public PostController(PostService postService, JwtUtil jwtUtil){
+    public PostController(PostService postService){
         this.postService = postService;
-        this.jwtUtil = jwtUtil;
-    }
-
-    private String extractUsername(String token) {
-        String jwtToken = token.substring(7);
-        return jwtUtil.extractUsername(jwtToken);
     }
 
     @GetMapping("/get-post-by-id")

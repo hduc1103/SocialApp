@@ -1,7 +1,6 @@
 package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.response.CommentResponse;
-import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.InteractService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

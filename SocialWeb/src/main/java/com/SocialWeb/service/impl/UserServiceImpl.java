@@ -3,7 +3,6 @@ package com.SocialWeb.service.impl;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.entity.PostEntity;
-import com.SocialWeb.entity.TicketCommentEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.entity.WebFriendEntity;
 import com.SocialWeb.repository.UserRepository;
@@ -13,7 +12,6 @@ import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.MessageService;
 import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.UserService;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -300,7 +298,6 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
 
-        Long userId = userEntity.getId();
         if (updateData.containsKey("new_username") && existsByUsername(updateData.get("new_username"))) {
             throw new IllegalArgumentException("Username already exists");
         }
