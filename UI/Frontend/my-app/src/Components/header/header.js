@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHome, FaSearch, FaUserCircle } from 'react-icons/fa';
 import { RiAdminFill } from 'react-icons/ri';
 import { MdSupportAgent } from "react-icons/md";
-import { BASE_URL } from '../../config';
-import { IoIosLogOut, IoIosLogIn } from "react-icons/io";
+import { IoIosLogOut, IoIosLogIn, IoIosNotifications } from "react-icons/io";
 import { AiFillMessage } from "react-icons/ai";
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import { BASE_URL, showBlueNotification } from '../../config';
 import SearchResult from '../../components/searchresult/SearchResult';
 import './header.scss';
 
@@ -16,8 +18,12 @@ const Header = () => {
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchPerformed, setSearchPerformed] = useState(false);
-  const navigate = useNavigate();
+  const stompClient = useRef(null);
+  const [notifications, setNotifications] = useState([]);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
 
+  const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
@@ -31,21 +37,53 @@ const Header = () => {
       } else {
         setIsAdmin(false);
       }
+      connectToWebSocket();
     } else {
       setIsLoggedin(false);
       setIsAdmin(false);
     }
+
     setSearchPerformed(false);
     setUserResults([]);
     setPostResults([]);
   }, [navigate]);
+
+  const connectToWebSocket = () => {
+    const socket = new SockJS(`${BASE_URL}/ws`);
+
+    stompClient.current = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+    });
+
+    stompClient.current.onConnect = (frame) => {
+      console.log("WebSocket connected: ", frame);
+
+      stompClient.current.subscribe(`/user/${userId}/queue/notifications`, (message) => {
+        console.log("Notification received: ", message);
+        const notification = message.body;
+        setNewNotificationCount((prevCount) => prevCount + 1);
+        console.log(notification);
+        showBlueNotification(notification);
+      });
+    };
+
+    stompClient.current.onStompError = (frame) => {
+      console.error('Broker reported error: ' + frame.headers['message']);
+      console.error('Additional details: ' + frame.body);
+    };
+
+    stompClient.current.activate(); 
+  };
+
   const handleSupportNavigation = () => {
     if (isAdmin) {
       navigate('/admin/ticketsupport');
     } else {
       navigate('/ticketsupport');
     }
-  }
+  };
+
   const handleSearch = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -72,9 +110,12 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    localStorage.removeItem('userId')
+    localStorage.removeItem('userId');
     setIsLoggedin(false);
     setIsAdmin(false);
+    if (stompClient.current) {
+      stompClient.current.deactivate(); 
+    }
     navigate('/login');
   };
 
@@ -82,6 +123,26 @@ const Header = () => {
     setSearchPerformed(false);
     setUserResults([]);
     setPostResults([]);
+  };
+
+  const handleNotificationClick = async () => {
+    setShowNotifications(!showNotifications);
+    setNewNotificationCount(0);  
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${BASE_URL}/user/get-notification`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setNotifications(data);  
+    } else {
+      console.error('Failed to fetch notifications');
+    }
   };
 
   return (
@@ -100,14 +161,19 @@ const Header = () => {
               <FaUserCircle size={24} />
               <span>Profile</span>
             </div>
-            <div className="nav-item" onClick={() =>navigate(`/conversation`)}>
-            <AiFillMessage size={24}/>
-            <span>Chat</span>
+            <div className="nav-item" onClick={() => navigate(`/conversation`)}>
+              <AiFillMessage size={24} />
+              <span>Chat</span>
+            </div>
+            <div className="nav-item" onClick={handleNotificationClick}>
+              <IoIosNotifications size={24} />
+              {newNotificationCount > 0 && <span className="notification-count">{newNotificationCount}</span>}
+              <span>Notifications</span>
             </div>
             <div className="nav-item" onClick={handleSupportNavigation}>
-        <MdSupportAgent size={24} />
-        <span>Support</span>
-      </div>
+              <MdSupportAgent size={24} />
+              <span>Support</span>
+            </div>
             {isAdmin && (
               <div className="nav-item" onClick={() => navigate('/adminpanel')}>
                 <RiAdminFill size={24} />
@@ -149,6 +215,20 @@ const Header = () => {
           postResults={postResults}
           onClose={handleCloseSearchResult}
         />
+      )}
+
+      {showNotifications && (
+        <div className="notification-dropdown">
+          {notifications.length > 0 ? (
+            <ul>
+              {notifications.map((notification) => (
+                <li key={notification.id}>{notification.content}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No notifications yet.</p>
+          )}
+        </div>
       )}
     </>
   );

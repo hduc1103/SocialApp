@@ -3,8 +3,10 @@ package com.SocialWeb.service.impl;
 import com.SocialWeb.entity.MessageEntity;
 import com.SocialWeb.mongorepository.MessageRepository;
 import com.SocialWeb.service.interfaces.MessageService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,14 +15,18 @@ import java.util.Set;
 public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public MessageServiceImpl(MessageRepository messageRepository) {
+    public MessageServiceImpl(MessageRepository messageRepository, SimpMessagingTemplate simpMessagingTemplate) {
         this.messageRepository = messageRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @Override
-    public void saveMessage(MessageEntity message) {
+    public void sendMessage(MessageEntity message) {
+        message.setTimestamp(LocalDateTime.now());
         messageRepository.save(message);
+        simpMessagingTemplate.convertAndSendToUser(message.getReceiverId(), "/private", message);
     }
 
     @Override

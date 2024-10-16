@@ -16,6 +16,8 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     @Query(value = "SELECT * FROM web_post WHERE user_id = :userId AND is_deleted = 0", nativeQuery = true)
     List<PostEntity> findByUserAndNotDeleted(@Param("userId") Long userId);
 
+    @Query(value = "SELECT user_id FROM web_post WHERE id = :postId", nativeQuery = true)
+    Long getUserOfPost(@Param("postId")Long postId);
 
     @Query(value = "SELECT COUNT(*) > 0 FROM web_likes WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
     int checkUserLikedPost(@Param("userId") Long userId, @Param("postId") Long postId);

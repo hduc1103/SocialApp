@@ -2,6 +2,7 @@ package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.service.interfaces.InteractService;
+import com.SocialWeb.service.interfaces.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,6 @@ import static com.SocialWeb.Message.*;
 public class InteractionController {
 
     private final InteractService interactService;
-
     public InteractionController(InteractService interactService){
         this.interactService = interactService;
     }

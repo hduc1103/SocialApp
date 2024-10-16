@@ -350,6 +350,7 @@ public class UserServiceImpl implements UserService {
                 userEntity.getAddress()
         );
     }
+
     @Override
     public Map<String, String> updateProfileImage(String token, MultipartFile profilePicture) throws IOException {
         if (profilePicture == null || profilePicture.isEmpty()) {
@@ -548,6 +549,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow();
         return userEntity.getName();
     }
+
     @Override
     public Map<String, String> getUsernameAndImage(long userId) {
         UserEntity userEntity = userRepository.findById(userId)

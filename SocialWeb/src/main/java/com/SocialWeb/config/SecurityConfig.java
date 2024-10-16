@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/login","/user/forget-password","/user/verify-otp","/user/reset-password", "/user/search", "/user/create-user", "/post/number-of-likes").permitAll()
-                        .requestMatchers("/ws/**","/app/**").permitAll()
+                        .requestMatchers("/ws/**","/app/**", "/queue/**", "/topic/**").permitAll()
                         .requestMatchers("/chat/**", "/post/**", "/user/**", "/interact/**").authenticated()
                         .requestMatchers("/admin/**").hasAuthority("ADMIN"))
                 .cors(withDefaults())

@@ -6,7 +6,7 @@ import java.util.Set;
 
 public interface MessageService {
 
-    void saveMessage(MessageEntity message);
+    void sendMessage(MessageEntity message);
 
     List<MessageEntity> getMessagesBetweenUsers(String senderId, String receiverId);
 

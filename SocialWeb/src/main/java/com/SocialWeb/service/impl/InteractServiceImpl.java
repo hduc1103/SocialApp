@@ -9,6 +9,7 @@ import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.InteractService;
+import com.SocialWeb.service.interfaces.NotificationService;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -24,12 +25,14 @@ public class InteractServiceImpl implements InteractService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final JwtUtil jwtUtil;
+    private final NotificationService notificationService;
 
-    public InteractServiceImpl(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository, JwtUtil jwtUtil) {
+    public InteractServiceImpl(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository, JwtUtil jwtUtil, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.jwtUtil = jwtUtil;
+        this.notificationService = notificationService;
     }
 
     private String extractUsername(String token) {
@@ -73,10 +76,10 @@ public class InteractServiceImpl implements InteractService {
     @Override
     public String deleteComment(Long cmtId) {
         try {
-             CommentEntity commentEntity= commentRepository.findById(cmtId).orElseThrow();
-             commentEntity.setDeleted(true);
-             commentRepository.save(commentEntity);
-             return CMT_DEL;
+            CommentEntity commentEntity = commentRepository.findById(cmtId).orElseThrow();
+            commentEntity.setDeleted(true);
+            commentRepository.save(commentEntity);
+            return CMT_DEL;
         } catch (NoSuchElementException e) {
             System.err.println(ERROR_MSG + e.getMessage());
             return ERROR_MSG + e.getMessage();
@@ -95,6 +98,10 @@ public class InteractServiceImpl implements InteractService {
             return Y_LIKE;
         }
         postRepository.addLike(userEntity.getId(), postId);
+        UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
+        String content = "User " + username + " liked your post";
+        System.out.println(content);
+        notificationService.sendNotification(userEntity1,content);
         return LIKE;
     }
 

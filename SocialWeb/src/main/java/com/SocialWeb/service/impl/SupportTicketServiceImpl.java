@@ -2,13 +2,15 @@ package com.SocialWeb.service.impl;
 
 import com.SocialWeb.domain.response.SupportTicketResponse;
 import com.SocialWeb.domain.response.TicketCommentResponse;
-import com.SocialWeb.entity.*;
+import com.SocialWeb.entity.SupportTicketEntity;
+import com.SocialWeb.entity.TicketCommentEntity;
+import com.SocialWeb.entity.TicketStatus;
+import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.SupportTicketRepository;
 import com.SocialWeb.repository.TicketCommentRepository;
 import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.SupportTicketService;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -24,6 +26,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     private final TicketCommentRepository ticketCommentRepository;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+
     private String extractUsername(String token) {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
@@ -35,6 +38,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
     }
+
     @Override
     public void addTicketCommentByToken(String token, Long ticketId, String text) {
         String username = extractUsername(token);
@@ -65,7 +69,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
 
     @Override
     public void deleteSupportTicket(Long ticketId) {
-        SupportTicketEntity supportTicketEntity= supportTicketRepository.findById(ticketId).orElseThrow();
+        SupportTicketEntity supportTicketEntity = supportTicketRepository.findById(ticketId).orElseThrow();
         supportTicketEntity.setStatus(TicketStatus.CLOSED);
         supportTicketEntity.setEndAt(new Date());
         supportTicketRepository.save(supportTicketEntity);
@@ -94,6 +98,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                         .build())
                 .collect(Collectors.toList());
     }
+
     @Override
     public void createSupportTicketByToken(String token, Map<String, Object> requestBody) {
         String username = extractUsername(token);

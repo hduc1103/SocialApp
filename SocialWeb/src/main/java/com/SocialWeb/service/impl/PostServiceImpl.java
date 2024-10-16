@@ -2,7 +2,6 @@ package com.SocialWeb.service.impl;
 
 import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.domain.response.PostResponse;
-import com.SocialWeb.entity.CommentEntity;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.PostRepository;

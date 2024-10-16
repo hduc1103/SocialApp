@@ -4,9 +4,8 @@
   border-radius: 10px;
   color: #e0e0e0;
   margin-bottom: 20px;
-  position: relative; /* Ensure the post is relatively positioned */
   animation: fadeIn 0.8s ease-in-out;
-
+  position: relative;
   .post-author {
     transition: background-color 0.3s ease;
   }
@@ -40,6 +39,17 @@
     color: #888888;
     margin-top: 5px;
     display: block;
+  }
+
+  .comment-updated-time {
+    font-size: 0.7rem;
+    color: #888888;
+    margin-top: 5px;
+    display: block;
+  }
+
+  .post-author {
+    font-size: 1.2em;
   }
 
   .post-actions {
@@ -145,16 +155,34 @@
     }
   }
 
-  .three-dot-button {
+  /* Styles for post options button */
+  .three-dot-button.post-options-button {
     background: none;
     border: none;
     cursor: pointer;
     color: #888;
+    z-index: 10;
     font-size: 1.5rem;
     transition: transform 0.3s ease;
-    position: absolute; /* Position the button */
-    top: 10px; /* Adjust the distance from the top */
-    right: 10px; /* Align the button to the right */
+    position: absolute; 
+    top: 10px; 
+    right: 10px;
+
+    &:hover {
+      transform: rotate(90deg);
+    }
+  }
+
+  /* Styles for comment options button */
+  .three-dot-button.comment-options-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    position: relative; /* Adjusted for comments */
+    margin-left: 10px;
 
     &:hover {
       transform: rotate(90deg);
@@ -166,8 +194,6 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     position: absolute;
-    top: 30px; /* Below the three-dot button */
-    right: 10px;
     padding: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     animation: fadeIn 0.5s ease-in-out;

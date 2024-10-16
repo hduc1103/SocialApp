@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -19,20 +18,17 @@ import java.util.Set;
 @RestController
 public class ChatController {
 
-    private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageService messageService;
 
-    public ChatController(SimpMessagingTemplate simpMessagingTemplate, MessageService messageService) {
-        this.simpMessagingTemplate = simpMessagingTemplate;
+    public ChatController( MessageService messageService) {
         this.messageService = messageService;
     }
 
     @MessageMapping("/private-message")
     public void receiveMessage(@Payload MessageEntity message) {
-        message.setTimestamp(LocalDateTime.now());
-        messageService.saveMessage(message);
-        simpMessagingTemplate.convertAndSendToUser(message.getReceiverId(), "/private", message);
+        messageService.sendMessage(message);
     }
+
     @GetMapping("/conversations")
     public Set<String> getConversations(@RequestParam String userId) {
         return messageService.getAllConversations(userId);

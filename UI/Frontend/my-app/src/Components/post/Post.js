@@ -280,9 +280,9 @@ const Post = ({ post, onDeletePost }) => {
 
       {(post.userId === parseInt(userId) || role === 'ADMIN') && (
         <div className="post-options">
-          {post.isDeleted && (
+          {!post.deleted && (
             <>
-              <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
+              <button className="three-dot-button post-options-button" onClick={() => setShowPostOptions(!showPostOptions)}>
                 <FaEllipsisH />
               </button>
               {showPostOptions && (
@@ -350,10 +350,11 @@ const Post = ({ post, onDeletePost }) => {
                   </span>
                   <br></br>
                   <p className="comment-updated-time">{formatDate(comment.updatedAt)}</p>
-                  {(comment.user_id === parseInt(userId) || role === 'ADMIN') && (
+                  {(comment.user_id === parseInt(userId)) && (
                     <div className="comment-options">
+                      
                       <button
-                        className="three-dot-button"
+                        className="three-dot-button comment-options-button"
                         onClick={() =>
                           setCommentOptions((prev) => ({
                             ...prev,

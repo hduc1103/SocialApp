@@ -2,15 +2,16 @@ package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.request.AuthRequest;
 import com.SocialWeb.domain.response.AuthResponse;
+import com.SocialWeb.domain.response.NotificationResponse;
 import com.SocialWeb.domain.response.SupportTicketResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.security.UserDetail;
+import com.SocialWeb.service.interfaces.NotificationService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,15 +34,15 @@ public class UserController {
     private final UserService userService;
     private final SupportTicketService supportTicketService;
     private final UserDetail userDetail;
+    private final NotificationService notificationService;
 
-
-    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, SupportTicketService supportTicketService, UserDetail userDetail) {
+    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, SupportTicketService supportTicketService, UserDetail userDetail, NotificationService notificationService) {
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.supportTicketService = supportTicketService;
         this.userDetail = userDetail;
-
+        this.notificationService = notificationService;
     }
 
     @PostMapping("/login")
@@ -301,4 +302,8 @@ public class UserController {
         }
     }
 
+    @GetMapping("/get-notification")
+    public List<NotificationResponse> getAllNotification(@RequestHeader("Authorization")String token){
+       return  notificationService.getAllNotifications(token);
+    }
 }
