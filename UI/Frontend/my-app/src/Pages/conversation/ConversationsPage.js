@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BASE_URL, PUBLIC_URL } from '../../config';
+import { BASE_URL, showRedNotification } from '../../config';
 import { useNavigate } from 'react-router-dom';
 import './conversationspage.scss';
 
@@ -12,6 +12,13 @@ const ConversationsPage = () => {
 
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+      showRedNotification('You must log in first');
+      return;
+    }
+  }, []);
 
   useEffect(() => {
     if (userId && token) {

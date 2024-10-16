@@ -95,7 +95,7 @@ const Login = () => {
         const userId = await userIdResponse.text();
         localStorage.setItem('userId', userId);
 
-        showGreenNotification('Login successful!');
+        showGreenNotification('Logged in successfully!');
 
         if (role === 'ADMIN') {
           navigate('/adminpanel');

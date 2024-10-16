@@ -36,7 +36,6 @@ public class JwtUtil {
     }
 
     public String generateToken(UserDetails userDetails) {
-        System.out.println("Generating token for: " + userDetails.getUsername());
         Map<String, Object> claims = new HashMap<>();
 
         List<String> roles = userDetails.getAuthorities().stream()
@@ -47,7 +46,6 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
-        System.out.println("Extracting username from token: " + token);
         return extractClaim(token, Claims::getSubject);
     }
 

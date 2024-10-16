@@ -278,13 +278,24 @@ const UserProfile = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      if (response.status === 401) {
+        const errorMessage = await response.text();
+        if (errorMessage === 'Token has expired') {
+          showRedNotification(errorMessage);
+        } else {
+          showRedNotification('Unauthorized access, please log in again');
+        }
+        navigate('/login');
+        return;
+      }
+      
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to fetch user profile');
         return;
       }
 
+      
       const data = await response.json();
       setUserDetails(data);
     } catch (error) {

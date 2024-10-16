@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
+import { BASE_URL, showRedNotification } from '../../config';
 import Post from '../../components/post/Post';
 import './dashboard.scss';
 
@@ -31,8 +31,13 @@ const Dashboard = () => {
       });
 
       if (response.status === 401) {
+        const errorMessage = await response.text();
+        if (errorMessage === 'Token has expired') {
+          showRedNotification(errorMessage);
+        } else {
+          showRedNotification('Unauthorized access, please log in again');
+        }
         navigate('/login');
-        showRedNotification('Unauthorized access, please log in again');
         return;
       }
 

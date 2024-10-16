@@ -17,7 +17,14 @@ const ChatPage = () => {
   const stompClient = useRef(null);
   const navigate = useNavigate();
 
-  // Check friend status function
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+      showRedNotification('You must log in first');
+      return;
+    }
+  }, []);
+
   const checkFriendStatus = async () => {
     try {
       const response = await fetch(`${BASE_URL}/user/check-friend-status?userId2=${receiverId}`, {
@@ -31,7 +38,7 @@ const ChatPage = () => {
         const isFriend = await response.json();
         if (!isFriend) {
           showRedNotification('You are not friends with this user.');
-          navigate('/conversation');  // Redirect to conversation page
+          navigate('/conversation');  
         }
       } else {
         throw new Error('Failed to check friend status');
@@ -39,13 +46,13 @@ const ChatPage = () => {
     } catch (error) {
       console.error('Error checking friend status:', error);
       showRedNotification('Error checking friend status');
-      navigate('/conversation');  // Redirect if any error occurs
+      navigate('/conversation'); 
     }
   };
 
   useEffect(() => {
     if (senderId && receiverId && token) {
-      checkFriendStatus();  // Check friend status when the page loads
+      checkFriendStatus();  
 
       const fetchReceiverDetails = async () => {
         try {
