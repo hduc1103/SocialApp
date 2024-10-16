@@ -18,7 +18,7 @@ const ViewPostsModal = ({ isOpen, onClose, userId, fetchUserPosts }) => {
         <h2>User Posts</h2>
         <div className="posts-container">
           {posts.length > 0 ? (
-            posts.map((post) => <Post key={post.id} post={post} />)
+            posts.slice().reverse().map((post) => <Post key={post.id} post={post} />)
           ) : (
             <p>No posts found.</p>
           )}

@@ -9,6 +9,8 @@ public interface PostService {
 
     List<PostResponse> getUserPosts(long userId);
 
+    List<PostResponse> admin_getUserPosts(long userId);
+
     PostEntity getPostById(long postId);
 
     PostResponse createPost(String token, Map<String, String> postData);

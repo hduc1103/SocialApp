@@ -2,12 +2,14 @@ package com.SocialWeb.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
 
+@Builder
 @Entity
 @Data
 @NoArgsConstructor
@@ -32,4 +34,5 @@ public class CommentEntity {
 
     private Date createdAt;
     private Date updatedAt;
+    private boolean isDeleted;
 }

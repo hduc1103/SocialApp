@@ -1,5 +1,8 @@
 import React from 'react';
-
+import { MdOutlineEdit } from "react-icons/md";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { MdPageview } from "react-icons/md";
+import './userlist.scss'
 const UserList = ({ users, onEditUser, onDeleteUser, onViewPosts }) => (
   <div className="user-list">
     {users.length > 0 &&
@@ -12,9 +15,9 @@ const UserList = ({ users, onEditUser, onDeleteUser, onViewPosts }) => (
           <p>Address: {user.address}</p>
 
           <div className="user-actions">
-            <button onClick={() => onEditUser(user)}>Edit</button>
-            <button onClick={() => onDeleteUser(user.id)}>Delete</button>
-            <button onClick={() => onViewPosts(user.id)}>View Posts</button>
+            <button onClick={() => onEditUser(user)}><MdOutlineEdit size={15}/></button>
+            <button onClick={() => onDeleteUser(user.id)}><RiDeleteBin6Line size={15}/></button>
+            <button onClick={() => onViewPosts(user.id)}><MdPageview size={15}/></button>
           </div>
         </div>
       ))}

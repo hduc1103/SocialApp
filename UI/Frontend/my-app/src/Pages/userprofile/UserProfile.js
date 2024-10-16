@@ -9,7 +9,7 @@ import { LiaUserEditSolid } from "react-icons/lia";
 import { FaUpload } from "react-icons/fa6";
 import { IoPersonAddSharp, IoPersonRemoveSharp } from "react-icons/io5";
 import { PiPasswordBold } from "react-icons/pi";
-import { BASE_URL, PUBLIC_URL, showRedNotification, showGreenNotification } from '../../config';
+import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import './userprofile.scss';
 import Footer from '../../components/footer/footer';
 
@@ -288,7 +288,7 @@ const UserProfile = () => {
         navigate('/login');
         return;
       }
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to fetch user profile');
@@ -357,7 +357,30 @@ const UserProfile = () => {
     );
     return updatedPosts;
   };
+  const handleDeletePost = async (postId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/post/delete-post?postId=${postId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to delete post');
+        return;
+      }
+
+      // Update the userPosts state to remove the deleted post
+      setUserPosts(userPosts.filter((post) => post.id !== postId));
+      showGreenNotification('Post deleted successfully');
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      showRedNotification('Error deleting post');
+    }
+  };
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -471,7 +494,7 @@ const UserProfile = () => {
         {userPosts.length > 0 ? (
           <div className="post-list">
             {userPosts.slice().reverse().map((post) => (
-              <Post key={post.id} post={post} />
+              <Post key={post.id} post={post} onDeletePost={handleDeletePost} />
             ))}
           </div>
 

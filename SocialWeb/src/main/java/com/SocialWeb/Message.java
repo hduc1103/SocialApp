@@ -23,7 +23,7 @@ public class Message {
     public static final String POST_NOT_FOUND = "Post not found";
     // User
     public static final String USER_NOT_FOUND = "User not found: ";
-    public static final String INVALID_CREDENTIAL = "Invalid credentials";
+    public static final String INVALID_CREDENTIAL = "Please check your username and password";
     public static final String USERNAME_ALREADY_EXIST = "Username already exists";
     public static final String EMAIL_ALREADY_EXIST = "Email already exists";
     public static final String FRIEND_ADDED = "Friend added successfully";

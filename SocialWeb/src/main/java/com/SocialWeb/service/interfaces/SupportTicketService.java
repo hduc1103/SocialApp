@@ -19,12 +19,6 @@ public interface SupportTicketService {
 
     SupportTicketEntity findSupportTicket(Long ticket_id);
 
-    void updateSupportTicket(String token, String content, Long ticketId);
-
-    void updateTicketComment(Long comment_id, String new_content);
-
-    void deleteTicketComment(Long comment_id);
-
     void deleteSupportTicket(Long ticketId);
 
 }

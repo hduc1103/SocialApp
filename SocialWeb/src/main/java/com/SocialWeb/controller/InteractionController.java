@@ -35,7 +35,7 @@ public class InteractionController {
         if (response.startsWith(ERROR_MSG)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PutMapping("/update-comment")

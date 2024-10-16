@@ -1,8 +1,10 @@
 package com.SocialWeb.controller;
 
+import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.domain.response.SupportTicketResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.security.JwtUtil;
+import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.http.HttpStatus;
@@ -24,13 +26,15 @@ public class AdminController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final SupportTicketService supportTicketService;
+    private final PostService postService;
 
     public AdminController(UserService userService,
                            JwtUtil jwtUtil,
-                           SupportTicketService supportTicketService) {
+                           SupportTicketService supportTicketService, PostService postService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.supportTicketService = supportTicketService;
+        this.postService = postService;
     }
 
     private String extractUsername(String token) {
@@ -41,6 +45,18 @@ public class AdminController {
     @GetMapping("/all-users")
     public List<UserResponse> getAllUsers() {
         return userService.getAllUserResponses();
+    }
+
+    @GetMapping("/get-user-post")
+    public ResponseEntity<List<PostResponse>> getUserPosts(@RequestParam("userId") long userId) {
+        try {
+            List<PostResponse> postResponses = postService.admin_getUserPosts(userId);
+            return ResponseEntity.ok(postResponses);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/one-user")
@@ -92,8 +108,10 @@ public class AdminController {
     public ResponseEntity<List<SupportTicketResponse>> getAllSupportTicket() {
         try {
             List<SupportTicketResponse> supportTicketResponses = supportTicketService.getAllSupportTicketResponses();
+            System.out.println("flag1");
             return ResponseEntity.ok(supportTicketResponses);
         } catch (Exception e) {
+            System.out.println(e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

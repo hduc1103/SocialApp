@@ -13,6 +13,10 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
     List<PostEntity> findByUser(UserEntity userEntity);
 
+    @Query(value = "SELECT * FROM web_post WHERE user_id = :userId AND is_deleted = 0", nativeQuery = true)
+    List<PostEntity> findByUserAndNotDeleted(@Param("userId") Long userId);
+
+
     @Query(value = "SELECT COUNT(*) > 0 FROM web_likes WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
     int checkUserLikedPost(@Param("userId") Long userId, @Param("postId") Long postId);
 
@@ -39,6 +43,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
                 JOIN web_friends wf
                 ON (wf.user_id1 = :userId AND wf.user_id2 = p.user_id)
                 OR (wf.user_id2 = :userId AND wf.user_id1 = p.user_id)
+                WHERE p.is_deleted=0
                 ORDER BY p.created_at DESC
                 LIMIT 20
             """, nativeQuery = true)

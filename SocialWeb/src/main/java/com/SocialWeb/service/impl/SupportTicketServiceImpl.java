@@ -49,29 +49,9 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .user(userEntity)
                 .supportTicketEntity(supportTicketEntity)
                 .createdAt(new Date())
-                .updatedAt(new Date())
                 .build();
 
         ticketCommentRepository.save(ticketCommentEntity);
-    }
-
-
-    @Override
-    public void updateSupportTicket(String token, String content, Long ticketId) {
-        String username = extractUsername(token);  // Extract username from token
-        UserEntity userEntity = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
-
-        Long userId = userEntity.getId();
-
-        if (!checkUserAccessToTicket(userId, ticketId)) {
-            throw new AccessDeniedException("Access denied to the ticket");
-        }
-
-        SupportTicketEntity supportTicketEntity = supportTicketRepository.findById(ticketId)
-                .orElseThrow(() -> new NoSuchElementException("Ticket not found"));
-
-        updateTicketContent(supportTicketEntity, content);
     }
 
     private boolean checkUserAccessToTicket(Long userId, Long ticketId) {
@@ -84,22 +64,11 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     @Override
-    public void updateTicketComment(Long comment_id, String new_content) {
-        TicketCommentEntity ticketCommentEntity = ticketCommentRepository.findById(comment_id).orElseThrow();
-        ticketCommentEntity.setText(new_content);
-        ticketCommentEntity.setUpdatedAt(new Date());
-        ticketCommentRepository.save(ticketCommentEntity);
-    }
-
-    @Override
-    public void deleteTicketComment(Long comment_id) {
-        TicketCommentEntity ticketCommentEntity = ticketCommentRepository.findById(comment_id).orElseThrow();
-        ticketCommentRepository.delete(ticketCommentEntity);
-    }
-
-    @Override
     public void deleteSupportTicket(Long ticketId) {
-        supportTicketRepository.delete(supportTicketRepository.findById(ticketId).orElseThrow());
+        SupportTicketEntity supportTicketEntity= supportTicketRepository.findById(ticketId).orElseThrow();
+        supportTicketEntity.setStatus(TicketStatus.CLOSED);
+        supportTicketEntity.setEndAt(new Date());
+        supportTicketRepository.save(supportTicketEntity);
     }
 
     @Override
@@ -110,7 +79,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                         .id(ticket.getId())
                         .title(ticket.getTitle())
                         .content(ticket.getContent())
-                        .status(ticket.getStatus())
+                        .status(ticket.getStatus().toString())
                         .createdAt(ticket.getCreatedAt())
                         .endAt(ticket.getEndAt())
                         .userId(ticket.getUser().getId())
@@ -119,7 +88,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                                         .id(comment.getId())
                                         .text(comment.getText())
                                         .createdAt(comment.getCreatedAt())
-                                        .updatedAt(comment.getUpdatedAt())
                                         .userId(comment.getUser().getId())
                                         .build())
                                 .collect(Collectors.toList()))
@@ -129,46 +97,35 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     @Override
     public void createSupportTicketByToken(String token, Map<String, Object> requestBody) {
         String username = extractUsername(token);
-
-        // Find the user by username
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
 
-        // Extract the title and content from request body
         String title = (String) requestBody.get("title");
         String content = (String) requestBody.get("content");
 
-        // Build the support ticket entity
         SupportTicketEntity supportTicketEntity = SupportTicketEntity.builder()
                 .user(userEntity)
                 .title(title)
                 .content(content)
-                .status("In progress")
+                .status(TicketStatus.IN_PROGRESS)
                 .createdAt(new Date())
                 .build();
 
-        // Save the ticket
         supportTicketRepository.save(supportTicketEntity);
     }
 
     @Override
     public List<SupportTicketResponse> getAllTicketsByToken(String token) {
         String username = extractUsername(token);
-
-        // Fetch the user entity by username
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        // Get all support tickets for the user
         List<SupportTicketEntity> supportTickets = supportTicketRepository.findByUserId(userEntity.getId());
-
-        // Convert the list of tickets to SupportTicketResponse objects
         return supportTickets.stream()
                 .map(ticket -> SupportTicketResponse.builder()
                         .id(ticket.getId())
                         .title(ticket.getTitle())
                         .content(ticket.getContent())
-                        .status(ticket.getStatus())
+                        .status(ticket.getStatus().toString())
                         .createdAt(ticket.getCreatedAt())
                         .userId(ticket.getUser().getId())
                         .comments(ticket.getTicketCommentEntities().stream()
@@ -176,7 +133,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                                         .id(comment.getId())
                                         .text(comment.getText())
                                         .createdAt(comment.getCreatedAt())
-                                        .updatedAt(comment.getUpdatedAt())
                                         .userId(comment.getUser().getId())
                                         .build())
                                 .toList())
@@ -186,22 +142,15 @@ public class SupportTicketServiceImpl implements SupportTicketService {
 
     @Override
     public void addTicketComment(Long ticket_id, String username, String text) {
-        // Find the user by username
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-
-        // Find the support ticket by id
         SupportTicketEntity supportTicketEntity = findSupportTicket(ticket_id);
-
-        // Create a new ticket comment
         TicketCommentEntity ticketCommentEntity = TicketCommentEntity.builder()
                 .text(text)
                 .user(userEntity)
                 .supportTicketEntity(supportTicketEntity)
                 .createdAt(new Date())
                 .build();
-
-        // Save the comment
         ticketCommentRepository.save(ticketCommentEntity);
     }
 

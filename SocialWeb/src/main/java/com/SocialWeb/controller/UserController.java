@@ -257,22 +257,6 @@ public class UserController {
         }
     }
 
-    @PutMapping("/update-support-ticket")
-    public ResponseEntity<Void> updateSupportTicket(
-            @RequestHeader("Authorization") String token,
-            @RequestBody String content,
-            @RequestParam Long t_id) {
-        try {
-            supportTicketService.updateSupportTicket(token, content, t_id);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 
     @DeleteMapping("/{ticketId}/close")
     public ResponseEntity<Void> closeSupportTicket(@PathVariable Long ticketId) {
@@ -281,25 +265,16 @@ public class UserController {
     }
 
     @PostMapping("/add-ticket-comment")
-    public ResponseEntity<Void> addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
+    public ResponseEntity<Void> addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody Map<String,String> text) {
         try {
-            supportTicketService.addTicketCommentByToken(token, ticket_id, text);
+            String comment_content = text.get("text");
+            supportTicketService.addTicketCommentByToken(token, ticket_id, comment_content);
             return ResponseEntity.ok().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    @PutMapping("/update-ticket-comment")
-    public void updateTicketComment(@RequestParam Long comment_id, @RequestBody String text) {
-        supportTicketService.updateTicketComment(comment_id, text);
-    }
-
-    @DeleteMapping("/delete-ticket-comment")
-    public void deleteTicketComment(@RequestParam Long comment_id) {
-        supportTicketService.deleteTicketComment(comment_id);
     }
 
     @GetMapping("/get-all-user-ticket")

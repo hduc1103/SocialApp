@@ -33,6 +33,5 @@ public class TicketCommentEntity {
     private SupportTicketEntity supportTicketEntity;
 
     private Date createdAt;
-    private Date updatedAt;
 }
 

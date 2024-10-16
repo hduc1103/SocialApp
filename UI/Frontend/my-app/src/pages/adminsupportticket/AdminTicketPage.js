@@ -30,7 +30,7 @@ const AdminTicketPage = () => {
         if (response.status === 401) {
           navigate('/login');
         } else {
-          const errorData = await response.json();
+          const errorData = await response.text();
           showRedNotification(errorData.message || 'Failed to fetch support tickets');
         }
         return;

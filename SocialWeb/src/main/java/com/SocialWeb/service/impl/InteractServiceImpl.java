@@ -49,6 +49,7 @@ public class InteractServiceImpl implements InteractService {
         commentEntity.setText(content);
         commentEntity.setCreatedAt(new Date());
         commentEntity.setUpdatedAt(new Date());
+        commentEntity.setDeleted(false);
         commentRepository.save(commentEntity);
 
         return CommentResponse.builder()
@@ -72,8 +73,10 @@ public class InteractServiceImpl implements InteractService {
     @Override
     public String deleteComment(Long cmtId) {
         try {
-            commentRepository.deleteById(cmtId);
-            return CMT_DEL;
+             CommentEntity commentEntity= commentRepository.findById(cmtId).orElseThrow();
+             commentEntity.setDeleted(true);
+             commentRepository.save(commentEntity);
+             return CMT_DEL;
         } catch (NoSuchElementException e) {
             System.err.println(ERROR_MSG + e.getMessage());
             return ERROR_MSG + e.getMessage();

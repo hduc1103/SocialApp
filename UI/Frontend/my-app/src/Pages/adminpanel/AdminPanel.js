@@ -202,7 +202,7 @@ const AdminPanel = () => {
   const fetchUserPosts = async (userId) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${BASE_URL}/post/get-user-post?userId=${userId}`, {
+      const response = await fetch(`${BASE_URL}/admin/get-user-post?userId=${userId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -268,7 +268,15 @@ const AdminPanel = () => {
       <h1>Admin Panel</h1>
       <button onClick={getAllUsers}>Get All Users</button>
       <UserList users={users} onEditUser={handleEditUser} onDeleteUser={deleteUser} onViewPosts={handleViewPosts} />
-      <GetUser userId={userId} setUserId={setUserId} getOneUser={getOneUser} userDetails={userDetails} />
+      <GetUser
+        userId={userId}  
+        setUserId={setUserId}  
+        getOneUser={getOneUser}  
+        userDetails={userDetails}  
+        onEditUser={handleEditUser}  
+        onDeleteUser={() => {}}  
+        onViewPosts={handleViewPosts} 
+      />
       
       <UpdateProfileModal
         isOpen={isUpdateModalOpen}

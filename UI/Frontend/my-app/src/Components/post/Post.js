@@ -8,10 +8,10 @@ import './post.scss';
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleString(); 
+  return date.toLocaleString();
 };
 
-const Post = ({ post }) => {
+const Post = ({ post, onDeletePost }) => {
   const [likes, setLikes] = useState(post.likeCount || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [comment, setComment] = useState('');
@@ -49,21 +49,19 @@ const Post = ({ post }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (!response.ok) {
         let errorMessage = 'Failed to fetch post author';
-        
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         } catch (e) {
           console.error('Error parsing response:', e);
         }
-
         showRedNotification(errorMessage);
         return;
       }
-  
+
       const data = await response.json();
       setAuthor(data.username);
       setAuthorImgUrl(data.imgUrl);
@@ -72,7 +70,7 @@ const Post = ({ post }) => {
       showRedNotification('An error occurred while fetching the post author.');
     }
   };
-  
+
   const fetchUsernamesForComments = async (comments) => {
     const token = localStorage.getItem('token');
     try {
@@ -223,28 +221,6 @@ const Post = ({ post }) => {
     }
   };
 
-  const handleDeletePost = async () => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${BASE_URL}/post/delete-post?postId=${post.id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        showRedNotification(errorData.message || 'Failed to delete post');
-        return;
-      }
-      showGreenNotification('Post deleted successfully');
-      console.log('Post deleted');
-    } catch (error) {
-      console.error('Error deleting post:', error);
-    }
-  };
-
   const handleUpdatePost = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -297,21 +273,30 @@ const Post = ({ post }) => {
           <button className="cancel-edit-button" onClick={() => setIsEditing(false)}>Cancel</button>
         </div>
       ) : (
-        <p className="post-content">{post.content}</p>
+        <p className="post-content">
+          {post.isDeleted ? <em>(Deleted)</em> : post.content}
+        </p>
       )}
+
       {(post.userId === parseInt(userId) || role === 'ADMIN') && (
         <div className="post-options">
-          <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
-            <FaEllipsisH />
-          </button>
-          {showPostOptions && (
-            <div className="dropdown-menu">
-              <button onClick={handleDeletePost}>Delete Post</button>
-              <button onClick={() => setIsEditing(true)}>Update Post</button>
-            </div>
+          {post.isDeleted && (
+            <>
+              <button className="three-dot-button" onClick={() => setShowPostOptions(!showPostOptions)}>
+                <FaEllipsisH />
+              </button>
+              {showPostOptions && (
+                <div className="dropdown-menu">
+                  <button onClick={() => setIsEditing(true)}>Update Post</button>
+                  <button onClick={() => onDeletePost(post.id)}>Delete Post</button>
+                </div>
+              )}
+            </>
           )}
         </div>
+
       )}
+
       <p className="post-updated-time">{formatDate(post.updatedAt)}</p>
       <div className="post-actions">
         <button className="like-button" onClick={handleLike}>
@@ -354,15 +339,17 @@ const Post = ({ post }) => {
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
                     <img
-                      src={cmtImg[comment.id]  ? `data:image/png;base64,${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
+                      src={cmtImg[comment.id] ? `data:image/png;base64,${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
                       alt="Author Profile"
                       className="post-author-img"
                     />
                     <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
                   </div>
-                  <span className="comment-text">{comment.text}</span>
+                  <span className="comment-text">
+                    {comment.isDeleted ? <em>(Deleted)</em> : comment.text}
+                  </span>
                   <br></br>
-                  <p className="comment-updated-time"> {formatDate(comment.updatedAt)}</p>
+                  <p className="comment-updated-time">{formatDate(comment.updatedAt)}</p>
                   {(comment.user_id === parseInt(userId) || role === 'ADMIN') && (
                     <div className="comment-options">
                       <button

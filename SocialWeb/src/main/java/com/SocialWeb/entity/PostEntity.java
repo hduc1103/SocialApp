@@ -5,13 +5,14 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 
 import java.util.Date;
 import java.util.List;
 
+@Builder
 @Entity
 @Data
 @NoArgsConstructor
@@ -39,4 +40,5 @@ public class PostEntity {
 
     private Date createdAt;
     private Date updatedAt;
+    private boolean isDeleted;
 }

@@ -2,6 +2,7 @@ package com.SocialWeb.service.impl;
 
 import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.domain.response.PostResponse;
+import com.SocialWeb.entity.CommentEntity;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.PostRepository;
@@ -38,6 +39,33 @@ public class PostServiceImpl implements PostService {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
 
+        List<PostEntity> postEntities = postRepository.findByUserAndNotDeleted(userId);
+        return postEntities.stream()
+                .map(postEntity -> PostResponse.builder()
+                        .id(postEntity.getId())
+                        .content(postEntity.getContent())
+                        .createdAt(postEntity.getCreatedAt())
+                        .updatedAt(postEntity.getUpdatedAt())
+                        .userId(postEntity.getUser().getId())
+                        .comments(postEntity.getComments().stream()
+                                .filter(commentEntity -> !commentEntity.isDeleted())
+                                .map(commentEntity -> CommentResponse.builder()
+                                        .id(commentEntity.getId())
+                                        .user_id(commentEntity.getUser().getId())
+                                        .text(commentEntity.getText())
+                                        .createdAt(commentEntity.getCreatedAt())
+                                        .updatedAt(commentEntity.getUpdatedAt())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PostResponse> admin_getUserPosts(long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
+
         List<PostEntity> postEntities = postRepository.findByUser(userEntity);
 
         return postEntities.stream()
@@ -47,6 +75,7 @@ public class PostServiceImpl implements PostService {
                         .createdAt(postEntity.getCreatedAt())
                         .updatedAt(postEntity.getUpdatedAt())
                         .userId(postEntity.getUser().getId())
+                        .isDeleted(postEntity.isDeleted())
                         .comments(postEntity.getComments().stream()
                                 .map(commentEntity -> CommentResponse.builder()
                                         .id(commentEntity.getId())
@@ -54,6 +83,7 @@ public class PostServiceImpl implements PostService {
                                         .text(commentEntity.getText())
                                         .createdAt(commentEntity.getCreatedAt())
                                         .updatedAt(commentEntity.getUpdatedAt())
+                                        .isDeleted(commentEntity.isDeleted())
                                         .build())
                                 .collect(Collectors.toList()))
                         .build())
@@ -75,6 +105,7 @@ public class PostServiceImpl implements PostService {
         postEntity.setContent(content);
         postEntity.setCreatedAt(new Date());
         postEntity.setUpdatedAt(new Date());
+        postEntity.setDeleted(false);
         postRepository.save(postEntity);
         return new PostResponse(
                 postEntity.getId(),
@@ -103,7 +134,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public String deletePost(long postId) {
-        postRepository.deleteById(postId);
+        PostEntity postEntity = postRepository.findById(postId).orElseThrow();
+        postEntity.setDeleted(true);
+        postRepository.save(postEntity);
         return D_POST;
     }
 

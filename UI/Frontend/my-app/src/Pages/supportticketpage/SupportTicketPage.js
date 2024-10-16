@@ -64,7 +64,7 @@ const SupportTicketPage = ({ userId }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.text();
         showRedNotification(errorData.message || 'Failed to submit ticket');
         return;
       }
@@ -89,7 +89,7 @@ const SupportTicketPage = ({ userId }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.text();
         showRedNotification(errorData.message || 'Failed to fetch user tickets');
         if (response.status === 401) {
           navigate('/login');
@@ -157,7 +157,7 @@ const SupportTicketPage = ({ userId }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.text();
         showRedNotification(errorData.message || 'Failed to add comment');
         return;
       }
@@ -183,7 +183,7 @@ const SupportTicketPage = ({ userId }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.text();
         showRedNotification(errorData.message || 'Failed to close ticket');
         return;
       }
@@ -241,7 +241,7 @@ const SupportTicketPage = ({ userId }) => {
                   <li key={index}>{item.trim()}</li>
                 ))}
               </ul>
-              <h5>Comments:</h5>
+              <h5 className='commenth5'>Comments:</h5>
               <div className="comments-section">
                 {ticket.comments.map((comment) => (
                   <div key={comment.id} className="user-comment-item">

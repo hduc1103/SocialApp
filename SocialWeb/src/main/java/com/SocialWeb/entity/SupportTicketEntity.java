@@ -36,5 +36,7 @@ public class SupportTicketEntity {
     @JsonManagedReference("support_ticket-ticket_comments")
     private List<TicketCommentEntity> ticketCommentEntities;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TicketStatus status;
+
 }
