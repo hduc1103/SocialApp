@@ -11,7 +11,6 @@ import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.InteractService;
 import com.SocialWeb.service.interfaces.NotificationService;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Date;
 import java.util.Map;

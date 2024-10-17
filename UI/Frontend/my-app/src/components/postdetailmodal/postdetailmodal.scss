@@ -1,4 +1,4 @@
-.modal-backdrop {
+.post-detail-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -9,19 +9,22 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.8s ease-in-out;
 }
 
-.modal-content {
-  background: #fff;
+.post-detail-modal-content {
+  background-color: #1e1e1e;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 10px;
+  color: #e0e0e0;
   width: 500px;
   max-width: 90%;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   position: relative;
+  animation: slideDown 0.7s ease-in-out;
 }
 
-.close-button {
+.post-detail-close-button {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -29,38 +32,145 @@
   border: none;
   cursor: pointer;
   color: #e74c3c;
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: rotate(90deg);
+  }
 }
 
-.like-section {
+.post-detail-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  animation: fadeInUp 0.8s ease-in-out;
+}
+
+.post-detail-content {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  animation: fadeInUp 0.7s ease-in-out;
+}
+
+.post-detail-like-section {
   margin-top: 20px;
+  display: flex;
+  align-items: center;
 }
 
-.like-button {
-  background: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
+.post-detail-like-button {
+  background-color: #3336d8;
+  color: #fff;
+  padding: 10px 15px;
   border-radius: 5px;
+  border: none;
   cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    background-color: #9eacda;
+    transform: translateY(-3px);
+  }
 }
 
-.like-button:hover {
-  background: #45a049;
-}
-
-.comments-section {
+.post-detail-comments-section {
   margin-top: 20px;
+  animation: fadeInUp 0.8s ease-in-out;
 }
 
-.comment-item-post-detail-modal {
+.post-detail-comment-item {
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #888;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+
+  .post-author-img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .post-detail-comment-username {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #b0b0b0;
+  }
+
+  .post-detail-comment-text {
+    flex-grow: 1;
+  }
+
+  .post-detail-comment-time {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 5px;
+    display: block;
+  }
 }
 
-.comment-date {
-  display: block;
-  font-size: 0.9em;
-  color: #888;
+.post-detail-add-comment-section {
+  margin-top: 20px;
 }
-  
+
+.post-detail-comment-input {
+  width: 100%;
+  background-color: #2b2b2b;
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  margin-right: 10px;
+}
+
+.post-detail-add-comment-button {
+  background-color: #3f51b5;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #354493;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

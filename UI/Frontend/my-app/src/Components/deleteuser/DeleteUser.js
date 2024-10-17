@@ -5,7 +5,7 @@ const DeleteUser = ({ userId, setUserId, deleteUser }) => (
     <input
       type="text"
       placeholder="Enter User ID to Delete"
-      value={userId}
+      value=" "
       onChange={(e) => setUserId(e.target.value)}
     />
     <button onClick={deleteUser}>Delete User</button>

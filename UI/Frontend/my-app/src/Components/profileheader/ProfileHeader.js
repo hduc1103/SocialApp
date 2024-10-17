@@ -12,6 +12,7 @@ const ProfileHeader = ({
   loggedInUserId,
   friendshipStatus,
   handleAddFriend,
+  hanldeCancelFriendRequest,
   handleUnfriend,
   handleAcceptFriendRequest,
   handleUpdateProfileImage,
@@ -29,8 +30,8 @@ const ProfileHeader = ({
         );
       case 'REQUEST_SENT':
         return (
-          <button className="cancel-request-button">
-            <MdPendingActions size={20} /> Request Sent
+          <button className="cancel-request-button" onClick={hanldeCancelFriendRequest}>
+            <MdPendingActions size={20} /> Cancel Friend Request
           </button>
         );
       case 'REQUEST_RECEIVED':

@@ -1,2 +1,0 @@
-cancel friend request
-split add friend and accept friend request

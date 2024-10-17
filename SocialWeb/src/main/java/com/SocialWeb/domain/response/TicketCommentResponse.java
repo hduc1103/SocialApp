@@ -15,5 +15,5 @@ public class TicketCommentResponse {
     private Long id;
     private String text;
     private Date createdAt;
-    private Long userId;
+    private String name;
 }

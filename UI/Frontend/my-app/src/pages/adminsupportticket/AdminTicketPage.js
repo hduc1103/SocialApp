@@ -62,6 +62,33 @@ const AdminTicketPage = () => {
     }
   };
 
+  const handleCommentTicket = async (ticketId, comment) => {
+  try {
+    const response = await fetch(`${BASE_URL}/admin/add-ticket-comment?ticket_id=${ticketId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+        Authorization: `Bearer ${token}`,
+      },
+      body: comment,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        navigate('/login');
+      } else {
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to add comment');
+      }
+      return;
+    }
+    fetchTickets(); 
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    showRedNotification('Error adding comment');
+  }
+};
+
   const handleTicketClick = (ticket) => {
     setSelectedTicket(ticket); 
     setIsModalOpen(true); 
@@ -97,6 +124,7 @@ const AdminTicketPage = () => {
 
       {selectedTicket && (
         <ViewTicketSupportModal
+        onCommentSubmit={handleCommentTicket}
           isOpen={isModalOpen}
           onClose={handleModalClose}
           ticket={selectedTicket} 

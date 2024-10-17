@@ -132,10 +132,10 @@ const PostDetailModal = ({ postId, onClose }) => {
 
   if (error) {
     return (
-      <div className="modal-backdrop">
-        <div className="modal-content">
+      <div className="post-detail-modal-backdrop">
+        <div className="post-detail-modal-content">
           <p>Error: {error}</p>
-          <button onClick={onClose} className="close-button">Close</button>
+          <button onClick={onClose} className="post-detail-close-button">Close</button>
         </div>
       </div>
     );
@@ -143,10 +143,10 @@ const PostDetailModal = ({ postId, onClose }) => {
 
   if (!post) {
     return (
-      <div className="modal-backdrop">
-        <div className="modal-content">
+      <div className="post-detail-modal-backdrop">
+        <div className="post-detail-modal-content">
           <p>Loading post details...</p>
-          <button onClick={onClose} className="close-button">
+          <button onClick={onClose} className="post-detail-close-button">
             <TiDeleteOutline size={24} />
           </button>
         </div>
@@ -155,24 +155,24 @@ const PostDetailModal = ({ postId, onClose }) => {
   }
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-content">
-        <button onClick={onClose} className="close-button">
+    <div className="post-detail-modal-backdrop">
+      <div className="post-detail-modal-content">
+        <button onClick={onClose} className="post-detail-close-button">
           <TiDeleteOutline size={24} />
         </button>
         <h1>{post.title ? post.title : "Post Details"}</h1>
         <p>{post.content}</p>
-        <div className="like-section">
-          <button onClick={handleLike} className="like-button">Like ({likeCount})</button>
+        <div className="post-detail-like-section">
+          <button onClick={handleLike} className="post-detail-like-button">Like ({likeCount})</button>
         </div>
-        <div className="comments-section">
+        <div className="post-detail-comments-section">
           <h3>Comments:</h3>
           {comments.length > 0 ? (
             <ul>
               {comments.map((comment) => (
-                <li key={comment.id} className="comment-item-post-detail-modal">
+                <li key={comment.id} className="post-detail-comment-item">
                   <p><strong>{commentUsernames[comment.id] || 'User'}:</strong> {comment.text}</p>
-                  <span className="comment-date">{new Date(comment.createdAt).toLocaleString()}</span>
+                  <span className="post-detail-comment-date">{new Date(comment.createdAt).toLocaleString()}</span>
                 </li>
               ))}
             </ul>
@@ -180,13 +180,13 @@ const PostDetailModal = ({ postId, onClose }) => {
             <p>No comments available.</p>
           )}
         </div>
-        <div className="add-comment-section-post-detail-modal">
+        <div className="post-detail-add-comment-section">
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Add a comment..."
           />
-          <button onClick={handleComment} className="add-comment-button">
+          <button onClick={handleComment} className="post-detail-add-comment-button">
             Add Comment
           </button>
         </div>

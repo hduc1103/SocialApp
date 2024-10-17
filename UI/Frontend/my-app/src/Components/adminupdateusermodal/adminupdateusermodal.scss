@@ -1,0 +1,60 @@
+.admin-update-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .admin-update-modal-content {
+    background: #333; 
+    color: white; 
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 100%;
+  }
+  
+  .admin-update-modal-content h2 {
+    margin-bottom: 20px;
+    color: #fff;
+  }
+  
+  .admin-update-modal-content form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .admin-update-modal-content input,
+  .admin-update-modal-content textarea {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #555; 
+    border-radius: 5px;
+    background-color: #444; 
+    color: white;
+  }
+  
+  .admin-update-modal-content input::placeholder,
+  .admin-update-modal-content textarea::placeholder {
+    color: #bbb; 
+  }
+  
+  .admin-update-modal-content button {
+    padding: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 5px;
+  }
+  
+  .admin-update-modal-content button[type="button"] {
+    background-color: #ff4d4d; 
+  }
+  

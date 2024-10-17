@@ -198,6 +198,10 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Friend request conflict: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UNEXPECTED_ERROR + e.getMessage());
         }
@@ -222,6 +226,12 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @DeleteMapping("/cancel-friend-request")
+    public ResponseEntity<Void> cancelFriendRequest(@RequestHeader("Authorization") String token, @RequestParam Long userId2){
+        userService.cancelFriendRequest(token, userId2);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/get-all-friends")

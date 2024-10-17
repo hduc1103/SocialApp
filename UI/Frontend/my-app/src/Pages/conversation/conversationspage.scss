@@ -40,6 +40,13 @@
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
+.no-friends-message {
+  color: gray;
+  font-size: 1.2em;
+  text-align: center;
+  margin-top: 20px;
+}
+
 .conversation-item:hover {
   background-color: #e6f7ff;
   transform: translateY(-3px);

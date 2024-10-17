@@ -10,6 +10,7 @@ import com.SocialWeb.repository.WebFriendRepository;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.MessageService;
+import com.SocialWeb.service.interfaces.NotificationService;
 import com.SocialWeb.service.interfaces.PostService;
 import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.mail.SimpleMailMessage;
@@ -39,8 +40,9 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
     private final JavaMailSender mailSender;
     private final UserDetail userDetail;
+    private final NotificationService notificationService;
 
-    public UserServiceImpl(UserRepository userRepository, WebFriendRepository webFriendRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail) {
+    public UserServiceImpl(UserRepository userRepository, WebFriendRepository webFriendRepository, MessageService messageService, PostService postService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, JavaMailSender mailSender, UserDetail userDetail, NotificationService notificationService) {
         this.webFriendRepository = webFriendRepository;
         this.messageService = messageService;
         this.userRepository = userRepository;
@@ -50,6 +52,7 @@ public class UserServiceImpl implements UserService {
         this.jwtUtil = jwtUtil;
         this.mailSender = mailSender;
         this.userDetail = userDetail;
+        this.notificationService = notificationService;
     }
 
     private String extractUsername(String token) {
@@ -229,19 +232,30 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
 
             UserEntity userEntity2 = userRepository.findById(userId2)
-                    .orElseThrow(() -> new NoSuchElementException("User not found: " + userId2));
+                    .orElseThrow(() -> new NoSuchElementException("User with userId: " + userId2 + " not found: "));
+
             Optional<WebFriendEntity> existingFriendship = webFriendRepository.findByUserId1AndUserId2(userEntity1.getId(), userId2);
 
             if (existingFriendship.isPresent()) {
                 WebFriendEntity friendEntity = existingFriendship.get();
-                if (friendEntity.getUser2Accepted() == 0) {
+                if (friendEntity.getUser1Accepted() != 1L) {
+                    throw new IllegalStateException("Friend request cannot proceed. The first user has not accepted yet.");
+                }
+                if (friendEntity.getUser2Accepted() == 0L) {
                     friendEntity.setUser2Accepted(1L);
                     webFriendRepository.save(friendEntity);
+
+                    String notification = userEntity1.getName() + NOTI_ACP_FRIEND;
+                    notificationService.sendNotification(userEntity2, notification);
+
                     return "Friend request accepted!";
                 }
-                return "You are already friends.";
-            }
+                if (friendEntity.getUser1Accepted() == 1L && friendEntity.getUser2Accepted() == 1L) {
+                    return "You are already friends.";
+                }
 
+                return "Friend request updated!";
+            }
             WebFriendEntity webFriend = WebFriendEntity.builder()
                     .userId1(userEntity1.getId())
                     .userId2(userEntity2.getId())
@@ -249,13 +263,16 @@ public class UserServiceImpl implements UserService {
                     .user2Accepted(0L)
                     .build();
             webFriendRepository.save(webFriend);
+
+            String notification = userEntity1.getName() + NOTI_FRIEND;
+            notificationService.sendNotification(userEntity2, notification);
+
             return "Friend request sent successfully!";
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             return "Unexpected error: " + e.getMessage();
         }
     }
-
 
     @Override
     public UserResponse updateUser(Long userId, Map<String, String> updateData) {
@@ -412,7 +429,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
     @Override
     public void unfriend(String token, Long userId2) {
         try {
@@ -424,6 +440,13 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
         }
+    }
+
+    @Override
+    public void cancelFriendRequest(String token, Long userId2){
+        String username= extractUsername(token);
+        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
+        webFriendRepository.cancelFriendRequest(userEntity.getId(), userId2);
     }
 
     @Override
@@ -529,7 +552,6 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         saveUser(userEntity);
-
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userEntity.getUsername(), rawPassword));
     }

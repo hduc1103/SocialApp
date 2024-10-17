@@ -45,6 +45,8 @@ public interface UserService {
 
     void unfriend(String token, Long userId2);
 
+    void cancelFriendRequest(String token, Long userId2);
+
     void deleteUserByToken(String token);
 
     void deleteRelationship(long userId);

@@ -11,7 +11,7 @@ import Footer from '../../components/footer/footer';
 const UserProfile = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
-  const [friendshipStatus, setFriendshipStatus] = useState('NOT_FRIENDS'); // Manage friendship state
+  const [friendshipStatus, setFriendshipStatus] = useState('NOT_FRIENDS'); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -234,6 +234,27 @@ const UserProfile = () => {
     }
   };
 
+  const hanldeCancelFriendRequest = async () => {
+    const token = localStorage.getItem("token");
+    try{
+      const response = await fetch(`${BASE_URL}/user/cancel-friend-request?userId2=${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if(!response.ok){
+        const error = await response.text();
+        showRedNotification(error);
+        return;
+      }
+      setFriendshipStatus('NOT_FRIENDS');
+      showGreenNotification("Friend request cancelled");
+    }catch (error){
+      console.log(error);
+    }
+  };
+
   const handleAcceptFriendRequest = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -430,6 +451,7 @@ const UserProfile = () => {
         loggedInUserId={loggedInUserId}
         friendshipStatus={friendshipStatus}
         handleAddFriend={handleAddFriend}
+        hanldeCancelFriendRequest={hanldeCancelFriendRequest}
         handleAcceptFriendRequest={handleAcceptFriendRequest}
         handleUnfriend={handleUnfriend}
         handleUpdateProfileImage={handleUpdateProfileImage}

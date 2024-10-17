@@ -108,7 +108,6 @@ public class AdminController {
     public ResponseEntity<List<SupportTicketResponse>> getAllSupportTicket() {
         try {
             List<SupportTicketResponse> supportTicketResponses = supportTicketService.getAllSupportTicketResponses();
-            System.out.println("flag1");
             return ResponseEntity.ok(supportTicketResponses);
         } catch (Exception e) {
             System.out.println(e);
@@ -119,8 +118,7 @@ public class AdminController {
     @PostMapping("/add-ticket-comment")
     public ResponseEntity<?> addTicketComment(@RequestHeader("Authorization") String token, @RequestParam Long ticket_id, @RequestBody String text) {
         try {
-            String username = extractUsername(token);
-            supportTicketService.addTicketComment(ticket_id, username, text);
+            supportTicketService.addTicketComment(ticket_id, token, text);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

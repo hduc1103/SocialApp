@@ -8,7 +8,6 @@ const SupportTicketPage = ({ userId }) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [usernames, setUsernames] = useState({});
   const [showCommentBox, setShowCommentBox] = useState({});
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
@@ -99,44 +98,9 @@ const SupportTicketPage = ({ userId }) => {
 
       const data = await response.json();
       setTickets(data);
-
-      const userIds = Array.from(
-        new Set(data.flatMap((ticket) => ticket.comments.map((comment) => comment.userId)))
-      );
-
-      const usernamesMap = {};
-      await Promise.all(
-        userIds.map(async (userId) => {
-          const username = await fetchUsername(userId);
-          usernamesMap[userId] = username;
-        })
-      );
-
-      setUsernames(usernamesMap);
     } catch (error) {
       console.error('Error fetching user tickets:', error);
       showRedNotification('Failed to fetch user tickets');
-    }
-  };
-
-  const fetchUsername = async (userId) => {
-    try {
-      const response = await fetch(`${BASE_URL}/user/get-username?userId=${userId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch username');
-      }
-
-      const data = await response.json();
-      return data.username;
-    } catch (error) {
-      console.error('Error fetching username:', error);
-      return 'Unknown User';
     }
   };
 
@@ -234,8 +198,9 @@ const SupportTicketPage = ({ userId }) => {
         <div className="ticket-list">
           <h3>Your Tickets</h3>
           {tickets.map((ticket) => (
-            <div key={ticket.id} className={`ticket-item ${ticket.closed ? 'closed' : ''}`}>
+            <div key={ticket.id} className={`ticket-item ${ticket.status === 'Closed' ? 'closed' : ''}`}>
               <h4>{ticket.title}</h4>
+              <p><strong>Status:</strong> {ticket.status}</p>
               <ul className="ticket-content-list">
                 {ticket.content.split(';').map((item, index) => (
                   <li key={index}>{item.trim()}</li>
@@ -246,14 +211,16 @@ const SupportTicketPage = ({ userId }) => {
                 {ticket.comments.map((comment) => (
                   <div key={comment.id} className="user-comment-item">
                     <p>
-                      <strong>{usernames[comment.userId] || 'Unknown User'}:</strong> {comment.text}
+                      <strong>{comment.name || 'Unknown User'}:</strong> {comment.text}
                     </p>
                     <p className="comment-date">
-                      Posted on: {new Date(comment.createdAt).toLocaleString()}
+                      <span style={{ color: 'gray', fontSize: '0.9em', marginLeft: '10px' }}>
+                        (Posted on: {new Date(comment.createdAt).toLocaleString()})
+                      </span>
                     </p>
                   </div>
                 ))}
-                {!ticket.closed && (
+                {ticket.status !== 'Closed' && (
                   <>
                     <button onClick={() => toggleCommentBox(ticket.id)}>Add Comment</button>
                     {showCommentBox[ticket.id] && (
@@ -269,7 +236,7 @@ const SupportTicketPage = ({ userId }) => {
                   </>
                 )}
               </div>
-              {!ticket.closed && (
+              {ticket.status !== 'Closed' && (
                 <button onClick={() => handleCloseTicket(ticket.id)}>Close Ticket</button>
               )}
             </div>

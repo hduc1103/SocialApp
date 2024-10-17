@@ -83,7 +83,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                                         .id(comment.getId())
                                         .text(comment.getText())
                                         .createdAt(comment.getCreatedAt())
-                                        .userId(comment.getUser().getId())
+                                        .name(comment.getUser().getName())
                                         .build())
                                 .collect(Collectors.toList()))
                         .build())
@@ -129,7 +129,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                                         .id(comment.getId())
                                         .text(comment.getText())
                                         .createdAt(comment.getCreatedAt())
-                                        .userId(comment.getUser().getId())
+                                        .name(comment.getUser().getName())
                                         .build())
                                 .toList())
                         .build())
@@ -137,7 +137,8 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     @Override
-    public void addTicketComment(Long ticket_id, String username, String text) {
+    public void addTicketComment(Long ticket_id, String token, String text) {
+        String username = extractUsername(token);
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
         SupportTicketEntity supportTicketEntity = findSupportTicket(ticket_id);

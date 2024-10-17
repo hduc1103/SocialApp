@@ -2,67 +2,79 @@ import React, { useState, useEffect } from 'react';
 import { BASE_URL, showGreenNotification, showRedNotification } from '../../config';
 import CreateUser from '../../components/createuser/CreateUser';
 import UserList from '../../components/userlist/UserList';
-import UpdateProfileModal from '../../components/updateprofilemodal/UpdateProfileModal';
-import ViewPostsModal from '../../components/viewpostsmodal/ViewPostsModal'; 
+import ViewPostsModal from '../../components/viewpostsmodal/ViewPostsModal';
 import GetUser from '../../components/getuser/GetUser';
 import UpdateUser from '../../components/updateuser/UpdateUser';
 import DeleteUser from '../../components/deleteuser/DeleteUser';
 import { useNavigate } from 'react-router-dom';
 
 import './adminpanel.scss';
+import AdminUpdateUserModal from '../../components/adminupdateusermodal/AdminUpdateUserModal';
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null); 
-  const [selectedUserId, setSelectedUserId] = useState(''); 
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false); 
-  const [isPostsModalOpen, setIsPostsModalOpen] = useState(false); 
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isPostsModalOpen, setIsPostsModalOpen] = useState(false);
+  const [isDataFetched, setIsDataFetched] = useState(false);
   const navigate = useNavigate();
 
   const [newUser, setNewUser] = useState({
     username: '',
+    name: '',
     email: '',
     password: '',
     address: '',
-    bio: '',
-    img_url: '',
+    bio: ''
   });
   const [updateData, setUpdateData] = useState({
     userId: '',
     new_username: '',
-    email: '',
-    address: '',
-    bio: '',
+    new_name:'',
+    new_email: '',
+    new_address: '',
+    new_bio: '',
   });
   const [userId, setUserId] = useState('');
   const [userDetails, setUserDetails] = useState(null);
+  const [isUserListVisible, setIsUserListVisible] = useState(true);
+
+  const handleCloseUserList = () => {
+    setIsUserListVisible(false); 
+  };
+  const handleShowUserList = () => {
+    setIsUserListVisible(true); 
+  };
   useEffect(() => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       showRedNotification('You must log in to view your dashboard');
       return;
     }
-  }, []);
+  }, [navigate]);
+
   const getAllUsers = async () => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${BASE_URL}/admin/all-users`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to fetch users');
-        return; 
+        return;
       }
-  
+
       const data = await response.json();
       setUsers(data);
+      setIsDataFetched(true);
+      setIsUserListVisible(true);
       showGreenNotification('Users fetched successfully');
     } catch (error) {
       showRedNotification('Error fetching users');
@@ -70,22 +82,22 @@ const AdminPanel = () => {
   };
 
   const getOneUser = async () => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${BASE_URL}/admin/one-user?userId=${userId}`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-  
+
       if (!response.ok) {
         const errorData = await response.text();
         showRedNotification(errorData || 'Failed to fetch user details');
-        return; 
+        return;
       }
-  
+
       const data = await response.json();
       setUserDetails(data);
       showGreenNotification('User details fetched successfully');
@@ -95,22 +107,22 @@ const AdminPanel = () => {
   };
 
   const deleteUser = async (userId) => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${BASE_URL}/admin/delete-user?userId=${userId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to delete user');
-        return; 
+        return;
       }
-  
+
       showGreenNotification('User deleted successfully');
       getAllUsers();
     } catch (error) {
@@ -119,33 +131,33 @@ const AdminPanel = () => {
   };
 
   const createUser = async () => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${BASE_URL}/admin/create-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(newUser),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to create user');
-        return; 
+        return;
       }
-  
+
       showGreenNotification('User created successfully');
       setNewUser({
         username: '',
+        name: '',
         email: '',
         password: '',
         address: '',
         bio: '',
-        img_url: '',
       });
-      getAllUsers(); 
+      getAllUsers();
     } catch (error) {
       showRedNotification('Error creating user');
     }
@@ -160,11 +172,12 @@ const AdminPanel = () => {
         }
         return acc;
       }, {});
-  
+
       if (Object.keys(updateDataPayload).length === 0) {
         return;
       }
-  
+
+      console.log(updateData);
       const response = await fetch(`${BASE_URL}/admin/update-user?userId=${updateData.userId}`, {
         method: 'PUT',
         headers: {
@@ -173,27 +186,29 @@ const AdminPanel = () => {
         },
         body: JSON.stringify(updateDataPayload),
       });
-  
+
       if (response.status === 409) {
         showRedNotification('Username or email already exists');
-        return; 
+        return;
       }
 
       if (!response.ok) {
         const errorData = await response.text();
         showRedNotification(errorData || 'Failed to update user');
-        return; 
+        return;
       }
-  
+
       showGreenNotification('User updated successfully');
       setUpdateData({
         userId: '',
         new_username: '',
-        email: '',
-        address: '',
-        bio: '',
+        new_name:'',
+        new_email: '',
+        new_address: '',
+        new_bio: '',
       });
-      getAllUsers(); 
+      getAllUsers();
+      setIsUpdateModalOpen(false);
     } catch (error) {
       showRedNotification('Error updating user');
     }
@@ -253,8 +268,15 @@ const AdminPanel = () => {
     return updatedPosts;
   };
 
-  const handleEditUser = (user) => {
-    setSelectedUser(user);
+  const handleEditUser = (userid) => {
+    setUpdateData({
+      userId: userid,  
+      new_username: '',
+      name: '',
+      email: '',
+      address: '',
+      bio: '',
+    });
     setIsUpdateModalOpen(true);
   };
 
@@ -267,24 +289,34 @@ const AdminPanel = () => {
     <div className="admin-panel">
       <h1>Admin Panel</h1>
       <button onClick={getAllUsers}>Get All Users</button>
-      <UserList users={users} onEditUser={handleEditUser} onDeleteUser={deleteUser} onViewPosts={handleViewPosts} />
+      {isUserListVisible && isDataFetched ? (
+        <UserList 
+          users={users} 
+          onEditUser={handleEditUser} 
+          onDeleteUser={deleteUser} 
+          onViewPosts={handleViewPosts} 
+          onCloseList={handleCloseUserList} 
+        />
+      ) : (
+        isDataFetched && <button onClick={handleShowUserList}>Show User List</button>
+      )}
       <GetUser
-        userId={userId}  
-        setUserId={setUserId}  
-        getOneUser={getOneUser}  
-        userDetails={userDetails}  
-        onEditUser={handleEditUser}  
-        onDeleteUser={() => {}}  
-        onViewPosts={handleViewPosts} 
-      />
-      
-      <UpdateProfileModal
-        isOpen={isUpdateModalOpen}
-        onClose={() => setIsUpdateModalOpen(false)}
-        user={selectedUser}
-        onUpdate={updateUser}
+        userId={userId}
+        setUserId={setUserId}
+        getOneUser={getOneUser}
+        userDetails={userDetails}
+        onEditUser={handleEditUser}
+        onDeleteUser={() => { }}
+        onViewPosts={handleViewPosts}
       />
 
+      <AdminUpdateUserModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        updateUser={updateUser}
+        updateData={updateData}
+        setUpdateData={setUpdateData}
+      />
       <ViewPostsModal
         isOpen={isPostsModalOpen}
         onClose={() => setIsPostsModalOpen(false)}

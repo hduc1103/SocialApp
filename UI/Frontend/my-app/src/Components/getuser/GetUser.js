@@ -16,6 +16,7 @@ const GetUser = ({ userId, setUserId, getOneUser, userDetails, onEditUser, onDel
       <div className="user-details">
         <p>ID: {userDetails.id}</p>
         <p>Username: {userDetails.username}</p>
+        <p>Name: {userDetails.name}</p>
         <p>Email: {userDetails.email}</p>
         <p>Bio: {userDetails.bio}</p>
         <p>Address: {userDetails.address}</p>
