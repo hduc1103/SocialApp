@@ -276,7 +276,7 @@ const SupportTicketPage = ({ userId }) => {
           ))}
         </div>
       ) : (
-        <p>No tickets yet.</p>
+        <p className="no-ticket">No tickets yet.</p>
       )}
     </div>
   );

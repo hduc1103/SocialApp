@@ -58,15 +58,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         ticketCommentRepository.save(ticketCommentEntity);
     }
 
-    private boolean checkUserAccessToTicket(Long userId, Long ticketId) {
-        return supportTicketRepository.checkUserTicket(userId) == ticketId;
-    }
-
-    private void updateTicketContent(SupportTicketEntity ticketEntity, String content) {
-        ticketEntity.setContent(content);
-        supportTicketRepository.save(ticketEntity);
-    }
-
     @Override
     public void deleteSupportTicket(Long ticketId) {
         SupportTicketEntity supportTicketEntity = supportTicketRepository.findById(ticketId).orElseThrow();

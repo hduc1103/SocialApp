@@ -2,7 +2,6 @@ package com.SocialWeb.controller;
 
 import com.SocialWeb.domain.response.CommentResponse;
 import com.SocialWeb.service.interfaces.InteractService;
-import com.SocialWeb.service.interfaces.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +38,8 @@ public class InteractionController {
     }
 
     @PutMapping("/update-comment")
-    public void updateComment(@RequestParam Long commentId, @RequestBody Map<String, String> new_comment) {
-        interactService.updateComment(commentId, new_comment);
+    public void updateComment(@RequestHeader("Authorization") String token, @RequestParam Long commentId, @RequestBody Map<String, String> new_comment) {
+        interactService.updateComment(token, commentId, new_comment);
     }
 
     @PostMapping("/like")

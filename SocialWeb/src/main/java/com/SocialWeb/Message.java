@@ -36,5 +36,11 @@ public class Message {
     public static final String Y_SUPPORT_TICKET = "Support ticket created";
     public static final String U_SUPPORT_TICKET = "Support ticket updated";
     public static final String DENIED_ACCESS_TICKET = "User has no access to this ticket";
+
+    //Notification
+    public static final String NOTI_LIKE = " liked your post";
+    public static final String NOTI_CMT = " commented into your post";
+    public static final String NOTI_FRIEND = " sent you a friend request";
+    public static final String NOTI_ACP_FRIEND = " accepted your friend request";
 }
 

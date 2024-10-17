@@ -60,11 +60,14 @@ const Header = () => {
       console.log("WebSocket connected: ", frame);
 
       stompClient.current.subscribe(`/user/${userId}/queue/notifications`, (message) => {
-        console.log("Notification received: ", message);
-        const notification = message.body;
+        try {
+          const notification = JSON.parse(message.body);
+          console.log("Notification received as JSON:", notification);
+        } catch (error) {
+          console.log("Notification received as plain text:", message.body);
+          showBlueNotification(message.body);
+        }
         setNewNotificationCount((prevCount) => prevCount + 1);
-        console.log(notification);
-        showBlueNotification(notification);
       });
     };
 
@@ -73,7 +76,27 @@ const Header = () => {
       console.error('Additional details: ' + frame.body);
     };
 
-    stompClient.current.activate(); 
+    stompClient.current.activate();
+  };
+
+  const handleNotificationClick = async () => {
+    setShowNotifications(!showNotifications);
+    setNewNotificationCount(0);  
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${BASE_URL}/user/get-notification`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setNotifications(data);
+    } else {
+      console.error('Failed to fetch notifications');
+    }
   };
 
   const handleSupportNavigation = () => {
@@ -114,7 +137,7 @@ const Header = () => {
     setIsLoggedin(false);
     setIsAdmin(false);
     if (stompClient.current) {
-      stompClient.current.deactivate(); 
+      stompClient.current.deactivate();
     }
     navigate('/login');
   };
@@ -123,26 +146,6 @@ const Header = () => {
     setSearchPerformed(false);
     setUserResults([]);
     setPostResults([]);
-  };
-
-  const handleNotificationClick = async () => {
-    setShowNotifications(!showNotifications);
-    setNewNotificationCount(0);  
-
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${BASE_URL}/user/get-notification`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      setNotifications(data);  
-    } else {
-      console.error('Failed to fetch notifications');
-    }
   };
 
   return (
@@ -165,10 +168,23 @@ const Header = () => {
               <AiFillMessage size={24} />
               <span>Chat</span>
             </div>
-            <div className="nav-item" onClick={handleNotificationClick}>
+            <div className={`nav-item ${showNotifications ? 'show-dropdown' : ''}`} onClick={handleNotificationClick}>
               <IoIosNotifications size={24} />
               {newNotificationCount > 0 && <span className="notification-count">{newNotificationCount}</span>}
               <span>Notifications</span>
+              {showNotifications && (
+                <div className="notification-dropdown">
+                  {notifications.length > 0 ? (
+                    <ul>
+                      {notifications.map((notification) => (
+                        <li key={notification.id}>{notification.content}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No notifications yet.</p>
+                  )}
+                </div>
+              )}
             </div>
             <div className="nav-item" onClick={handleSupportNavigation}>
               <MdSupportAgent size={24} />

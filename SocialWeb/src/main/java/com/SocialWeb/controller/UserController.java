@@ -193,7 +193,7 @@ public class UserController {
     @PostMapping("/add-friend")
     public ResponseEntity<String> addFriend(@RequestHeader("Authorization") String token, @RequestParam Long userId2) {
         try {
-            String response = userService.addFriend(token, userId2);
+            String response = userService.makeFriend(token, userId2);
             if (response.startsWith(ERROR_MSG)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
@@ -204,13 +204,13 @@ public class UserController {
     }
 
     @GetMapping("/check-friend-status")
-    public ResponseEntity<Boolean> checkFriendStatus(@RequestHeader("Authorization") String token,
+    public ResponseEntity<String> checkFriendStatus(@RequestHeader("Authorization") String token,
                                                      @RequestParam Long userId2) {
         try {
-            boolean isFriend = userService.checkFriendStatus(token, userId2);
+            String isFriend = userService.checkFriendStatus(token, userId2);
             return ResponseEntity.status(HttpStatus.OK).body(isFriend);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

@@ -13,7 +13,7 @@ public interface UserService {
 
     Long getUserIdByToken(String token);
 
-    String addFriend(String token, Long userId2);
+    String makeFriend(String token, Long userId2);
 
     UserResponse updateUser(Long userId, Map<String, String> updateData);
 
@@ -41,7 +41,7 @@ public interface UserService {
 
     void deleteUserById(Long userId);
 
-    boolean checkFriendStatus(String token, Long userId2);
+    String checkFriendStatus(String token, Long userId2);
 
     void unfriend(String token, Long userId2);
 

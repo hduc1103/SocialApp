@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Post from '../../components/post/Post';
 import FloatingButton from '../../components/floatingbutton/FloatingButton';
-import AddNewPost from '../../components/addpostmodal/AddNewPost';
-import UpdateProfileModal from '../../components/updateprofilemodal/UpdateProfileModal';
-import ChangePasswordModal from '../../components/changepasswordmodal/ChangePasswordModal';
-import { LiaUserEditSolid } from "react-icons/lia";
-import { FaUpload } from "react-icons/fa6";
-import { IoPersonAddSharp, IoPersonRemoveSharp } from "react-icons/io5";
-import { PiPasswordBold } from "react-icons/pi";
+import ProfileHeader from '../../components/profileheader/ProfileHeader';
+import PostList from '../../components/postlist/PostList';
+import Modals from '../../components/profilemodals/ProfileModals';
 import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import './userprofile.scss';
 import Footer from '../../components/footer/footer';
@@ -16,16 +11,13 @@ import Footer from '../../components/footer/footer';
 const UserProfile = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
-  const [isFriend, setIsFriend] = useState(false);
+  const [friendshipStatus, setFriendshipStatus] = useState('NOT_FRIENDS'); // Manage friendship state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [author, setAuthor] = useState('');
-  const [authorImgUrl, setAuthorImgUrl] = useState('');
 
   const navigate = useNavigate();
   const { userId } = useParams();
-
   const loggedInUserId = localStorage.getItem('userId');
 
   const fetchPostAuthor = async (new_post_userId) => {
@@ -45,8 +37,6 @@ const UserProfile = () => {
       }
 
       const data = await response.json();
-      setAuthor(data.username);
-      setAuthorImgUrl(data.imgUrl);
       return data;
     } catch (error) {
       console.error('Error fetching post author:', error);
@@ -55,39 +45,40 @@ const UserProfile = () => {
     }
   };
 
-  const handleNewPost = (content) => {
+  const handleNewPost = async (content) => {
     const token = localStorage.getItem('token');
-    fetch(`${BASE_URL}/post/create-post`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content }),
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          showRedNotification(errorData.message || 'Failed to create post');
-          return;
-        }
-        const data = await response.json();
-        const authorData = await fetchPostAuthor(data.userId);
-        if (authorData) {
-          const newPost = {
-            ...data,
-            likeCount: 0,
-            author: authorData.username,
-            authorImgUrl: authorData.imgUrl,
-          };
-          setUserPosts((prevPosts) => [...prevPosts, newPost]);
-          showGreenNotification('Post created successfully');
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        showRedNotification('Error creating post');
+    try {
+      const response = await fetch(`${BASE_URL}/post/create-post`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        showRedNotification(errorData.message || 'Failed to create post');
+        return;
+      }
+
+      const data = await response.json();
+      const authorData = await fetchPostAuthor(data.userId);
+      if (authorData) {
+        const newPost = {
+          ...data,
+          likeCount: 0,
+          author: authorData.username,
+          authorImgUrl: authorData.imgUrl,
+        };
+        setUserPosts((prevPosts) => [...prevPosts, newPost]);
+        showGreenNotification('Post created successfully');
+      }
+    } catch (err) {
+      console.error('Error creating post:', err);
+      showRedNotification('Error creating post');
+    }
   };
 
   const handleUpdateProfile = async (updatedDetails) => {
@@ -100,9 +91,7 @@ const UserProfile = () => {
         return acc;
       }, {});
 
-      if (Object.keys(updateData).length === 0) {
-        return;
-      }
+      if (Object.keys(updateData).length === 0) return;
 
       const response = await fetch(`${BASE_URL}/user/update-user`, {
         method: 'PUT',
@@ -208,13 +197,13 @@ const UserProfile = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        showRedNotification(errorData.message || 'Failed to check friendship status');
+        const errorData = await response.text();
+        showRedNotification(errorData || 'Failed to check friendship status');
         return;
       }
 
-      const isFriendStatus = await response.json();
-      setIsFriend(isFriendStatus);
+      const friendshipStatus = await response.text();
+      setFriendshipStatus(friendshipStatus);
     } catch (error) {
       console.error('Error checking friendship status:', error);
       showRedNotification('Error checking friendship status');
@@ -237,15 +226,39 @@ const UserProfile = () => {
         return;
       }
 
-      setIsFriend(1);
-      showGreenNotification('Friend added successfully');
+      setFriendshipStatus('REQUEST_SENT');
+      showGreenNotification('Friend request sent');
     } catch (error) {
       console.error('Error adding friend:', error);
       showRedNotification('Error adding friend');
     }
   };
 
-  const Handleunfriend = async () => {
+  const handleAcceptFriendRequest = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}/user/add-friend?userId2=${userId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        showRedNotification(errorData.message || 'Failed to accept friend request');
+        return;
+      }
+
+      setFriendshipStatus('FRIENDS');
+      showGreenNotification('Friend request accepted');
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      showRedNotification('Error accepting friend request');
+    }
+  };
+
+  const handleUnfriend = async () => {
     const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${BASE_URL}/user/unfriend?userId2=${userId}`, {
@@ -261,7 +274,7 @@ const UserProfile = () => {
         return;
       }
 
-      setIsFriend(0);
+      setFriendshipStatus('NOT_FRIENDS');
       showGreenNotification('Unfriended successfully');
     } catch (error) {
       console.error('Error unfriending:', error);
@@ -278,6 +291,7 @@ const UserProfile = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (response.status === 401) {
         const errorMessage = await response.text();
         if (errorMessage === 'Token has expired') {
@@ -295,7 +309,6 @@ const UserProfile = () => {
         return;
       }
 
-      
       const data = await response.json();
       setUserDetails(data);
     } catch (error) {
@@ -357,6 +370,7 @@ const UserProfile = () => {
     );
     return updatedPosts;
   };
+
   const handleDeletePost = async (postId) => {
     const token = localStorage.getItem('token');
     try {
@@ -372,8 +386,6 @@ const UserProfile = () => {
         showRedNotification(errorData.message || 'Failed to delete post');
         return;
       }
-
-      // Update the userPosts state to remove the deleted post
       setUserPosts(userPosts.filter((post) => post.id !== postId));
       showGreenNotification('Post deleted successfully');
     } catch (error) {
@@ -381,6 +393,7 @@ const UserProfile = () => {
       showRedNotification('Error deleting post');
     }
   };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -395,113 +408,37 @@ const UserProfile = () => {
     }
   }, [navigate, userId]);
 
-
   return (
     <div className="user-profile">
-      {userId === loggedInUserId && (
-        <FloatingButton onClick={() => setIsModalOpen(true)} />
-      )}
-      <AddNewPost isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleNewPost} />
+      {userId === loggedInUserId && <FloatingButton onClick={() => setIsModalOpen(true)} />}
+      <Modals
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        handleNewPost={handleNewPost}
+        isUpdateModalOpen={isUpdateModalOpen}
+        setIsUpdateModalOpen={setIsUpdateModalOpen}
+        handleUpdateProfile={handleUpdateProfile}
+        isPasswordModalOpen={isPasswordModalOpen}
+        setIsPasswordModalOpen={setIsPasswordModalOpen}
+        handlePasswordChange={handlePasswordChange}
+        userDetails={userDetails}
+      />
 
-      <div className="profile-header">
-        <div className="profile-details">
-          <div className="profile-picture-wrapper">
-            <img
-              src={userDetails?.img_url ? `data:image/png;base64,${userDetails.img_url}` : "https://via.placeholder.com/150"}
-              alt="Profile"
-              className="profile-picture"
-            />
+      <ProfileHeader
+        userDetails={userDetails}
+        userId={userId}
+        loggedInUserId={loggedInUserId}
+        friendshipStatus={friendshipStatus}
+        handleAddFriend={handleAddFriend}
+        handleAcceptFriendRequest={handleAcceptFriendRequest}
+        handleUnfriend={handleUnfriend}
+        handleUpdateProfileImage={handleUpdateProfileImage}
+        setIsUpdateModalOpen={setIsUpdateModalOpen}
+        setIsPasswordModalOpen={setIsPasswordModalOpen}
+      />
 
-            {userId === loggedInUserId && (
-              <>
-                <input
-                  type="file"
-                  id="profileImageInput"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      handleUpdateProfileImage(e.target.files[0]);
-                    }
-                  }}
-                />
-                <button
-                  className="edit-profile-picture-button"
-                  onClick={() => document.getElementById('profileImageInput').click()}
-                >
-                  <FaUpload size={15} />
-                </button>
-              </>
-            )}
-          </div>
-          <div className="user-info">
-            <h1>{userDetails ? `${userDetails.name}` : 'User Profile'}</h1>
-            <p>{userDetails ? `Email: ${userDetails.email}` : 'Loading user details...'}</p>
-            <p>{userDetails ? `Address: ${userDetails.address}` : 'Loading user details...'}</p>
-            <p>{userDetails ? `Bio: ${userDetails.bio}` : 'Loading user details...'}</p>
-          </div>
-        </div>
-        {userId === loggedInUserId && (
-          <div className="profile-actions">
-            <button className="update-profile-button" onClick={() => setIsUpdateModalOpen(true)}>
-              <LiaUserEditSolid size={20} />
-            </button>
-            <button className="change-password-button" onClick={() => setIsPasswordModalOpen(true)}>
-              <PiPasswordBold size={20} />
-            </button>
-          </div>
-        )}
-        {userId !== loggedInUserId && (
-          <button
-            className="add-friend-button"
-            onClick={() => {
-              if (!isFriend) {
-                handleAddFriend();
-              } else {
-                Handleunfriend();
-              }
-            }}
-          >
-            {isFriend ? (
-              <>
-                <IoPersonRemoveSharp size={20} /> Unfriend
-              </>
-            ) : (
-              <>
-                <IoPersonAddSharp size={20} /> Add Friend
-              </>
-            )}
-          </button>
-        )}
-      </div>
+      <PostList posts={userPosts} onDeletePost={handleDeletePost} userId={userId} Name={userDetails?.name} loggedInUserId={loggedInUserId} />
 
-      {isUpdateModalOpen && (
-        <UpdateProfileModal
-          isOpen={isUpdateModalOpen}
-          onClose={() => setIsUpdateModalOpen(false)}
-          onSubmit={handleUpdateProfile}
-          currentDetails={userDetails}
-        />
-      )}
-      {isPasswordModalOpen && (
-        <ChangePasswordModal
-          isOpen={isPasswordModalOpen}
-          onClose={() => setIsPasswordModalOpen(false)}
-          onSubmit={handlePasswordChange}
-        />
-      )}
-      <div className="posts-section">
-        <h2>{userId === loggedInUserId ? 'Your Posts' : `${userDetails?.name}'s Posts`}</h2>
-        {userPosts.length > 0 ? (
-          <div className="post-list">
-            {userPosts.slice().reverse().map((post) => (
-              <Post key={post.id} post={post} onDeletePost={handleDeletePost} />
-            ))}
-          </div>
-
-        ) : (
-          <p>No posts to display.</p>
-        )}
-      </div>
       <Footer />
     </div>
   );

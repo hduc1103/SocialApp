@@ -22,11 +22,13 @@ const SearchResult = ({ userResults, postResults, onClose }) => {
 
   return (
     <div className="search-result-container">
+      {/* Close Button */}
       <div className="search-result-header">
         <button className="search-close-button" onClick={onClose}>
           <TiDeleteOutline size={24} />
         </button>
       </div>
+
       {userResults.length > 0 && (
         <div className="result-section">
           <h3>User Results:</h3>

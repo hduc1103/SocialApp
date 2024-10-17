@@ -220,7 +220,8 @@ public class UserServiceImpl implements UserService {
         deleteUser(userEntity);
     }
 
-    public String addFriend(String token, Long userId2) {
+    @Override
+    public String makeFriend(String token, Long userId2) {
         try {
             String username = extractUsername(token);
 
@@ -229,10 +230,16 @@ public class UserServiceImpl implements UserService {
 
             UserEntity userEntity2 = userRepository.findById(userId2)
                     .orElseThrow(() -> new NoSuchElementException("User not found: " + userId2));
+            Optional<WebFriendEntity> existingFriendship = webFriendRepository.findByUserId1AndUserId2(userEntity1.getId(), userId2);
 
-            boolean friendshipExists = webFriendRepository.existsByUserId1AndUserId2(userEntity1.getId(), userEntity2.getId());
-            if (friendshipExists) {
-                return "Friendship request already sent.";
+            if (existingFriendship.isPresent()) {
+                WebFriendEntity friendEntity = existingFriendship.get();
+                if (friendEntity.getUser2Accepted() == 0) {
+                    friendEntity.setUser2Accepted(1L);
+                    webFriendRepository.save(friendEntity);
+                    return "Friend request accepted!";
+                }
+                return "You are already friends.";
             }
 
             WebFriendEntity webFriend = WebFriendEntity.builder()
@@ -242,13 +249,13 @@ public class UserServiceImpl implements UserService {
                     .user2Accepted(0L)
                     .build();
             webFriendRepository.save(webFriend);
-
             return "Friend request sent successfully!";
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             return "Unexpected error: " + e.getMessage();
         }
     }
+
 
     @Override
     public UserResponse updateUser(Long userId, Map<String, String> updateData) {
@@ -373,7 +380,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean checkFriendStatus(String token, Long userId2) {
+    public String checkFriendStatus(String token, Long userId2) {
         try {
             String username = extractUsername(token);
 
@@ -383,15 +390,28 @@ public class UserServiceImpl implements UserService {
             Optional<WebFriendEntity> friendship = webFriendRepository.findByUserId1AndUserId2(userEntity1.getId(), userId2)
                     .or(() -> webFriendRepository.findByUserId1AndUserId2(userId2, userEntity1.getId()));
 
-            return friendship.isPresent()
-                    && friendship.get().getUser1Accepted() == 1L
-                    && friendship.get().getUser2Accepted() == 1L;
+            if (friendship.isEmpty()) {
+                return "NOT_FRIENDS";
+            }
+            WebFriendEntity webFriendEntity = friendship.get();
+            if (webFriendEntity.getUser1Accepted() == 1L && webFriendEntity.getUser2Accepted() == 1L) {
+                return "FRIENDS";
+            }
+            if (webFriendEntity.getUserId1().equals(userEntity1.getId()) && webFriendEntity.getUser1Accepted() == 1L && webFriendEntity.getUser2Accepted() == 0L) {
+                return "REQUEST_SENT";
+            }
+            if (webFriendEntity.getUserId2().equals(userEntity1.getId()) && webFriendEntity.getUser2Accepted() == 0L) {
+                return "REQUEST_RECEIVED";
+            }
+
+            return "NOT_FRIENDS";
 
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
-            return false;
+            return "NOT_FRIENDS";
         }
     }
+
 
     @Override
     public void unfriend(String token, Long userId2) {
@@ -418,7 +438,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteRelationship(long userId) {
-        webFriendRepository.deleteRelationship(userId);
+        webFriendRepository.deleteAllUserRelationships(userId);
     }
 
     @Override

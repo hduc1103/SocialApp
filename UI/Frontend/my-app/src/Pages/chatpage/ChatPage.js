@@ -35,8 +35,8 @@ const ChatPage = () => {
       });
 
       if (response.ok) {
-        const isFriend = await response.json();
-        if (!isFriend) {
+        const isFriend = await response.text();
+        if (isFriend==="NOT_FRIENDS" || isFriend==="REQUEST_SENT" || isFriend==="REQUEST_RECEIVED") {
           showRedNotification('You are not friends with this user.');
           navigate('/conversation');  
         }

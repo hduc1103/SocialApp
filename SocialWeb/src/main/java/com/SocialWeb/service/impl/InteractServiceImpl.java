@@ -11,10 +11,12 @@ import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.InteractService;
 import com.SocialWeb.service.interfaces.NotificationService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import static com.SocialWeb.Message.*;
 
@@ -55,6 +57,11 @@ public class InteractServiceImpl implements InteractService {
         commentEntity.setDeleted(false);
         commentRepository.save(commentEntity);
 
+        UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
+        if (!Objects.equals(userEntity1.getId(), userEntity.getId())) {
+            String notification = username + NOTI_CMT;
+            notificationService.sendNotification(userEntity1, notification);
+        }
         return CommentResponse.builder()
                 .id(commentEntity.getId())
                 .user_id(userEntity.getId())
@@ -65,12 +72,18 @@ public class InteractServiceImpl implements InteractService {
     }
 
     @Override
-    public void updateComment(Long commentId, Map<String, String> new_comment) {
+    public void updateComment(String token, Long commentId, Map<String, String> new_comment) {
+        String username = extractUsername(token);
         String new_content = new_comment.get("text");
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow();
         commentEntity.setText(new_content);
         commentEntity.setUpdatedAt(new Date());
         commentRepository.save(commentEntity);
+
+        Long postId = commentRepository.getPostId(commentId);
+        UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
+        String notification = username + NOTI_CMT;
+        notificationService.sendNotification(userEntity1,notification);
     }
 
     @Override
@@ -99,9 +112,10 @@ public class InteractServiceImpl implements InteractService {
         }
         postRepository.addLike(userEntity.getId(), postId);
         UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
-        String content = "User " + username + " liked your post";
-        System.out.println(content);
-        notificationService.sendNotification(userEntity1,content);
+        if (!Objects.equals(userEntity1.getId(), userEntity.getId())){
+        String notification = username + NOTI_LIKE;
+        notificationService.sendNotification(userEntity1,notification);
+        }
         return LIKE;
     }
 

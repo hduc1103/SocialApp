@@ -291,7 +291,6 @@ const AdminPanel = () => {
         userId={selectedUserId}
         fetchUserPosts={fetchUserPosts}
       />
-
       <CreateUser newUser={newUser} setNewUser={setNewUser} createUser={createUser} />
       <UpdateUser updateData={updateData} setUpdateData={setUpdateData} updateUser={updateUser} />
       <DeleteUser userId={userId} setUserId={setUserId} deleteUser={deleteUser} />

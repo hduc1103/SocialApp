@@ -277,25 +277,28 @@ const Post = ({ post, onDeletePost }) => {
           {post.isDeleted ? <em>(Deleted)</em> : post.content}
         </p>
       )}
-
-      {(post.userId === parseInt(userId) || role === 'ADMIN') && (
-        <div className="post-options">
-          {!post.deleted && (
-            <>
-              <button className="three-dot-button post-options-button" onClick={() => setShowPostOptions(!showPostOptions)}>
-                <FaEllipsisH />
-              </button>
-              {showPostOptions && (
-                <div className="dropdown-menu">
-                  <button onClick={() => setIsEditing(true)}>Update Post</button>
-                  <button onClick={() => onDeletePost(post.id)}>Delete Post</button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-      )}
+{(post.userId === parseInt(userId) || role === 'ADMIN') && (
+  <div className="post-options">
+    {!post.deleted && (
+      <>
+        <button
+          className="three-dot-button post-options-button"
+          onClick={() => setShowPostOptions(!showPostOptions)}
+        >
+          <FaEllipsisH />
+        </button>
+        {showPostOptions && (
+          <div className="dropdown-menu">
+            {post.userId === parseInt(userId) && (
+              <button onClick={() => setIsEditing(true)}>Update Post</button>
+            )}
+            <button onClick={() => onDeletePost(post.id)}>Delete Post</button>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+)}
 
       <p className="post-updated-time">{formatDate(post.updatedAt)}</p>
       <div className="post-actions">
