@@ -124,6 +124,7 @@ const AdminPanel = () => {
       }
 
       showGreenNotification('User deleted successfully');
+      setUserId('');
       getAllUsers();
     } catch (error) {
       showRedNotification('Error deleting user');

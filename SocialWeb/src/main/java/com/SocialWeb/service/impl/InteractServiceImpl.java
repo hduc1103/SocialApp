@@ -10,6 +10,7 @@ import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.InteractService;
 import com.SocialWeb.service.interfaces.NotificationService;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -58,7 +59,7 @@ public class InteractServiceImpl implements InteractService {
 
         UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         if (!Objects.equals(userEntity1.getId(), userEntity.getId())) {
-            String notification = username + NOTI_CMT;
+            String notification = userEntity.getName() + NOTI_CMT;
             notificationService.sendNotification(userEntity1, notification);
         }
         return CommentResponse.builder()
@@ -73,6 +74,7 @@ public class InteractServiceImpl implements InteractService {
     @Override
     public void updateComment(String token, Long commentId, Map<String, String> new_comment) {
         String username = extractUsername(token);
+        UserEntity userEntity= userRepository.findByUsername(username).orElseThrow();
         String new_content = new_comment.get("text");
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow();
         commentEntity.setText(new_content);
@@ -81,7 +83,7 @@ public class InteractServiceImpl implements InteractService {
 
         Long postId = commentRepository.getPostId(commentId);
         UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
-        String notification = username + NOTI_CMT;
+        String notification = userEntity.getName()+ NOTI_CMT;
         notificationService.sendNotification(userEntity1,notification);
     }
 
@@ -112,7 +114,7 @@ public class InteractServiceImpl implements InteractService {
         postRepository.addLike(userEntity.getId(), postId);
         UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         if (!Objects.equals(userEntity1.getId(), userEntity.getId())){
-        String notification = username + NOTI_LIKE;
+        String notification = userEntity.getName() + NOTI_LIKE;
         notificationService.sendNotification(userEntity1,notification);
         }
         return LIKE;
