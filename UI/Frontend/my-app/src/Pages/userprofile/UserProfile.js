@@ -113,6 +113,7 @@ const UserProfile = () => {
       }
 
       const data = await response.json();
+      console.log(data);
       showGreenNotification('Profile updated successfully');
       setUserDetails(data);
       setIsUpdateModalOpen(false);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaHome, FaSearch, FaUserCircle } from 'react-icons/fa';
+import { FaHome, FaUserCircle } from 'react-icons/fa';
 import { RiAdminFill } from 'react-icons/ri';
 import { MdSupportAgent } from "react-icons/md";
 import { IoIosLogOut, IoIosLogIn, IoIosNotifications } from "react-icons/io";
@@ -208,7 +208,7 @@ const Header = () => {
             />
             <div className="nav-item search-nav">
               <button onClick={handleSearch}>
-                <FaSearch size={24} /> Search
+                Search
               </button>
             </div>
           </div>

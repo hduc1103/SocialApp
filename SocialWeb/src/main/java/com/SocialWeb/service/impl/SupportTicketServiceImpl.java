@@ -95,10 +95,8 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         String username = extractUsername(token);
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
-
         String title = (String) requestBody.get("title");
         String content = (String) requestBody.get("content");
-
         SupportTicketEntity supportTicketEntity = SupportTicketEntity.builder()
                 .user(userEntity)
                 .title(title)
@@ -106,7 +104,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .status(TicketStatus.IN_PROGRESS)
                 .createdAt(new Date())
                 .build();
-
         supportTicketRepository.save(supportTicketEntity);
     }
 

@@ -378,16 +378,12 @@ public class UserServiceImpl implements UserService {
             userEntity.setAddress(updateData.get("new_address"));
         }
         userRepository.save(userEntity);
-        String decodedImgUrl = null;
-        if (userEntity.getImg_url() != null) {
-            decodedImgUrl = new String(Base64.getDecoder().decode(userEntity.getImg_url()));
-        }
         return UserResponse.builder()
                 .id(userEntity.getId())
                 .username(userEntity.getUsername())
                 .name(userEntity.getName())
                 .email(userEntity.getEmail())
-                .img_url(decodedImgUrl)
+                .img_url(userEntity.getImg_url())
                 .bio(userEntity.getBio())
                 .address(userEntity.getAddress())
                 .build();

@@ -18,7 +18,6 @@ import static com.SocialWeb.Message.*;
 
 @Service
 public class PostServiceImpl implements PostService {
-
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
