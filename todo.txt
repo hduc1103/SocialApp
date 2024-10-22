@@ -1,0 +1,1 @@
+delete noti while deleting post, user, comment, relationship, cancel friend request
