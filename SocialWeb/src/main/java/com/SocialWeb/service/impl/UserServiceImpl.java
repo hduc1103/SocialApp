@@ -280,7 +280,7 @@ public class UserServiceImpl implements UserService {
                     webFriendRepository.save(friendEntity);
 
                     String notification = userEntity1.getName() + NOTI_ACP_FRIEND;
-                    notificationService.deleteFriendShipNoti(userId2,userEntity1.getId());
+                    notificationService.deleteFriendShipNoti(userEntity1.getId(),userId2);
                     notificationService.sendNotification(userEntity2, notification, friendEntity, userEntity1.getId());
                     return "Friend request accepted!";
                 }
