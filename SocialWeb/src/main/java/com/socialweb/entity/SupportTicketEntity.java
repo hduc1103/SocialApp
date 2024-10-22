@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +35,4 @@ public class SupportTicketEntity {
 
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
-
-    List<String> assignedUsers= new ArrayList<>();
 }

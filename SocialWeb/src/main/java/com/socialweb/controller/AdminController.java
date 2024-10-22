@@ -3,7 +3,6 @@ package com.socialweb.controller;
 import com.socialweb.domain.response.PostResponse;
 import com.socialweb.domain.response.SupportTicketResponse;
 import com.socialweb.domain.response.UserResponse;
-import com.socialweb.security.JwtUtil;
 import com.socialweb.service.interfaces.PostService;
 import com.socialweb.service.interfaces.SupportTicketService;
 import com.socialweb.service.interfaces.UserService;
@@ -24,22 +23,14 @@ import static com.socialweb.Message.USER_CREATED;
 public class AdminController {
 
     private final UserService userService;
-    private final JwtUtil jwtUtil;
     private final SupportTicketService supportTicketService;
     private final PostService postService;
 
     public AdminController(UserService userService,
-                           JwtUtil jwtUtil,
                            SupportTicketService supportTicketService, PostService postService) {
         this.userService = userService;
-        this.jwtUtil = jwtUtil;
         this.supportTicketService = supportTicketService;
         this.postService = postService;
-    }
-
-    private String extractUsername(String token) {
-        String jwtToken = token.substring(7);
-        return jwtUtil.extractUsername(jwtToken);
     }
 
     @GetMapping("/all-users")

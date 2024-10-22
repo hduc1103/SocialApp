@@ -4,7 +4,6 @@ import com.socialweb.domain.request.AuthRequest;
 import com.socialweb.domain.response.AuthResponse;
 import com.socialweb.domain.response.UserResponse;
 import com.socialweb.entity.UserEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
