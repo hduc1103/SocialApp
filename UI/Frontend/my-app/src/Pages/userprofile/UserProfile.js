@@ -103,11 +103,11 @@ const UserProfile = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.text();
         if (response.status === 409) {
-          showRedNotification('Username or email already exists');
+          showRedNotification(errorData);
         } else {
-          showRedNotification(errorData.message || 'Failed to update profile');
+          showRedNotification(errorData || 'Failed to update profile');
         }
         return;
       }
