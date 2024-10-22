@@ -124,35 +124,48 @@ const UserProfile = () => {
 
   const handleUpdateProfileImage = async (profilePicture) => {
     const token = localStorage.getItem('token');
+    
+    if (!profilePicture) {
+      showRedNotification('Please select an image to upload');
+      return;
+    }
+  
+    // Check if the file is an image
+    if (!profilePicture.type.startsWith('image/')) {
+      showRedNotification('Please upload a valid image file');
+      return;
+    }
+  
     try {
       const formData = new FormData();
       formData.append('profilePicture', profilePicture);
-
+  
       const response = await fetch(`${BASE_URL}/user/update-profile-image`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: formData, 
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         showRedNotification(errorData.message || 'Failed to update profile image');
         return;
       }
-
+  
       const updatedData = await response.json();
       showGreenNotification('Profile image updated successfully');
       setUserDetails((prevDetails) => ({
         ...prevDetails,
-        img_url: updatedData.img_url,
+        img_url: updatedData.img_url, 
       }));
     } catch (error) {
       console.error('Error updating profile image:', error);
       showRedNotification('Error updating profile image');
     }
   };
+  
 
   const handlePasswordChange = (passwordDetails) => {
     const token = localStorage.getItem('token');

@@ -1,7 +1,6 @@
 package com.SocialWeb.service.interfaces;
 
 import com.SocialWeb.domain.response.CommentResponse;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Map;
 
@@ -11,7 +10,7 @@ public interface InteractService {
 
     void updateComment(String token, Long commentId, Map<String, String> new_comment);
 
-    String deleteComment(Long cmtId);
+    String deleteComment(String token, Long cmtId);
 
     String likePost(String token, Long postId);
 

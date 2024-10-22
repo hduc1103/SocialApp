@@ -5,12 +5,12 @@ import com.SocialWeb.entity.CommentEntity;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.CommentRepository;
+import com.SocialWeb.repository.NotificationRepository;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.security.JwtUtil;
 import com.SocialWeb.service.interfaces.InteractService;
 import com.SocialWeb.service.interfaces.NotificationService;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -28,13 +28,15 @@ public class InteractServiceImpl implements InteractService {
     private final CommentRepository commentRepository;
     private final JwtUtil jwtUtil;
     private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
 
-    public InteractServiceImpl(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository, JwtUtil jwtUtil, NotificationService notificationService) {
+    public InteractServiceImpl(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository, JwtUtil jwtUtil, NotificationService notificationService, NotificationRepository notificationRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.jwtUtil = jwtUtil;
         this.notificationService = notificationService;
+        this.notificationRepository = notificationRepository;
     }
 
     private String extractUsername(String token) {
@@ -60,7 +62,7 @@ public class InteractServiceImpl implements InteractService {
         UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         if (!Objects.equals(userEntity1.getId(), userEntity.getId())) {
             String notification = userEntity.getName() + NOTI_CMT;
-            notificationService.sendNotification(userEntity1, notification);
+            notificationService.sendNotification(userEntity1, notification, commentEntity, userEntity.getId());
         }
         return CommentResponse.builder()
                 .id(commentEntity.getId())
@@ -84,14 +86,16 @@ public class InteractServiceImpl implements InteractService {
         Long postId = commentRepository.getPostId(commentId);
         UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         String notification = userEntity.getName()+ NOTI_CMT;
-        notificationService.sendNotification(userEntity1,notification);
+        notificationService.sendNotification(userEntity1,notification, commentEntity, userEntity.getId());
     }
 
     @Override
-    public String deleteComment(Long cmtId) {
+    public String deleteComment(String token, Long cmtId) {
         try {
+            UserEntity userEntity = userRepository.findByUsername(extractUsername(token)).orElseThrow();
             CommentEntity commentEntity = commentRepository.findById(cmtId).orElseThrow();
             commentEntity.setDeleted(true);
+            notificationService.removeNotification(cmtId, userEntity.getId());
             commentRepository.save(commentEntity);
             return CMT_DEL;
         } catch (NoSuchElementException e) {
@@ -115,7 +119,8 @@ public class InteractServiceImpl implements InteractService {
         UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         if (!Objects.equals(userEntity1.getId(), userEntity.getId())){
         String notification = userEntity.getName() + NOTI_LIKE;
-        notificationService.sendNotification(userEntity1,notification);
+        PostEntity postEntity= postRepository.findById(postId).orElseThrow();
+        notificationService.sendNotification(userEntity1,notification, postEntity, userEntity.getId());
         }
         return LIKE;
     }
@@ -130,6 +135,8 @@ public class InteractServiceImpl implements InteractService {
             return N_LIKE;
         }
         postRepository.removeLike(userId, postId);
+            System.out.println("postId"+ postId+"userid"+userId);
+        notificationService.removeNotification(postId, userId);
         return DISLIKE;
     }
 

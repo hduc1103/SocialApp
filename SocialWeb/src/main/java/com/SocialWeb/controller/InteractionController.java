@@ -29,8 +29,8 @@ public class InteractionController {
 
 
     @DeleteMapping("/delete-comment")
-    public ResponseEntity<?> deleteComment(@RequestParam Long cmtId) {
-        String response = interactService.deleteComment(cmtId);
+    public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @RequestParam Long cmtId) {
+        String response = interactService.deleteComment(token, cmtId);
         if (response.startsWith(ERROR_MSG)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }

@@ -108,20 +108,16 @@
   transform: scale(1.05);
 }
 
-/* Position notification badge correctly */
-.nav-item .notification-count {
+.nav-item .notification-dot {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: 5px;
+  right: 5px;
+  height: 10px;
+  width: 10px;
   background-color: red;
-  color: white;
   border-radius: 50%;
-  padding: 2px 6px;
-  font-size: 12px;
-  font-weight: bold;
 }
 
-/* Notification dropdown styles */
 .notification-dropdown {
   position: absolute;
   right: 0;
@@ -187,7 +183,6 @@
   }
 }
 
-/* Smaller screens (14 inch) */
 @media (max-width: 1440px) {
   .header-container {
     max-width: 1200px;

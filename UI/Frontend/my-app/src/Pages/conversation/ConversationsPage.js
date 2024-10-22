@@ -12,13 +12,14 @@ const ConversationsPage = () => {
 
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
+
   useEffect(() => {
     if (!token) {
       navigate('/login');
       showRedNotification('You must log in first');
-      return;
     }
-  }, []);
+  }, [token, navigate]);
+  
 
   useEffect(() => {
     if (userId && token) {
@@ -30,6 +31,10 @@ const ConversationsPage = () => {
             },
           });
           if (!response.ok) {
+            if(response.status === 401){
+              navigate('/login');
+              showRedNotification('You must log in first');
+            }
             throw new Error('Failed to fetch conversations');
           }
           const data = await response.json();

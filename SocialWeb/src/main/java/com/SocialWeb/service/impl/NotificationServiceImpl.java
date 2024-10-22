@@ -10,9 +10,11 @@ import com.SocialWeb.service.interfaces.NotificationService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,29 +37,54 @@ public class NotificationServiceImpl implements NotificationService {
         return jwtUtil.extractUsername(jwtToken);
     }
 
+    public <T> String getEntityType(T entity) {
+        try {
+            return entity.getClass().getSimpleName();
+        } catch (Exception e) {
+            return "Unknown Entity";
+        }
+    }
+
+    public <T> Long getEntityId(T entity) {
+        try {
+            Field field = entity.getClass().getDeclaredField("id");
+            field.setAccessible(true);
+            return (Long) field.get(entity);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
-    public void sendNotification(UserEntity user, String content) {
-        System.out.println("Sending notification to userID: " + user.getId());
+    public <T> void sendNotification(UserEntity receiver, String content, T entity, Long senderId) {
         simpMessagingTemplate.convertAndSendToUser(
-                String.valueOf(user.getId()),
+                String.valueOf(receiver.getId()),
                 "/queue/notifications",
                 content
         );
-
-        System.out.println("Notification sent to user: " + user.getId() + " with content: " + content);
-
-        saveNotification(user, content);
+        saveNotification(receiver, content, entity, senderId);
     }
 
-
-    @Override
-    public NotificationEntity saveNotification(UserEntity user, String content) {
+    public <T> void saveNotification(UserEntity receiver, String content, T entity, Long senderId) {
+        Long relatedId = getEntityId(entity);
+        String classType = getEntityType(entity);
+        String type = "";
+        if(Objects.equals(classType, "PostEntity")){
+            type = "post";
+        }else if(Objects.equals(classType, "CommentEntity")){
+            type= "comment";
+        } else if (Objects.equals(classType,"WebFriendEntity")) {
+            type ="friendship";
+        }
         NotificationEntity notification = NotificationEntity.builder()
-                .user(user)
+                .user(receiver)
                 .content(content)
                 .createdAt(new Date())
+                .relatedId(relatedId)
+                .type(type)
+                .senderId(senderId)
                 .build();
-        return notificationRepository.save(notification);
+        notificationRepository.save(notification);
     }
 
     @Override
@@ -78,5 +105,13 @@ public class NotificationServiceImpl implements NotificationService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public <T> void removeNotification(Long relatedId, Long userId) {
+        NotificationEntity notification = notificationRepository
+                .findNotificationByRelatedIdAndSenderId(relatedId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("No notification found for relatedId " + relatedId + " and senderId " + userId));
+
+        notificationRepository.deleteNotificationById(notification.getId());
+}
 
 }

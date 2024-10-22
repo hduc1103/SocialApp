@@ -26,4 +26,8 @@ public class NotificationEntity {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonBackReference("user-notifications")
     private UserEntity user;
+
+    private Long senderId;
+    private Long relatedId;
+    private String type;
 }

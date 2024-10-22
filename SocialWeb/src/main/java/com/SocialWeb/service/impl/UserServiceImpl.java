@@ -246,7 +246,7 @@ public class UserServiceImpl implements UserService {
                     webFriendRepository.save(friendEntity);
 
                     String notification = userEntity1.getName() + NOTI_ACP_FRIEND;
-                    notificationService.sendNotification(userEntity2, notification);
+                    notificationService.sendNotification(userEntity2, notification, friendEntity, userEntity1.getId());
 
                     return "Friend request accepted!";
                 }
@@ -265,7 +265,7 @@ public class UserServiceImpl implements UserService {
             webFriendRepository.save(webFriend);
 
             String notification = userEntity1.getName() + NOTI_FRIEND;
-            notificationService.sendNotification(userEntity2, notification);
+            notificationService.sendNotification(userEntity2, notification, webFriend, userEntity1.getId());
 
             return "Friend request sent successfully!";
         } catch (Exception e) {
@@ -437,6 +437,7 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
             webFriendRepository.unfriend(userEntity1.getId(), userId2);
+
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
         }

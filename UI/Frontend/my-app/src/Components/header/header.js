@@ -81,7 +81,7 @@ const Header = () => {
 
   const handleNotificationClick = async () => {
     setShowNotifications(!showNotifications);
-    setNewNotificationCount(0);  
+    setNewNotificationCount(0);
 
     const token = localStorage.getItem('token');
     const response = await fetch(`${BASE_URL}/user/get-notification`, {
@@ -125,6 +125,7 @@ const Header = () => {
       setUserResults(data.users);
       setPostResults(data.posts);
       setSearchPerformed(true);
+      setSearchTerm('');
     } catch (error) {
       console.error('Error during search:', error);
     }
@@ -170,7 +171,7 @@ const Header = () => {
             </div>
             <div className={`nav-item ${showNotifications ? 'show-dropdown' : ''}`} onClick={handleNotificationClick}>
               <IoIosNotifications size={24} />
-              {newNotificationCount > 0 && <span className="notification-count">{newNotificationCount}</span>}
+              {newNotificationCount > 0 && <span className="notification-dot"></span>}
               <span>Notifications</span>
               {showNotifications && (
                 <div className="notification-dropdown">
@@ -186,6 +187,7 @@ const Header = () => {
                 </div>
               )}
             </div>
+
             <div className="nav-item" onClick={handleSupportNavigation}>
               <MdSupportAgent size={24} />
               <span>Support</span>
