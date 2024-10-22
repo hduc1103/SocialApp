@@ -89,9 +89,11 @@ const SupportTicketPage = ({ userId }) => {
 
       if (!response.ok) {
         const errorData = await response.text();
-        showRedNotification(errorData.message || 'Failed to fetch user tickets');
+        showRedNotification(errorData|| 'Failed to fetch user tickets');
         if (response.status === 401) {
           navigate('/login');
+        } else if(response.status === 403){
+          navigate('/login')
         }
         return;
       }

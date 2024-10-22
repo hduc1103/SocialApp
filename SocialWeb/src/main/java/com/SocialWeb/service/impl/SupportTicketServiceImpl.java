@@ -4,7 +4,7 @@ import com.SocialWeb.domain.response.SupportTicketResponse;
 import com.SocialWeb.domain.response.TicketCommentResponse;
 import com.SocialWeb.entity.SupportTicketEntity;
 import com.SocialWeb.entity.TicketCommentEntity;
-import com.SocialWeb.entity.TicketStatus;
+import com.SocialWeb.config.TicketStatus;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.SupportTicketRepository;
 import com.SocialWeb.repository.TicketCommentRepository;

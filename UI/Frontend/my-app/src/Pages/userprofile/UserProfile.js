@@ -130,7 +130,6 @@ const UserProfile = () => {
       return;
     }
   
-    // Check if the file is an image
     if (!profilePicture.type.startsWith('image/')) {
       showRedNotification('Please upload a valid image file');
       return;
@@ -333,6 +332,9 @@ const UserProfile = () => {
         } else {
           showRedNotification('Unauthorized access, please log in again');
         }
+        navigate('/login');
+        return;
+      } else if(response.status === 403){
         navigate('/login');
         return;
       }

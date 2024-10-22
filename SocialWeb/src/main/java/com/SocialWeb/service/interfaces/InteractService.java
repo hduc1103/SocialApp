@@ -17,4 +17,5 @@ public interface InteractService {
     String dislikePost(String token, Long postId);
 
     String getCommentAuthor(long commentId);
+
 }

@@ -234,7 +234,6 @@ const Header = () => {
           onClose={handleCloseSearchResult}
         />
       )}
-
       {showNotifications && (
         <div className="notification-dropdown">
           {notifications.length > 0 ? (

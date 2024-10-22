@@ -34,6 +34,10 @@ const ConversationsPage = () => {
             if(response.status === 401){
               navigate('/login');
               showRedNotification('You must log in first');
+              return;
+            } else if(response.status === 403){
+              navigate('/login');
+              return;
             }
             throw new Error('Failed to fetch conversations');
           }

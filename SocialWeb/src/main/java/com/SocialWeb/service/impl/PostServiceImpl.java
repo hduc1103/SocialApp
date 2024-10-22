@@ -7,6 +7,7 @@ import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.security.JwtUtil;
+import com.SocialWeb.service.interfaces.NotificationService;
 import com.SocialWeb.service.interfaces.PostService;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +21,13 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
     private final JwtUtil jwtUtil;
 
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, JwtUtil jwtUtil) {
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, NotificationService notificationService, JwtUtil jwtUtil) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -135,6 +138,7 @@ public class PostServiceImpl implements PostService {
     public String deletePost(long postId) {
         PostEntity postEntity = postRepository.findById(postId).orElseThrow();
         postEntity.setDeleted(true);
+        notificationService.deleteAllPostOrCommentNoti(postId);
         postRepository.save(postEntity);
         return D_POST;
     }
@@ -166,6 +170,11 @@ public class PostServiceImpl implements PostService {
                                 .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteAllUserPost(long userId){
+        postRepository.deleteAllUserPost(userId);
     }
 
 }

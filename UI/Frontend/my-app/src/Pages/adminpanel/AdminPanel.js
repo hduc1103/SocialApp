@@ -7,9 +7,9 @@ import GetUser from '../../components/getuser/GetUser';
 import UpdateUser from '../../components/updateuser/UpdateUser';
 import DeleteUser from '../../components/deleteuser/DeleteUser';
 import { useNavigate } from 'react-router-dom';
+import AdminUpdateUserModal from '../../components/adminupdateusermodal/AdminUpdateUserModal';
 
 import './adminpanel.scss';
-import AdminUpdateUserModal from '../../components/adminupdateusermodal/AdminUpdateUserModal';
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);

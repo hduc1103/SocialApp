@@ -1,7 +1,10 @@
 package com.SocialWeb.service.interfaces;
 
+import com.SocialWeb.domain.request.AuthRequest;
+import com.SocialWeb.domain.response.AuthResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.entity.UserEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -10,6 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface UserService {
+
+    AuthResponse authenticate(AuthRequest authRequest) throws BadCredentialsException, Exception;
 
     Long getUserIdByToken(String token);
 
@@ -67,11 +72,10 @@ public interface UserService {
 
     List<UserEntity> getAllUsers();
 
-    List<UserEntity> searchUserByName(String keyword);
-
     String getUserName(long userId);
 
     void createUser(Map<String, String> newAccount);
 
     Map<String, String> getUsernameAndImage(long userId);
+
 }

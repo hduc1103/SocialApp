@@ -24,4 +24,6 @@ public interface PostService {
     List<PostEntity> searchPostsByKeyWord(String keyword);
 
     List<PostResponse> retrieveFriendsPosts(Long userId);
+
+    void deleteAllUserPost(long userId);
 }

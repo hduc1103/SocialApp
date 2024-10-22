@@ -62,4 +62,6 @@ public class UserEntity {
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private List<String> roles;
+
+    private boolean isDeleted;
 }

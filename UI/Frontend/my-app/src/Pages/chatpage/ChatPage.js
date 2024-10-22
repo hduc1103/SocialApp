@@ -33,7 +33,10 @@ const ChatPage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      if(response.status === 403){
+        navigate('/login');
+        return;
+      }
       if (response.ok) {
         const isFriend = await response.text();
         if (isFriend==="NOT_FRIENDS" || isFriend==="REQUEST_SENT" || isFriend==="REQUEST_RECEIVED") {

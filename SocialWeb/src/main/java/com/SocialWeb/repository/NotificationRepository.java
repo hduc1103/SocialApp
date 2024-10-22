@@ -21,5 +21,19 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
     @Query(value = "DELETE FROM notification WHERE id= :id", nativeQuery = true)
     void deleteNotificationById(@Param("id") Long id);
 
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM notification WHERE user_id = :userId OR sender_id= :userId", nativeQuery = true)
+    void deleteAllUserNotification(@Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM notification WHERE related_id= :post_or_cmt_id", nativeQuery = true)
+    void deletePostOrCommentNoti(@Param("post_or_cmt_id") Long post_or_cmt_id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM notification WHERE user_id = :userId AND sender_id = :senderId AND type = 'friendship'", nativeQuery = true)
+    void deleteFriendshipNotification(@Param("userId") Long userId, @Param("senderId") Long senderId);
 }
 

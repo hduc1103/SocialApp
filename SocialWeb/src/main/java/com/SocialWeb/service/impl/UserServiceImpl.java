@@ -1,5 +1,7 @@
 package com.SocialWeb.service.impl;
 
+import com.SocialWeb.domain.request.AuthRequest;
+import com.SocialWeb.domain.response.AuthResponse;
 import com.SocialWeb.domain.response.PostResponse;
 import com.SocialWeb.domain.response.UserResponse;
 import com.SocialWeb.entity.PostEntity;
@@ -16,6 +18,7 @@ import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,6 +61,21 @@ public class UserServiceImpl implements UserService {
     private String extractUsername(String token) {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
+    }
+
+    @Override
+    public AuthResponse authenticate(AuthRequest authRequest) throws BadCredentialsException, Exception {
+        UserEntity user = userRepository.findByUsername(authRequest.getUsername()).orElseThrow();
+        if (user.isDeleted()) {
+            throw new Exception("User account is disabled");
+        }
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+
+        final UserDetails userDetails = userDetail.loadUserByUsername(authRequest.getUsername());
+        final String jwt = jwtUtil.generateToken(userDetails);
+
+        return new AuthResponse(jwt);
     }
 
     @Override
@@ -214,15 +232,31 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("An unexpected error occurred while fetching user details", e);
         }
     }
+    @Override
+    public void deleteUser(UserEntity userEntity) {
+        Long userId = userEntity.getId();
+        messageService.deleteAllUserMessage(userId);
+        deleteRelationship(userEntity.getId());
+        postService.deleteAllUserPost(userId);
+        notificationService.deleteAllUserNotification(userId);
+        userRepository.deleteLikesByUserId(userId);
+        userRepository.deleteUser(userId);
+    }
 
     @Override
     public void deleteUserById(Long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
-        messageService.deleteAllUserMessage(userId);
-        deleteRelationship(userId);
         deleteUser(userEntity);
     }
 
+    @Override
+    public void deleteUserByToken(String token) {
+        String username = extractUsername(token);
+        UserEntity userEntity = getUserByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+        deleteUser(userEntity);
+    }
+    
     @Override
     public String makeFriend(String token, Long userId2) {
         try {
@@ -246,8 +280,8 @@ public class UserServiceImpl implements UserService {
                     webFriendRepository.save(friendEntity);
 
                     String notification = userEntity1.getName() + NOTI_ACP_FRIEND;
+                    notificationService.deleteFriendShipNoti(userId2,userEntity1.getId());
                     notificationService.sendNotification(userEntity2, notification, friendEntity, userEntity1.getId());
-
                     return "Friend request accepted!";
                 }
                 if (friendEntity.getUser1Accepted() == 1L && friendEntity.getUser2Accepted() == 1L) {
@@ -437,27 +471,19 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + username));
 
             webFriendRepository.unfriend(userEntity1.getId(), userId2);
-
+            notificationService.deleteFriendShipNoti(userId2, userEntity1.getId());
+            notificationService.deleteFriendShipNoti(userEntity1.getId(), userId2);
         } catch (Exception e) {
             System.err.println(UNEXPECTED_ERROR + e.getMessage());
         }
     }
 
     @Override
-    public void cancelFriendRequest(String token, Long userId2){
-        String username= extractUsername(token);
+    public void cancelFriendRequest(String token, Long userId2) {
+        String username = extractUsername(token);
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         webFriendRepository.cancelFriendRequest(userEntity.getId(), userId2);
-    }
-
-    @Override
-    public void deleteUserByToken(String token) {
-        String username = extractUsername(token);
-        UserEntity userEntity = getUserByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
-
-        deleteRelationship(userEntity.getId());
-        deleteUser(userEntity);
+        notificationService.deleteFriendShipNoti(userId2,userEntity.getId());
     }
 
     @Override
@@ -563,11 +589,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(UserEntity userEntity) {
-        userRepository.delete(userEntity);
-    }
-
-    @Override
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
@@ -580,11 +601,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
-    }
-
-    @Override
-    public List<UserEntity> searchUserByName(String keyword) {
-        return userRepository.searchUsersByUsername(keyword);
     }
 
     @Override
@@ -609,6 +625,5 @@ public class UserServiceImpl implements UserService {
 
         return response;
     }
-
 }
 

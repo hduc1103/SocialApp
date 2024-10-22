@@ -1,4 +1,4 @@
-package com.SocialWeb.entity;
+package com.SocialWeb.config;
 
 
 public enum TicketStatus {

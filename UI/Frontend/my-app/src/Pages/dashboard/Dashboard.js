@@ -39,6 +39,9 @@ const Dashboard = () => {
         }
         navigate('/login');
         return;
+      }else if(response.status === 403){
+        navigate('/login');
+        return;
       }
 
       if (response.status === 403) {

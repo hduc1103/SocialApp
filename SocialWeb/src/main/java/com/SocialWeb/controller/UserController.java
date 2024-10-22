@@ -5,17 +5,12 @@ import com.SocialWeb.domain.response.AuthResponse;
 import com.SocialWeb.domain.response.NotificationResponse;
 import com.SocialWeb.domain.response.SupportTicketResponse;
 import com.SocialWeb.domain.response.UserResponse;
-import com.SocialWeb.security.JwtUtil;
-import com.SocialWeb.security.UserDetail;
 import com.SocialWeb.service.interfaces.NotificationService;
 import com.SocialWeb.service.interfaces.SupportTicketService;
 import com.SocialWeb.service.interfaces.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,33 +24,26 @@ import static com.SocialWeb.Message.*;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final SupportTicketService supportTicketService;
-    private final UserDetail userDetail;
     private final NotificationService notificationService;
 
-    public UserController(JwtUtil jwtUtil, AuthenticationManager authenticationManager, UserService userService, SupportTicketService supportTicketService, UserDetail userDetail, NotificationService notificationService) {
-        this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
+    public UserController(UserService userService, SupportTicketService supportTicketService, NotificationService notificationService) {
         this.userService = userService;
         this.supportTicketService = supportTicketService;
-        this.userDetail = userDetail;
         this.notificationService = notificationService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticate(@RequestBody AuthRequest authRequest) throws Exception {
+    public ResponseEntity<?> authenticate(@RequestBody AuthRequest authRequest) {
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            AuthResponse authResponse = userService.authenticate(authRequest);
+            return ResponseEntity.ok(authResponse);
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(INVALID_CREDENTIAL);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
-        final UserDetails userDetails = userDetail.loadUserByUsername(authRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(jwt));
     }
 
     @GetMapping("/get-user-id")

@@ -69,12 +69,12 @@ public class NotificationServiceImpl implements NotificationService {
         Long relatedId = getEntityId(entity);
         String classType = getEntityType(entity);
         String type = "";
-        if(Objects.equals(classType, "PostEntity")){
+        if (Objects.equals(classType, "PostEntity")) {
             type = "post";
-        }else if(Objects.equals(classType, "CommentEntity")){
-            type= "comment";
-        } else if (Objects.equals(classType,"WebFriendEntity")) {
-            type ="friendship";
+        } else if (Objects.equals(classType, "CommentEntity")) {
+            type = "comment";
+        } else if (Objects.equals(classType, "WebFriendEntity")) {
+            type = "friendship";
         }
         NotificationEntity notification = NotificationEntity.builder()
                 .user(receiver)
@@ -112,6 +112,20 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("No notification found for relatedId " + relatedId + " and senderId " + userId));
 
         notificationRepository.deleteNotificationById(notification.getId());
-}
+    }
 
+    @Override
+    public void deleteAllUserNotification(Long userId) {
+        notificationRepository.deleteAllUserNotification(userId);
+    }
+
+    @Override
+    public void deleteAllPostOrCommentNoti(Long id) {
+        notificationRepository.deletePostOrCommentNoti(id);
+    }
+
+    @Override
+    public void deleteFriendShipNoti(Long userId, Long senderId) {
+        notificationRepository.deleteFriendshipNotification(userId, senderId);
+    }
 }

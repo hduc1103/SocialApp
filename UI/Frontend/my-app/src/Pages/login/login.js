@@ -57,7 +57,7 @@ const Login = () => {
 
         if (!loginResponse.ok) {
           const errorData = await loginResponse.text();
-          showRedNotification(errorData.message || 'Invalid credentials');
+          showRedNotification(errorData|| 'Invalid credentials');
           return;
         }
 

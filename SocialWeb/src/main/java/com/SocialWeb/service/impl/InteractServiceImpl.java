@@ -5,7 +5,6 @@ import com.SocialWeb.entity.CommentEntity;
 import com.SocialWeb.entity.PostEntity;
 import com.SocialWeb.entity.UserEntity;
 import com.SocialWeb.repository.CommentRepository;
-import com.SocialWeb.repository.NotificationRepository;
 import com.SocialWeb.repository.PostRepository;
 import com.SocialWeb.repository.UserRepository;
 import com.SocialWeb.security.JwtUtil;
@@ -28,15 +27,13 @@ public class InteractServiceImpl implements InteractService {
     private final CommentRepository commentRepository;
     private final JwtUtil jwtUtil;
     private final NotificationService notificationService;
-    private final NotificationRepository notificationRepository;
 
-    public InteractServiceImpl(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository, JwtUtil jwtUtil, NotificationService notificationService, NotificationRepository notificationRepository) {
+    public InteractServiceImpl(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository, JwtUtil jwtUtil, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.jwtUtil = jwtUtil;
         this.notificationService = notificationService;
-        this.notificationRepository = notificationRepository;
     }
 
     private String extractUsername(String token) {
@@ -59,7 +56,7 @@ public class InteractServiceImpl implements InteractService {
         commentEntity.setDeleted(false);
         commentRepository.save(commentEntity);
 
-        UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
+        UserEntity userEntity1 = userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         if (!Objects.equals(userEntity1.getId(), userEntity.getId())) {
             String notification = userEntity.getName() + NOTI_CMT;
             notificationService.sendNotification(userEntity1, notification, commentEntity, userEntity.getId());
@@ -76,7 +73,7 @@ public class InteractServiceImpl implements InteractService {
     @Override
     public void updateComment(String token, Long commentId, Map<String, String> new_comment) {
         String username = extractUsername(token);
-        UserEntity userEntity= userRepository.findByUsername(username).orElseThrow();
+        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow();
         String new_content = new_comment.get("text");
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow();
         commentEntity.setText(new_content);
@@ -84,9 +81,9 @@ public class InteractServiceImpl implements InteractService {
         commentRepository.save(commentEntity);
 
         Long postId = commentRepository.getPostId(commentId);
-        UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
-        String notification = userEntity.getName()+ NOTI_CMT;
-        notificationService.sendNotification(userEntity1,notification, commentEntity, userEntity.getId());
+        UserEntity userEntity1 = userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
+        String notification = userEntity.getName() + NOTI_CMT;
+        notificationService.sendNotification(userEntity1, notification, commentEntity, userEntity.getId());
     }
 
     @Override
@@ -116,11 +113,11 @@ public class InteractServiceImpl implements InteractService {
             return Y_LIKE;
         }
         postRepository.addLike(userEntity.getId(), postId);
-        UserEntity userEntity1= userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
-        if (!Objects.equals(userEntity1.getId(), userEntity.getId())){
-        String notification = userEntity.getName() + NOTI_LIKE;
-        PostEntity postEntity= postRepository.findById(postId).orElseThrow();
-        notificationService.sendNotification(userEntity1,notification, postEntity, userEntity.getId());
+        UserEntity userEntity1 = userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
+        if (!Objects.equals(userEntity1.getId(), userEntity.getId())) {
+            String notification = userEntity.getName() + NOTI_LIKE;
+            PostEntity postEntity = postRepository.findById(postId).orElseThrow();
+            notificationService.sendNotification(userEntity1, notification, postEntity, userEntity.getId());
         }
         return LIKE;
     }
@@ -135,7 +132,7 @@ public class InteractServiceImpl implements InteractService {
             return N_LIKE;
         }
         postRepository.removeLike(userId, postId);
-            System.out.println("postId"+ postId+"userid"+userId);
+        System.out.println("postId" + postId + "userid" + userId);
         notificationService.removeNotification(postId, userId);
         return DISLIKE;
     }
@@ -144,4 +141,5 @@ public class InteractServiceImpl implements InteractService {
     public String getCommentAuthor(long commentId) {
         return commentRepository.getCommentUser(commentId);
     }
+
 }

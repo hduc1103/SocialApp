@@ -1,5 +1,7 @@
 package com.SocialWeb.security;
 
+import com.SocialWeb.entity.UserEntity;
+import com.SocialWeb.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,16 +14,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetail userDetail;
+    private final UserRepository userRepository;
 
-    public JwtRequestFilter(JwtUtil jwtUtil, UserDetail userDetail) {
+    public JwtRequestFilter(JwtUtil jwtUtil, UserDetail userDetail, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetail = userDetail;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -49,6 +54,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             var userDetails = userDetail.loadUserByUsername(username);
+
+            UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User not found"));
+            if (userEntity == null || userEntity.isDeleted()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("User account is disabled or does not exist");
+                return;
+            }
 
             if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(

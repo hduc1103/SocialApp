@@ -32,11 +32,11 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     @Query(value = "DELETE FROM web_likes WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
     void removeLike(@Param("userId") Long userId, @Param("postId") Long postId);
 
-    @Query("SELECT p FROM PostEntity p WHERE p.content LIKE %:content%")
+    @Query("SELECT p FROM PostEntity p WHERE p.content LIKE %:content% AND p.isDeleted = false")
     List<PostEntity> searchPostsByContent(@Param("content") String content);
 
     @Transactional
-    @Query(value = "SELECT COUNT(post_id) FROM web_likes WHERE post_id = :postId", nativeQuery = true)
+    @Query(value = "SELECT COUNT(post_id) FROM web_likes WHERE post_id = :postId AND is_deleted = 0", nativeQuery = true)
     long LikeCount(@Param("postId") long postId);
 
     @Transactional
@@ -51,4 +51,8 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
             """, nativeQuery = true)
     List<PostEntity> retrieveRecentFriendPosts(@Param("userId") Long userId);
 
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE web_post SET is_deleted = 1 WHERE user_id = :userId", nativeQuery = true)
+    void deleteAllUserPost(@Param("userId") Long userId);
 }

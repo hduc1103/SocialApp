@@ -1,5 +1,6 @@
 package com.SocialWeb.entity;
 
+import com.SocialWeb.config.TicketStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

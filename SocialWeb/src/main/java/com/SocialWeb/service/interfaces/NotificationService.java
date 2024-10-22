@@ -13,4 +13,10 @@ public interface NotificationService {
     List<NotificationResponse> getAllNotifications(String token);
 
     <T> void removeNotification(Long userId, Long relatedId);
+
+    void deleteAllUserNotification(Long userId);
+
+    void deleteAllPostOrCommentNoti(Long id);
+
+    void deleteFriendShipNoti(Long userId, Long senderId);
 }
