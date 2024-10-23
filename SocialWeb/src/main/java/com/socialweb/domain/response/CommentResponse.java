@@ -14,4 +14,6 @@ public class CommentResponse {
     private Date createdAt;
     private Date updatedAt;
     private boolean isDeleted;
+    private String imgUrl;
+    private String author;
 }

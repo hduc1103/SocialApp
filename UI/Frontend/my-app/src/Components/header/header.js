@@ -142,7 +142,14 @@ const Header = () => {
     }
     navigate('/login');
   };
-
+  const handleNotificationNavigation = (notification) => {
+    if (notification.type === 'post') {
+      navigate(`/userprofile/${notification.userId}`, { state: { scrollToPostId: notification.relatedId } });
+    } else if (notification.type === 'comment') {
+      navigate(`/userprofile/${notification.userId}`, { state: { scrollToCommentId: notification.relatedId } });
+    }
+  };
+  
   const handleCloseSearchResult = () => {
     setSearchPerformed(false);
     setUserResults([]);
@@ -190,13 +197,16 @@ const Header = () => {
                 <div className="notification-dropdown">
                   {notifications.length > 0 ? (
                     <ul>
-                      {notifications.map((notification) => (
-                       <li key={notification.id}>
-                       {notification.content}
-                       <span className="notification-time">{new Date(notification.createdAt).toLocaleString()}</span>
-                     </li>                     
-                      ))}
-                    </ul>
+                    {notifications.map((notification) => (
+                      <li key={notification.id} onClick={() => handleNotificationNavigation(notification)}>
+                        <img src={`data:image/png;base64,${notification.imgUrl}`} alt="Sender Avatar" className="sender-avatar" />
+                        <div className="notification-content">
+                          {notification.content}
+                          <span className="notification-time">{new Date(notification.createdAt).toLocaleString()}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                   ) : (
                     <p>No notifications yet.</p>
                   )}
@@ -237,19 +247,6 @@ const Header = () => {
           postResults={postResults}
           onClose={handleCloseSearchResult}
         />
-      )}
-      {showNotifications && (
-        <div className="notification-dropdown">
-          {notifications.length > 0 ? (
-            <ul>
-              {notifications.map((notification) => (
-                <li key={notification.id}>{notification.content}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>No notifications yet.</p>
-          )}
-        </div>
       )}
     </>
   );

@@ -5,6 +5,7 @@ import ProfileHeader from '../../components/profileheader/ProfileHeader';
 import PostList from '../../components/postlist/PostList';
 import Modals from '../../components/profilemodals/ProfileModals';
 import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
+import { useLocation } from 'react-router-dom';
 import './userprofile.scss';
 import Footer from '../../components/footer/footer';
 
@@ -15,71 +16,65 @@ const UserProfile = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-
+  const [profileLoaded, setProfileLoaded] = useState(false); 
+  const [postsLoaded, setPostsLoaded] = useState(false);
   const navigate = useNavigate();
   const { userId } = useParams();
   const loggedInUserId = localStorage.getItem('userId');
 
-  const fetchPostAuthor = async (new_post_userId) => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${BASE_URL}/user/get-username?userId=${new_post_userId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  const location = useLocation();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        showRedNotification(errorData.message || 'Failed to fetch post author');
-        return null;
+  useEffect(() => {
+    if (profileLoaded && postsLoaded && location.state) {
+      const { scrollToPostId, scrollToCommentId } = location.state;
+
+      if (scrollToPostId) {
+        const postElement = document.getElementById(`post-${scrollToPostId}`);
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else if (scrollToCommentId) {
+        const commentElement = document.getElementById(`comment-${scrollToCommentId}`);
+        if (commentElement) {
+          commentElement.scrollIntoView({ behavior: 'smooth' });
+        }
       }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching post author:', error);
-      showRedNotification('Error fetching post author');
-      return null;
     }
-  };
-
+  }, [profileLoaded, postsLoaded, location]);
+  
+/**
+ * Creates a new post with the given content by sending a POST request to the server.
+ * On success, adds the new post to the user's posts and displays a success notification.
+ * On failure, displays an error notification with the message from the server response.
+ *
+ * @param {string} content - The content of the new post to be created.
+ */
   const handleNewPost = async (content) => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${BASE_URL}/post/create-post`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content }),
-      });
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${BASE_URL}/post/create-post`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        showRedNotification(errorData.message || 'Failed to create post');
-        return;
-      }
-
-      const data = await response.json();
-      const authorData = await fetchPostAuthor(data.userId);
-      if (authorData) {
-        const newPost = {
-          ...data,
-          likeCount: 0,
-          author: authorData.username,
-          authorImgUrl: authorData.imgUrl,
-        };
-        setUserPosts((prevPosts) => [...prevPosts, newPost]);
-        showGreenNotification('Post created successfully');
-      }
-    } catch (err) {
-      console.error('Error creating post:', err);
-      showRedNotification('Error creating post');
+    if (!response.ok) {
+      const errorData = await response.text();
+      showRedNotification(errorData.message || 'Failed to create post');
+      return;
     }
-  };
+
+    const newPost = await response.json();  
+    setUserPosts((prevPosts) => [...prevPosts, newPost]);
+    showGreenNotification('Post created successfully');
+  } catch (err) {
+    console.error('Error creating post:', err);
+    showRedNotification('Error creating post');
+  }
+};
 
   const handleUpdateProfile = async (updatedDetails) => {
     const token = localStorage.getItem('token');
@@ -247,7 +242,7 @@ const UserProfile = () => {
     }
   };
 
-  const hanldeCancelFriendRequest = async () => {
+  const handleCancelFriendRequest = async () => {
     const token = localStorage.getItem("token");
     try{
       const response = await fetch(`${BASE_URL}/user/cancel-friend-request?userId2=${userId}`, {
@@ -348,6 +343,7 @@ const UserProfile = () => {
 
       const data = await response.json();
       setUserDetails(data);
+      setProfileLoaded(true);
     } catch (error) {
       console.error('Error fetching user profile:', error);
       showRedNotification('Error fetching user profile');
@@ -373,6 +369,7 @@ const UserProfile = () => {
       const posts = await response.json();
       const postsWithLikes = await fetchPostLikeCounts(posts);
       setUserPosts(postsWithLikes);
+      setPostsLoaded(true);
     } catch (error) {
       console.error('Error fetching user posts:', error);
       showRedNotification('Error fetching user posts');
@@ -467,7 +464,7 @@ const UserProfile = () => {
         loggedInUserId={loggedInUserId}
         friendshipStatus={friendshipStatus}
         handleAddFriend={handleAddFriend}
-        hanldeCancelFriendRequest={hanldeCancelFriendRequest}
+        handleCancelFriendRequest={handleCancelFriendRequest}
         handleAcceptFriendRequest={handleAcceptFriendRequest}
         handleUnfriend={handleUnfriend}
         handleUpdateProfileImage={handleUpdateProfileImage}

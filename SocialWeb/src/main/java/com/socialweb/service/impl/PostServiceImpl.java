@@ -48,6 +48,8 @@ public class PostServiceImpl implements PostService {
                         .createdAt(postEntity.getCreatedAt())
                         .updatedAt(postEntity.getUpdatedAt())
                         .userId(postEntity.getUser().getId())
+                        .author(postEntity.getUser().getName())
+                        .imgUrl(postEntity.getUser().getImg_url())
                         .comments(postEntity.getComments().stream()
                                 .filter(commentEntity -> !commentEntity.isDeleted())
                                 .map(commentEntity -> CommentResponse.builder()
@@ -56,6 +58,9 @@ public class PostServiceImpl implements PostService {
                                         .text(commentEntity.getText())
                                         .createdAt(commentEntity.getCreatedAt())
                                         .updatedAt(commentEntity.getUpdatedAt())
+                                        .isDeleted(commentEntity.isDeleted())
+                                        .author(commentEntity.getUser().getName())
+                                        .imgUrl(commentEntity.getUser().getImg_url())
                                         .build())
                                 .collect(Collectors.toList()))
                         .build())
@@ -76,6 +81,8 @@ public class PostServiceImpl implements PostService {
                         .createdAt(postEntity.getCreatedAt())
                         .updatedAt(postEntity.getUpdatedAt())
                         .userId(postEntity.getUser().getId())
+                        .author(postEntity.getUser().getName())
+                        .imgUrl(postEntity.getUser().getImg_url())
                         .isDeleted(postEntity.isDeleted())
                         .comments(postEntity.getComments().stream()
                                 .map(commentEntity -> CommentResponse.builder()
@@ -85,6 +92,8 @@ public class PostServiceImpl implements PostService {
                                         .createdAt(commentEntity.getCreatedAt())
                                         .updatedAt(commentEntity.getUpdatedAt())
                                         .isDeleted(commentEntity.isDeleted())
+                                        .author(commentEntity.getUser().getName())
+                                        .imgUrl(commentEntity.getUser().getImg_url())
                                         .build())
                                 .collect(Collectors.toList()))
                         .build())
@@ -114,7 +123,9 @@ public class PostServiceImpl implements PostService {
                 Collections.emptyList(),
                 postEntity.getCreatedAt(),
                 postEntity.getUpdatedAt(),
-                userEntity.getId()
+                userEntity.getId(),
+                userEntity.getName(),
+                userEntity.getImg_url()
         );
     }
 
@@ -158,6 +169,8 @@ public class PostServiceImpl implements PostService {
                         .createdAt(postEntity.getCreatedAt())
                         .updatedAt(postEntity.getUpdatedAt())
                         .userId(postEntity.getUser().getId())
+                        .author(postEntity.getUser().getName())
+                        .imgUrl(postEntity.getUser().getImg_url())
                         .comments(postEntity.getComments().stream()
                                 .map(commentEntity -> CommentResponse.builder()
                                         .id(commentEntity.getId())
@@ -165,6 +178,9 @@ public class PostServiceImpl implements PostService {
                                         .text(commentEntity.getText())
                                         .createdAt(commentEntity.getCreatedAt())
                                         .updatedAt(commentEntity.getUpdatedAt())
+                                        .isDeleted(commentEntity.isDeleted())
+                                        .author(commentEntity.getUser().getName())
+                                        .imgUrl(commentEntity.getUser().getImg_url())
                                         .build())
                                 .collect(Collectors.toList()))
                         .build())

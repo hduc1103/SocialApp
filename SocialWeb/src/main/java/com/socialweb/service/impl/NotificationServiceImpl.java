@@ -145,12 +145,21 @@ public class NotificationServiceImpl implements NotificationService {
         List<NotificationEntity> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(userEntity);
 
         return notifications.stream()
-                .map(notification -> new NotificationResponse(
-                        notification.getId(),
-                        notification.getUser().getId(),
-                        notification.getCreatedAt(),
-                        notification.getContent()
-                ))
+                .map(notification -> {
+                    UserEntity senderEntity = userRepository.findById(notification.getSenderId())
+                            .orElseThrow(() -> new NoSuchElementException("Sender not found"));
+
+                    return NotificationResponse.builder()
+                            .id(notification.getId())
+                            .relatedId(notification.getRelatedId())
+                            .type(notification.getType())
+                            .userId(notification.getUser().getId())
+                            .createdAt(notification.getCreatedAt())
+                            .content(notification.getContent())
+                            .senderId(notification.getSenderId())
+                            .imgUrl(senderEntity.getImg_url())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

@@ -65,6 +65,8 @@ public class InteractServiceImpl implements InteractService {
                 .id(commentEntity.getId())
                 .user_id(userEntity.getId())
                 .text(commentEntity.getText())
+                .author(userEntity.getName())
+                .imgUrl(userEntity.getImg_url())
                 .createdAt(commentEntity.getCreatedAt())
                 .updatedAt(commentEntity.getUpdatedAt())
                 .build();

@@ -15,10 +15,6 @@ const Post = ({ post, onDeletePost }) => {
   const [likes, setLikes] = useState(post.likeCount || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [comment, setComment] = useState('');
-  const [commentUsernames, setCommentUsernames] = useState({});
-  const [author, setAuthor] = useState('');
-  const [authorImgUrl, setAuthorImgUrl] = useState('');
-  const [cmtImg, setcmtImg] = useState({});
   const [showPostOptions, setShowPostOptions] = useState(false);
   const [commentOptions, setCommentOptions] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -29,76 +25,6 @@ const Post = ({ post, onDeletePost }) => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
   const role = localStorage.getItem('role');
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    } else {
-      fetchPostAuthor(post.userId);
-      fetchUsernamesForComments(comments);
-    }
-  }, [navigate, comments, post.userId]);
-
-  const fetchPostAuthor = async (userId) => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${BASE_URL}/user/get-username?userId=${userId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Failed to fetch post author';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (e) {
-          console.error('Error parsing response:', e);
-        }
-        showRedNotification(errorMessage);
-        return;
-      }
-
-      const data = await response.json();
-      setAuthor(data.username);
-      setAuthorImgUrl(data.imgUrl);
-    } catch (error) {
-      console.error('Error fetching post author:', error);
-      showRedNotification('An error occurred while fetching the post author.');
-    }
-  };
-
-  const fetchUsernamesForComments = async (comments) => {
-    const token = localStorage.getItem('token');
-    try {
-      const usernames = {};
-      const img_url = {};
-      for (const comment of comments) {
-        const response = await fetch(`${BASE_URL}/user/get-username?userId=${comment.user_id}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          usernames[comment.id] = data.username;
-          img_url[comment.id] = data.imgUrl;
-        } else {
-          const errorData = await response.json();
-          showRedNotification(errorData.message || 'Failed to fetch username');
-          return;
-        }
-      }
-      setCommentUsernames(usernames);
-      setcmtImg(img_url);
-    } catch (error) {
-      console.error('Error fetching usernames:', error);
-    }
-  };
 
   const handleDeleteComment = async (commentId) => {
     const token = localStorage.getItem('token');
@@ -202,24 +128,29 @@ const Post = ({ post, onDeletePost }) => {
           },
           body: JSON.stringify({ text: comment }),
         });
-
+  
         if (!response.ok) {
           const errorData = await response.json();
           showRedNotification(errorData.message || 'Failed to add comment');
           return;
         }
-
-        let newComment = await response.json();
-        newComment = { ...newComment, user_id: parseInt(userId, 10) };
-        setComments([...comments, newComment]);
-        setComment('');
-        fetchUsernamesForComments([newComment]);
+          let newComment = await response.json();
+        newComment = {
+          ...newComment,
+          user_id: parseInt(userId, 10),
+          imgUrl: newComment.imgUrl,   
+          author: newComment.author   
+        };
+  
+        setComments([...comments, newComment]); 
+        setComment(''); 
         showGreenNotification('Comment added successfully');
       } catch (error) {
         console.error('Error adding comment:', error);
       }
     }
   };
+  
 
   const handleUpdatePost = async () => {
     const token = localStorage.getItem('token');
@@ -248,18 +179,18 @@ const Post = ({ post, onDeletePost }) => {
   };
 
   return (
-    <div className="post-card">
+    <div className="post-card"  id={`post-${post.id}`}>
       <div
         className="post-author-info"
         onClick={() => navigate(`/userprofile/${post.userId}`)}
         style={{ cursor: 'pointer' }}
       >
         <img
-          src={authorImgUrl ? `data:image/png;base64,${authorImgUrl}` : "https://via.placeholder.com/150"}
+          src={post.imgUrl ? `data:image/png;base64,${post.imgUrl}` : "https://via.placeholder.com/150"}
           alt="Author Profile"
           className="post-author-img"
         />
-        <h3 className="post-author">{author}</h3>
+        <h3 className="post-author">{ post.author}</h3>
       </div>
 
       {isEditing ? (
@@ -277,28 +208,28 @@ const Post = ({ post, onDeletePost }) => {
           {post.isDeleted ? <em>(Deleted)</em> : post.content}
         </p>
       )}
-{(post.userId === parseInt(userId) || role === 'ADMIN') && (
-  <div className="post-options">
-    {!post.deleted && (
-      <>
-        <button
-          className="three-dot-button post-options-button"
-          onClick={() => setShowPostOptions(!showPostOptions)}
-        >
-          <FaEllipsisH />
-        </button>
-        {showPostOptions && (
-          <div className="dropdown-menu">
-            {post.userId === parseInt(userId) && (
-              <button onClick={() => setIsEditing(true)}>Update Post</button>
-            )}
-            <button onClick={() => onDeletePost(post.id)}>Delete Post</button>
-          </div>
-        )}
-      </>
-    )}
-  </div>
-)}
+      {(post.userId === parseInt(userId) || role === 'ADMIN') && (
+        <div className="post-options">
+          {!post.deleted && (
+            <>
+              <button
+                className="three-dot-button post-options-button"
+                onClick={() => setShowPostOptions(!showPostOptions)}
+              >
+                <FaEllipsisH />
+              </button>
+              {showPostOptions && (
+                <div className="dropdown-menu">
+                  {post.userId === parseInt(userId) && (
+                    <button onClick={() => setIsEditing(true)}>Update Post</button>
+                  )}
+                  <button onClick={() => onDeletePost(post.id)}>Delete Post</button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <p className="post-updated-time">{formatDate(post.updatedAt)}</p>
       <div className="post-actions">
@@ -342,11 +273,11 @@ const Post = ({ post, onDeletePost }) => {
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
                     <img
-                      src={cmtImg[comment.id] ? `data:image/png;base64,${cmtImg[comment.id]}` : "https://via.placeholder.com/150"}
+                      src={comment.imgUrl ? `data:image/png;base64,${comment.imgUrl}` : "https://via.placeholder.com/150"}
                       alt="Author Profile"
                       className="post-author-img"
                     />
-                    <span className="comment-username">{commentUsernames[comment.id] || 'Loading...'}:</span>
+                    <span className="comment-username">{comment.author || 'Loading...'}:</span>
                   </div>
                   <span className="comment-text">
                     {comment.isDeleted ? <em>(Deleted)</em> : comment.text}
@@ -355,7 +286,7 @@ const Post = ({ post, onDeletePost }) => {
                   <p className="comment-updated-time">{formatDate(comment.updatedAt)}</p>
                   {(comment.user_id === parseInt(userId)) && (
                     <div className="comment-options">
-                      
+
                       <button
                         className="three-dot-button comment-options-button"
                         onClick={() =>
