@@ -128,29 +128,29 @@ const Post = ({ post, onDeletePost }) => {
           },
           body: JSON.stringify({ text: comment }),
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           showRedNotification(errorData.message || 'Failed to add comment');
           return;
         }
-          let newComment = await response.json();
+        let newComment = await response.json();
         newComment = {
           ...newComment,
           user_id: parseInt(userId, 10),
-          imgUrl: newComment.imgUrl,   
-          author: newComment.author   
+          imgUrl: newComment.imgUrl,
+          author: newComment.author
         };
-  
-        setComments([...comments, newComment]); 
-        setComment(''); 
+
+        setComments([...comments, newComment]);
+        setComment('');
         showGreenNotification('Comment added successfully');
       } catch (error) {
         console.error('Error adding comment:', error);
       }
     }
   };
-  
+
 
   const handleUpdatePost = async () => {
     const token = localStorage.getItem('token');
@@ -179,7 +179,7 @@ const Post = ({ post, onDeletePost }) => {
   };
 
   return (
-    <div className="post-card"  id={`post-${post.id}`}>
+    <div className="post-card" id={`post-${post.id}`}>
       <div
         className="post-author-info"
         onClick={() => navigate(`/userprofile/${post.userId}`)}
@@ -190,7 +190,7 @@ const Post = ({ post, onDeletePost }) => {
           alt="Author Profile"
           className="post-author-img"
         />
-        <h3 className="post-author">{ post.author}</h3>
+        <h3 className="post-author">{post.author}</h3>
       </div>
 
       {isEditing ? (
@@ -219,13 +219,14 @@ const Post = ({ post, onDeletePost }) => {
                 <FaEllipsisH />
               </button>
               {showPostOptions && (
-                <div className="dropdown-menu">
+                <div className="dropdown-menu post">
                   {post.userId === parseInt(userId) && (
                     <button onClick={() => setIsEditing(true)}>Update Post</button>
                   )}
                   <button onClick={() => onDeletePost(post.id)}>Delete Post</button>
                 </div>
               )}
+
             </>
           )}
         </div>
@@ -299,7 +300,7 @@ const Post = ({ post, onDeletePost }) => {
                         <FaEllipsisH />
                       </button>
                       {commentOptions[comment.id] && (
-                        <div className="dropdown-menu">
+                        <div className="dropdown-menu comment">
                           <button onClick={() => handleDeleteComment(comment.id)}>Delete Comment</button>
                           <button
                             onClick={() => {
@@ -311,6 +312,7 @@ const Post = ({ post, onDeletePost }) => {
                           </button>
                         </div>
                       )}
+
                     </div>
                   )}
                 </>

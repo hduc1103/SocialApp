@@ -6,6 +6,7 @@
   margin-bottom: 20px;
   animation: fadeIn 0.8s ease-in-out;
   position: relative;
+
   .post-author {
     transition: background-color 0.3s ease;
   }
@@ -164,16 +165,30 @@
     z-index: 10;
     font-size: 1.5rem;
     transition: transform 0.3s ease;
-    position: absolute; 
-    top: 10px; 
+    position: absolute;
+    top: 10px;
+    /* Top right position */
     right: 10px;
-
-    &:hover {
-      transform: rotate(90deg);
-    }
+    /* Align to the right edge */
+    transform-origin: center;
   }
 
-  /* Styles for comment options button */
+  /* Dropdown menu styling for post options */
+  .dropdown-menu.post {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    position: absolute;
+    top: 40px;
+    /* Space below the button */
+    right: 10px;
+    /* Align with the right edge of the post */
+    padding: 5px;
+    z-index: 20;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+
   .three-dot-button.comment-options-button {
     background: none;
     border: none;
@@ -181,13 +196,23 @@
     color: #888;
     font-size: 1.2rem;
     transition: transform 0.3s ease;
-    position: relative; /* Adjusted for comments */
+    position: relative;
     margin-left: 10px;
-
-    &:hover {
-      transform: rotate(90deg);
-    }
+    z-index: 5;
   }
+
+  .dropdown-menu.comment {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    position: absolute;
+    margin-top: 10px;
+    right: 0;
+    padding: 5px;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
 
   .dropdown-menu {
     background: #fff;
@@ -220,6 +245,7 @@
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -230,6 +256,7 @@
     transform: translateY(10px);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;
@@ -241,6 +268,7 @@
     transform: translateY(-20px);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;
