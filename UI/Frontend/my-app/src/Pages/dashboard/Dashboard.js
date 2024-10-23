@@ -41,18 +41,13 @@ const Dashboard = () => {
         return;
       }else if(response.status === 403){
         navigate('/login');
-        return;
-      }
-
-      if (response.status === 403) {
-        navigate('/login');
         showRedNotification('Session expired, please log in again');
         return;
       }
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to retrieve friends posts');
+        const errorData = await response.text()
+        throw new Error(errorData || 'Failed to retrieve friends posts');
       }
 
       const posts = await response.json();

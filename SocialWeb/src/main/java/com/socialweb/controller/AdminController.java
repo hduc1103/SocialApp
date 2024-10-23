@@ -3,6 +3,7 @@ package com.socialweb.controller;
 import com.socialweb.domain.response.PostResponse;
 import com.socialweb.domain.response.SupportTicketResponse;
 import com.socialweb.domain.response.UserResponse;
+import com.socialweb.service.interfaces.NotificationService;
 import com.socialweb.service.interfaces.PostService;
 import com.socialweb.service.interfaces.SupportTicketService;
 import com.socialweb.service.interfaces.UserService;
@@ -25,12 +26,14 @@ public class AdminController {
     private final UserService userService;
     private final SupportTicketService supportTicketService;
     private final PostService postService;
+    private final NotificationService notificationService;
 
     public AdminController(UserService userService,
-                           SupportTicketService supportTicketService, PostService postService) {
+                           SupportTicketService supportTicketService, PostService postService, NotificationService notificationService) {
         this.userService = userService;
         this.supportTicketService = supportTicketService;
         this.postService = postService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/all-users")
@@ -122,5 +125,16 @@ public class AdminController {
         return ResponseEntity.ok(username);
     }
 
+    @PostMapping("/global-notification")
+    public ResponseEntity<Void> sendGlobalNotification(@RequestBody String message) {
+        notificationService.sendGlobalNotification(message);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/user-notification")
+    public ResponseEntity<Void> sendUserNotification(@RequestParam Long userId, @RequestBody String message) {
+        notificationService.sendUserNotification(userId, message);
+        return ResponseEntity.ok().build();
+    }
 }
 

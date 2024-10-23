@@ -50,34 +50,34 @@ const Header = () => {
 
   const connectToWebSocket = () => {
     const socket = new SockJS(`${BASE_URL}/ws`);
-
+  
     stompClient.current = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
     });
-
     stompClient.current.onConnect = (frame) => {
       console.log("WebSocket connected: ", frame);
-
       stompClient.current.subscribe(`/user/${userId}/queue/notifications`, (message) => {
         try {
           const notification = JSON.parse(message.body);
           console.log("Notification received as JSON:", notification);
+          showBlueNotification(notification);
         } catch (error) {
           console.log("Notification received as plain text:", message.body);
           showBlueNotification(message.body);
         }
         setNewNotificationCount((prevCount) => prevCount + 1);
       });
-    };
 
+    };
+  
     stompClient.current.onStompError = (frame) => {
       console.error('Broker reported error: ' + frame.headers['message']);
       console.error('Additional details: ' + frame.body);
     };
-
+  
     stompClient.current.activate();
-  };
+  };  
 
   const handleNotificationClick = async () => {
     setShowNotifications(!showNotifications);

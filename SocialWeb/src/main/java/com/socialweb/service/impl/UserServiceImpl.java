@@ -105,7 +105,8 @@ public class UserServiceImpl implements UserService {
                     userEntity.getEmail(),
                     userEntity.getImg_url(),
                     userEntity.getBio(),
-                    userEntity.getAddress()
+                    userEntity.getAddress(),
+                    userEntity.isDeleted()
             ));
         }
         return result;
@@ -222,7 +223,8 @@ public class UserServiceImpl implements UserService {
                     userEntity.getEmail(),
                     userEntity.getImg_url(),
                     userEntity.getBio(),
-                    userEntity.getAddress()
+                    userEntity.getAddress(),
+                    userEntity.isDeleted()
             );
         } catch (NoSuchElementException e) {
             throw e;
@@ -401,7 +403,8 @@ public class UserServiceImpl implements UserService {
                 userEntity.getEmail(),
                 userEntity.getImg_url(),
                 userEntity.getBio(),
-                userEntity.getAddress()
+                userEntity.getAddress(),
+                userEntity.isDeleted()
         );
     }
 

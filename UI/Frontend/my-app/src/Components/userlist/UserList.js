@@ -19,6 +19,7 @@ const UserList = ({ users, onEditUser, onDeleteUser, onViewPosts, onCloseList })
           <p>Email: {user.email}</p>
           <p>Bio: {user.bio}</p>
           <p>Address: {user.address}</p>
+          <p>{user.deleted === true ? 'Deleted' : 'Available'}</p>
           <div className="user-actions">
             <button onClick={() => onEditUser(user.id)}><MdOutlineEdit size={15} /></button>
             <button onClick={() => onDeleteUser(user.id)}><RiDeleteBin6Line size={15} /></button>

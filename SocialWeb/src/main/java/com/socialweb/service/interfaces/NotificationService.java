@@ -6,9 +6,11 @@ import com.socialweb.entity.UserEntity;
 import java.util.List;
 
 public interface NotificationService {
-    <T> void sendNotification(UserEntity receiver, String content, T entity, Long senderId);
+    void sendGlobalNotification(String content);
 
-    <T> void saveNotification(UserEntity receiver, String content, T entity, Long senderId);
+    void sendUserNotification(Long userId, String content);
+
+    <T> void sendNotification(UserEntity receiver, String content, T entity, Long senderId);
 
     List<NotificationResponse> getAllNotifications(String token);
 

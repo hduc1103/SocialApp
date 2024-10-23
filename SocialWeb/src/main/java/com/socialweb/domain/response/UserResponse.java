@@ -13,8 +13,9 @@ public class UserResponse {
     private String img_url;
     private String bio;
     private String address;
+    private boolean isDeleted;
 
-    public UserResponse(Long id, String username, String name, String email, String img_url, String bio, String address) {
+    public UserResponse(Long id, String username, String name, String email, String img_url, String bio, String address, boolean isDeleted) {
         this.id = id;
         this.username = username;
         this.name = name;
@@ -22,6 +23,7 @@ public class UserResponse {
         this.img_url = img_url;
         this.bio = bio;
         this.address = address;
+        this.isDeleted = isDeleted;
     }
 
     public UserResponse(Long id, String name, String username, String email) {

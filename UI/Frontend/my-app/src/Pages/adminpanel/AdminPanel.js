@@ -3,6 +3,8 @@ import { BASE_URL, showGreenNotification, showRedNotification } from '../../conf
 import CreateUser from '../../components/createuser/CreateUser';
 import UserList from '../../components/userlist/UserList';
 import ViewPostsModal from '../../components/viewpostsmodal/ViewPostsModal';
+import SendGlobal from '../../components/sendglobal/SendGlobal';
+import SendToUser from '../../components/sendtouser/SendToUser';
 import GetUser from '../../components/getuser/GetUser';
 import UpdateUser from '../../components/updateuser/UpdateUser';
 import DeleteUser from '../../components/deleteuser/DeleteUser';
@@ -72,6 +74,7 @@ const AdminPanel = () => {
       }
 
       const data = await response.json();
+      console.log(data)
       setUsers(data);
       setIsDataFetched(true);
       setIsUserListVisible(true);
@@ -289,6 +292,8 @@ const AdminPanel = () => {
   return (
     <div className="admin-panel">
       <h1>Admin Panel</h1>
+      <SendToUser />
+      <SendGlobal />
       <button onClick={getAllUsers}>Get All Users</button>
       {isUserListVisible && isDataFetched ? (
         <UserList 

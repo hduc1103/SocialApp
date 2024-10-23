@@ -1,0 +1,29 @@
+.send-global-container {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #1c1d1e; 
+    max-width: 500px;
+  }
+  
+  .send-global-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .send-global-container textarea {
+    width: 70% !important;
+    background-color: rgb(45, 44, 48);
+    color: rgb(254, 255, 255);
+    padding: 10px !important;
+    margin-bottom: 15px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 5px !important;
+    font-size: 1em !important;
+    resize: vertical !important;
+    height: 100px !important;
+  }
+ 
+  

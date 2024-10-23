@@ -32,12 +32,48 @@ public class NotificationServiceImpl implements NotificationService {
         this.userRepository = userRepository;
     }
 
+    private final String userSubcribeRoute = "/queue/notifications";
+    @Override
+    public void sendGlobalNotification(String content) {
+        String finalContent = "Admin: " + content;
+
+        List<UserEntity> allUsers = userRepository.findAll();
+        List<NotificationEntity> notifications = allUsers.stream()
+                .map(user -> NotificationEntity.builder()
+                        .user(user)
+                        .content(finalContent)
+                        .createdAt(new Date())
+                        .relatedId(null)
+                        .type("admin")
+                        .senderId(3L)
+                        .build())
+                .toList();
+
+        notificationRepository.saveAll(notifications);
+
+        allUsers.forEach(user -> simpMessagingTemplate.convertAndSendToUser(
+                user.getId().toString(),
+                userSubcribeRoute,
+                finalContent
+        ));
+    }
+
+    @Override
+    public void sendUserNotification(Long userId, String content) {
+        content = "Admin: " + content;
+        simpMessagingTemplate.convertAndSendToUser(
+                String.valueOf(userId),
+                userSubcribeRoute,
+                content
+        );
+        saveAdminNotification(userId, content);
+    }
     private String extractUsername(String token) {
         String jwtToken = token.substring(7);
         return jwtUtil.extractUsername(jwtToken);
     }
 
-    public <T> String getEntityType(T entity) {
+    private <T> String getEntityType(T entity) {
         try {
             return entity.getClass().getSimpleName();
         } catch (Exception e) {
@@ -45,7 +81,7 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    public <T> Long getEntityId(T entity) {
+    private  <T> Long getEntityId(T entity) {
         try {
             Field field = entity.getClass().getDeclaredField("id");
             field.setAccessible(true);
@@ -59,13 +95,13 @@ public class NotificationServiceImpl implements NotificationService {
     public <T> void sendNotification(UserEntity receiver, String content, T entity, Long senderId) {
         simpMessagingTemplate.convertAndSendToUser(
                 String.valueOf(receiver.getId()),
-                "/queue/notifications",
+                userSubcribeRoute,
                 content
         );
         saveNotification(receiver, content, entity, senderId);
     }
 
-    public <T> void saveNotification(UserEntity receiver, String content, T entity, Long senderId) {
+    private <T> void saveNotification(UserEntity receiver, String content, T entity, Long senderId) {
         Long relatedId = getEntityId(entity);
         String classType = getEntityType(entity);
         String type = "";
@@ -83,6 +119,18 @@ public class NotificationServiceImpl implements NotificationService {
                 .relatedId(relatedId)
                 .type(type)
                 .senderId(senderId)
+                .build();
+        notificationRepository.save(notification);
+    }
+
+    private void saveAdminNotification(Long userId, String content){
+        NotificationEntity notification = NotificationEntity.builder()
+                .user(userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found")))
+                .content(content)
+                .createdAt(new Date())
+                .relatedId(null)
+                .type("admin")
+                .senderId(3L)
                 .build();
         notificationRepository.save(notification);
     }
