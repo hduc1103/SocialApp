@@ -174,22 +174,22 @@ const ChatPage = () => {
           <div className="loading-message">Loading...</div>
         ) : (
           <div className="messages-container">
-            {chatMessages.length > 0 ? (
-              chatMessages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`message ${msg.senderId === senderId ? 'sent' : 'received'}`}
-                >
-                  {msg.senderId === senderId ? (
-                    <strong>You:</strong>
-                  ) : null}
-                  <span> {msg.content}</span>
-                </div>
-              ))
-            ) : (
-              <div className="no-messages">No messages yet</div>
-            )}
-          </div>
+          {chatMessages.length > 0 ? (
+            chatMessages.map((msg, index) => (
+              <div
+                key={index}
+                className={`message ${msg.senderId === senderId ? 'sent' : 'received'}`}
+              >
+                {msg.senderId === senderId ? (
+                  <strong></strong>
+                ) : null}
+                <span> {msg.content}</span>
+              </div>
+            ))
+          ) : (
+            <div className="no-messages">No messages yet</div>
+          )}
+        </div>
         )}
         <div className="send-message">
           <input

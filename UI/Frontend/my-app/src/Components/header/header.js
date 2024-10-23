@@ -178,7 +178,10 @@ const Header = () => {
                   {notifications.length > 0 ? (
                     <ul>
                       {notifications.map((notification) => (
-                        <li key={notification.id}>{notification.content}</li>
+                       <li key={notification.id}>
+                       {notification.content}
+                       <span className="notification-time">{new Date(notification.createdAt).toLocaleString()}</span>
+                     </li>                     
                       ))}
                     </ul>
                   ) : (

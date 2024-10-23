@@ -1,7 +1,7 @@
 package com.socialweb.service.impl;
 
 import com.socialweb.entity.MessageEntity;
-import com.socialweb.mongorepository.MessageRepository;
+import com.socialweb.repository.MessageRepository;
 import com.socialweb.service.interfaces.MessageService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;

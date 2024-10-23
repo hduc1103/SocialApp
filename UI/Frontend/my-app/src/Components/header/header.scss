@@ -33,7 +33,6 @@
   transform: scale(1.1);
 }
 
-/* Flex for alignment between search and nav */
 .header-nav-search-wrapper {
   display: flex;
   justify-content: flex-end;
@@ -54,7 +53,7 @@
   cursor: pointer;
   color: #e0e0e0;
   transition: color 0.3s ease, transform 0.3s ease;
-  position: relative; /* Ensures the dropdown is positioned relative to its parent */
+  position: relative;
 }
 
 .nav-item:hover {
@@ -132,6 +131,12 @@
   overflow-y: auto;
   display: none;
 }
+.notification-time {
+  font-size: 0.85em; 
+  color: gray;       
+  margin-left: 10px;  
+  display: block;     }
+
 
 .nav-item.show-dropdown .notification-dropdown {
   display: block;

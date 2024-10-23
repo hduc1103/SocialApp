@@ -1,24 +1,34 @@
 package com.socialweb.entity;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "messages")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @ToString
-@Document(collection = "messages") 
 public class MessageEntity {
-    @Id
-    private String id;  
 
-    private String senderId;      
-    private String receiverId;    
-    private String content;        
-    private LocalDateTime timestamp;  
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "sender_id", nullable = false)
+    private String senderId;
+
+    @Column(name = "receiver_id", nullable = false)
+    private String receiverId;
+
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
+
+    @Column(name = "timestamp", nullable = false)
+    private LocalDateTime timestamp;
+
+    @Column(name = "status")
     private String status;
 }
