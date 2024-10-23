@@ -24,6 +24,15 @@ public class UserDetail implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Loads the user details from the database using the provided username.
+     * This method retrieves the user entity and converts its roles into
+     * granted authorities required by Spring Security.
+     *
+     * @param username the username of the user to be loaded
+     * @return UserDetails containing the user's username, password, and authorities
+     * @throws UsernameNotFoundException if a user with the given username is not found
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));

@@ -58,7 +58,7 @@ public class InteractServiceImpl implements InteractService {
 
         UserEntity userEntity1 = userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         if (!Objects.equals(userEntity1.getId(), userEntity.getId())) {
-            String notification = userEntity.getName() + NOTI_CMT + " " + postEntity.getContent();
+            String notification = userEntity.getName() + NOTI_CMT + ": " + postEntity.getContent();
             notificationService.sendNotification(userEntity1, notification, commentEntity, userEntity.getId());
         }
         return CommentResponse.builder()
@@ -116,7 +116,7 @@ public class InteractServiceImpl implements InteractService {
         UserEntity userEntity1 = userRepository.findById(postRepository.getUserOfPost(postId)).orElseThrow();
         if (!Objects.equals(userEntity1.getId(), userEntity.getId())) {
             PostEntity postEntity = postRepository.findById(postId).orElseThrow();
-            String notification = userEntity.getName() + NOTI_LIKE + " "+ postEntity.getContent();
+            String notification = userEntity.getName() + NOTI_LIKE + ": "+ postEntity.getContent();
             notificationService.sendNotification(userEntity1, notification, postEntity, userEntity.getId());
         }
         return LIKE;

@@ -29,6 +29,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Filter to validate JWT token and authenticate user with Spring Security Context.
+     * 
+     * @param request  the incoming HTTP request
+     * @param response the outgoing HTTP response
+     * @param filterChain the filter chain to continue the request
+     * @throws ServletException if the request could not be handled
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {

@@ -29,6 +29,12 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
+    /**
+     * Extracts all claims from the provided JWT token.
+     *
+     * @param token the JWT token from which claims are to be extracted
+     * @return the claims extracted from the token
+     */
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -59,6 +65,15 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
+    /**
+     * Creates a JWT token with the given claims and subject. The token's expiration
+     * date is set to 10 hours from the current time. The signing key is obtained
+     * from the getSigningKey() method.
+     *
+     * @param claims the claims to be included in the token
+     * @param subject the subject of the token
+     * @return the generated JWT token
+     */
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)

@@ -169,6 +169,19 @@ const Header = () => {
               <AiFillMessage size={24} />
               <span>Chat</span>
             </div>
+            <div className="search-bar nav-search">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search"
+            />
+            <div className="nav-item search-nav">
+              <button onClick={handleSearch}>
+                Search
+              </button>
+            </div>
+          </div>
             <div className={`nav-item ${showNotifications ? 'show-dropdown' : ''}`} onClick={handleNotificationClick}>
               <IoIosNotifications size={24} />
               {newNotificationCount > 0 && <span className="notification-dot"></span>}
@@ -202,19 +215,7 @@ const Header = () => {
               </div>
             )}
           </nav>
-          <div className="search-bar nav-search">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search"
-            />
-            <div className="nav-item search-nav">
-              <button onClick={handleSearch}>
-                Search
-              </button>
-            </div>
-          </div>
+          
           <div className="nav-item nav-logout" onClick={isLoggedin ? handleLogout : () => navigate('/login')}>
             {isLoggedin ? (
               <>

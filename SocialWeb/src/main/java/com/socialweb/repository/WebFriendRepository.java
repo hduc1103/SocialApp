@@ -12,13 +12,6 @@ import java.util.Optional;
 
 public interface WebFriendRepository extends JpaRepository<WebFriendEntity, Long> {
     @Query(value = """
-        SELECT COUNT(*) > 0 FROM web_friends 
-        WHERE (user_id1 = :userId1 AND user_id2 = :userId2) 
-        OR (user_id1 = :userId2 AND user_id2 = :userId1)
-    """, nativeQuery = true)
-    boolean existsByUserId1AndUserId2(Long userId1, Long userId2);
-
-    @Query(value = """
         SELECT * FROM web_friends 
         WHERE (user_id1 = :userId1 AND user_id2 = :userId2) 
         OR (user_id1 = :userId2 AND user_id2 = :userId1)
@@ -33,19 +26,6 @@ public interface WebFriendRepository extends JpaRepository<WebFriendEntity, Long
         OR (user_id1 = :userId2 AND user_id2 = :userId1)
     """, nativeQuery = true)
     void unfriend(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
-
-    @Modifying
-    @Transactional
-    @Query(value = """
-        UPDATE web_friends 
-        SET user1_accepted = CASE 
-            WHEN user_id1 = :userId THEN 1 ELSE user1_accepted END,
-            user2_accepted = CASE 
-            WHEN user_id2 = :userId THEN 1 ELSE user2_accepted END
-        WHERE (user_id1 = :userId1 AND user_id2 = :userId2)
-        OR (user_id1 = :userId2 AND user_id2 = :userId1)
-    """, nativeQuery = true)
-    void acceptFriendRequest(@Param("userId") Long userId, @Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
     @Query(value = """
         SELECT user_id2 FROM web_friends 
