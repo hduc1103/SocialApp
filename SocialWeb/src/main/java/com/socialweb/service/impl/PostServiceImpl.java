@@ -35,6 +35,8 @@ public class PostServiceImpl implements PostService {
         return jwtUtil.extractUsername(jwtToken);
     }
 
+
+    //overflown
     @Override
     public List<PostResponse> getUserPosts(long userId) {
         List<PostEntity> postEntities = postRepository.findByUserAndNotDeleted(userId);
@@ -55,7 +57,6 @@ public class PostServiceImpl implements PostService {
                                         .text(commentEntity.getText())
                                         .createdAt(commentEntity.getCreatedAt())
                                         .updatedAt(commentEntity.getUpdatedAt())
-                                        .isDeleted(commentEntity.isDeleted())
                                         .author(commentEntity.getUser().getName())
                                         .imgUrl(commentEntity.getUser().getImg_url())
                                         .build())
