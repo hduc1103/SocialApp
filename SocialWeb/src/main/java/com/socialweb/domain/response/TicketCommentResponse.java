@@ -16,4 +16,5 @@ public class TicketCommentResponse {
     private String text;
     private Date createdAt;
     private String name;
+    private String author;
 }

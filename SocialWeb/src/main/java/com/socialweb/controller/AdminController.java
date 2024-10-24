@@ -119,12 +119,6 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/get-username")
-    public ResponseEntity<String> getUsername(@RequestParam Long userId) {
-        String username = userService.getUserName(userId);
-        return ResponseEntity.ok(username);
-    }
-
     @PostMapping("/global-notification")
     public ResponseEntity<Void> sendGlobalNotification(@RequestBody String message) {
         notificationService.sendGlobalNotification(message);

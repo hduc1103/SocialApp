@@ -1,28 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TiDeleteOutline } from "react-icons/ti";
-import PostDetailModal from '../postdetailmodal/PostDetailModal';
 import './searchresult.scss';
 
-const SearchResult = ({ userResults, postResults, onClose }) => {
+const SearchResult = ({ userResults, postResults, onClose, handleNotificationNavigation }) => {
   const navigate = useNavigate();
-  const [selectedPostId, setSelectedPostId] = useState(null);
 
   const handleUserClick = (userId) => {
     navigate(`/userprofile/${userId}`);
   };
 
   const handlePostClick = (postId) => {
-    setSelectedPostId(postId); 
-  };
-
-  const handleCloseModal = () => {
-    setSelectedPostId(null);
+    handleNotificationNavigation(postId); 
   };
 
   return (
     <div className="search-result-container">
-      {/* Close Button */}
       <div className="search-result-header">
         <button className="search-close-button" onClick={onClose}>
           <TiDeleteOutline size={24} />
@@ -69,10 +62,6 @@ const SearchResult = ({ userResults, postResults, onClose }) => {
         <div className="no-results">
           <p>No results found.</p>
         </div>
-      )}
-
-      {selectedPostId && (
-        <PostDetailModal postId={selectedPostId} onClose={handleCloseModal} />
       )}
     </div>
   );

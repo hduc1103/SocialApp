@@ -6,7 +6,6 @@ import ViewTicketSupportModal from '../../components/viewticketsupportmodal/View
 
 const AdminTicketPage = () => {
   const [tickets, setTickets] = useState([]);
-  const [usernames, setUsernames] = useState({});
   const [selectedTicket, setSelectedTicket] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false); 
   const token = localStorage.getItem('token');
@@ -17,50 +16,33 @@ const AdminTicketPage = () => {
     fetchTickets();
   }, []);
 
-  const fetchTickets = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/admin/get-all-support-ticket`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+const fetchTickets = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/admin/get-all-support-ticket`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          navigate('/login');
-        } else {
-          const errorData = await response.text();
-          showRedNotification(errorData.message || 'Failed to fetch support tickets');
-        }
-        return;
+    if (!response.ok) {
+      if (response.status === 401) {
+        navigate('/login');
+      } else {
+        const errorData = await response.text();
+        showRedNotification(errorData.message || 'Failed to fetch support tickets');
       }
-
-      const data = await response.json();
-      setTickets(data);
-
-      const usernamesTemp = {};
-      await Promise.all(
-        data.map(async (ticket) => {
-          const ticketUserResponse = await fetch(`${BASE_URL}/admin/get-username?userId=${ticket.userId}`, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (ticketUserResponse.ok) {
-            const username = await ticketUserResponse.text();
-            usernamesTemp[ticket.userId] = username;
-          }
-        })
-      );
-
-      setUsernames(usernamesTemp);
-    } catch (error) {
-      console.error('Error fetching tickets:', error);
-      showRedNotification('Error fetching tickets');
+      return;
     }
-  };
+
+    const data = await response.json();
+    setTickets(data); 
+
+  } catch (error) {
+    console.error('Error fetching tickets:', error);
+    showRedNotification('Error fetching tickets');
+  }
+};
 
   const handleCommentTicket = async (ticketId, comment) => {
   try {
@@ -110,7 +92,7 @@ const AdminTicketPage = () => {
                 {ticket.title}
               </h3>
               <p className="ticket-user">
-                Posted by: <strong>{usernames[ticket.userId] || 'Loading...'}</strong>
+                Posted by: <strong>{ticket.author || 'Loading...'}</strong>
               </p>
               <div className="ticket-status">
                 <strong>Status:</strong> {ticket.status}

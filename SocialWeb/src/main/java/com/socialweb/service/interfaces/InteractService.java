@@ -18,4 +18,5 @@ public interface InteractService {
 
     String getCommentAuthor(long commentId);
 
+    Long getPostIdOfComment(Long commentId);
 }

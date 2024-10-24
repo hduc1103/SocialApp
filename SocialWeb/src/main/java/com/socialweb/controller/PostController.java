@@ -1,7 +1,6 @@
 package com.socialweb.controller;
 
 import com.socialweb.domain.response.PostResponse;
-import com.socialweb.entity.PostEntity;
 import com.socialweb.service.interfaces.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +19,7 @@ public class PostController {
     public PostController(PostService postService){
         this.postService = postService;
     }
-
-    @GetMapping("/get-post-by-id")
-    public PostEntity getPostById(@RequestParam("postId") long postId) {
-        return postService.getPostById(postId);
-    }
-
+    
     @GetMapping("/get-user-post")
     public ResponseEntity<List<PostResponse>> getUserPosts(@RequestParam("userId") long userId) {
         try {

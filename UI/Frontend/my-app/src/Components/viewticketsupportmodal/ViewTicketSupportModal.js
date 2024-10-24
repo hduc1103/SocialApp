@@ -1,32 +1,28 @@
 import React, { useState } from 'react';
 import './viewticketsupportmodal.scss';
 
-const ViewTicketSupportModal = ({ username, isOpen, onClose, ticket, onCommentSubmit }) => {
+const ViewTicketSupportModal = ({ isOpen, onClose, ticket, onCommentSubmit }) => {
   const [comment, setComment] = useState('');
 
   if (!isOpen || !ticket) {
     return null;
   }
 
-  const parseCommentText = (text) => {
-    try {
-      const parsed = JSON.parse(text);
-      if (parsed.text || parsed.comment) {
-        return parsed.text || parsed.comment;
-      }
-    } catch (e) {
-      return text;
-    }
-    return text;
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (ticket.status !== 'CLOSED') {
+    if (ticket.status.toLowerCase() !== 'closed') {
       onCommentSubmit(ticket.id, comment);
       setComment('');
     } else {
       alert('Comments cannot be added to closed tickets.');
+    }
+  };
+  const parseCommentText = (text) => {
+    try {
+      const parsed = JSON.parse(text);
+      return parsed.text || parsed.comment || text;
+    } catch (e) {
+      return text; 
     }
   };
 
@@ -53,7 +49,8 @@ const ViewTicketSupportModal = ({ username, isOpen, onClose, ticket, onCommentSu
           {ticket.comments && ticket.comments.length > 0 ? (
             ticket.comments.map((comment, index) => (
               <li key={index}>
-                <strong> {comment.name}:</strong> {comment.text} <span style={{ color: 'gray', fontSize: '0.9em', marginLeft: '10px' }}>
+                <strong>{comment.author}:</strong> {parseCommentText(comment.text)}{' '}
+                <span style={{ color: 'gray', fontSize: '0.9em', marginLeft: '10px' }}>
                   (Posted on: {new Date(comment.createdAt).toLocaleDateString()})
                 </span>
               </li>
@@ -63,7 +60,7 @@ const ViewTicketSupportModal = ({ username, isOpen, onClose, ticket, onCommentSu
           )}
         </ul>
 
-        {ticket.status !== 'Closed' ? (
+        {ticket.status.toLowerCase() !== 'closed' ? (
           <form onSubmit={handleSubmit}>
             <textarea
               value={comment}

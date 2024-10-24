@@ -22,6 +22,7 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [tmpPostId, setTmpPostId] = useState(0);
 
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
@@ -131,6 +132,23 @@ const Header = () => {
     }
   };
 
+  const handleFetchPostId = async(commentId) => {
+    try{
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BASE_URL}/interact/get-postId-of-comment/${commentId}`,{
+        method: 'GET',
+        headers:{
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.text();
+      setTmpPostId(data);
+    }catch(error){
+      console.error(error);
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
@@ -146,7 +164,8 @@ const Header = () => {
     if (notification.type === 'post') {
       navigate(`/userprofile/${notification.userId}`, { state: { scrollToPostId: notification.relatedId } });
     } else if (notification.type === 'comment') {
-      navigate(`/userprofile/${notification.userId}`, { state: { scrollToCommentId: notification.relatedId } });
+      handleFetchPostId(notification.relatedId);
+      navigate(`/userprofile/${notification.userId}`, { state: { scrollToPostId: tmpPostId } });
     }
   };
   
@@ -243,6 +262,7 @@ const Header = () => {
       </header>
       {searchPerformed && (
         <SearchResult
+          handleNotificationNavigation={handleNotificationNavigation}
           userResults={userResults}
           postResults={postResults}
           onClose={handleCloseSearchResult}

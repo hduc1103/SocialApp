@@ -143,4 +143,9 @@ public class InteractServiceImpl implements InteractService {
         return commentRepository.getCommentUser(commentId);
     }
 
+    @Override
+    public Long getPostIdOfComment(Long commentId){
+        return commentRepository.getPostId(commentId);
+    }
+
 }

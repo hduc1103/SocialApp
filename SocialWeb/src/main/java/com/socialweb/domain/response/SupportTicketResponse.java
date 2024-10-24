@@ -20,5 +20,6 @@ public class SupportTicketResponse {
     private Date endAt;
     private Long userId;
     private String status;
+    private String author;
     private List<TicketCommentResponse> comments;
 }

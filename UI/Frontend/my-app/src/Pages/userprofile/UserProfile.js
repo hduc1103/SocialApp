@@ -25,22 +25,12 @@ const UserProfile = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (profileLoaded && postsLoaded && location.state) {
-      const { scrollToPostId, scrollToCommentId } = location.state;
-
-      if (scrollToPostId) {
-        const postElement = document.getElementById(`post-${scrollToPostId}`);
-        if (postElement) {
-          postElement.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else if (scrollToCommentId) {
-        const commentElement = document.getElementById(`comment-${scrollToCommentId}`);
-        if (commentElement) {
-          commentElement.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
+    const { scrollToPostId } = location.state;
+    const postElement = document.getElementById(`post-${scrollToPostId}`);
+    if (postElement) {
+      postElement.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [profileLoaded, postsLoaded, location]);
+  }, [profileLoaded, postsLoaded, location.state]);
   
 /**
  * Creates a new post with the given content by sending a POST request to the server.
