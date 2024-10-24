@@ -63,7 +63,17 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+    @GetMapping("/get-userId-by-postId")
+    public ResponseEntity<Long> getUserIdByPostId(@RequestParam("postId") long postId) {
+        try {
+            Long userId = postService.getUserIdByPostId(postId);
+            return ResponseEntity.ok(userId);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
 
 

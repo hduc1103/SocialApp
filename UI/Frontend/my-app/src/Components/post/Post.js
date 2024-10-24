@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BASE_URL, showRedNotification, showGreenNotification } from '../../config';
 import { useNavigate } from 'react-router-dom';
 import { FaEllipsisH } from 'react-icons/fa';
@@ -151,7 +151,6 @@ const Post = ({ post, onDeletePost }) => {
     }
   };
 
-
   const handleUpdatePost = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -205,9 +204,14 @@ const Post = ({ post, onDeletePost }) => {
         </div>
       ) : (
         <p className="post-content">
-          {post.isDeleted ? <em>(Deleted)</em> : post.content}
+          {post.isDeleted ? (
+            <em>(Deleted)</em>
+          ) : (
+            post.content
+          )}
         </p>
       )}
+
       {(post.userId === parseInt(userId) || role === 'ADMIN') && (
         <div className="post-options">
           {!post.deleted && (
@@ -226,10 +230,15 @@ const Post = ({ post, onDeletePost }) => {
                   <button onClick={() => onDeletePost(post.id)}>Delete Post</button>
                 </div>
               )}
-
             </>
           )}
         </div>
+      )}
+
+      {post.isDeleted !== null && role === 'ADMIN' && (
+        <p className="post-deleted-note">
+          {post.deleted === true ? 'Deleted' : ''}
+        </p>
       )}
 
       <p className="post-updated-time">{formatDate(post.updatedAt)}</p>
@@ -281,8 +290,15 @@ const Post = ({ post, onDeletePost }) => {
                     <span className="comment-username">{comment.author || 'Loading...'}:</span>
                   </div>
                   <span className="comment-text">
-                    {comment.isDeleted ? <em>(Deleted)</em> : comment.text}
+                    {comment.deleted ? (
+                      <>
+                        {comment.text} <em className="deleted-comment-text"> (Deleted)</em>
+                      </>
+                    ) : (
+                      comment.text
+                    )}
                   </span>
+
                   <br></br>
                   <p className="comment-updated-time">{formatDate(comment.updatedAt)}</p>
                   {(comment.user_id === parseInt(userId)) && (
@@ -323,6 +339,7 @@ const Post = ({ post, onDeletePost }) => {
       </div>
     </div>
   );
+
 };
 
 export default Post;

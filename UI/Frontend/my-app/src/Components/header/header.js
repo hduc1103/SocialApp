@@ -22,32 +22,9 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [tmpPostId, setTmpPostId] = useState(0);
 
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-
-    if (token) {
-      setIsLoggedin(true);
-      if (role === 'ADMIN') {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
-      connectToWebSocket();
-    } else {
-      setIsLoggedin(false);
-      setIsAdmin(false);
-    }
-
-    setSearchPerformed(false);
-    setUserResults([]);
-    setPostResults([]);
-  }, [navigate]);
 
   const connectToWebSocket = () => {
     const socket = new SockJS(`${BASE_URL}/ws`);
@@ -57,7 +34,6 @@ const Header = () => {
       reconnectDelay: 5000,
     });
     stompClient.current.onConnect = (frame) => {
-      console.log("WebSocket connected: ", frame);
       stompClient.current.subscribe(`/user/${userId}/queue/notifications`, (message) => {
         try {
           const notification = JSON.parse(message.body);
@@ -79,6 +55,27 @@ const Header = () => {
   
     stompClient.current.activate();
   };  
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
+    if (token) {
+      setIsLoggedin(true);
+      if (role === 'ADMIN') {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+      connectToWebSocket();
+    } else {
+      setIsLoggedin(false);
+      setIsAdmin(false);
+    }
+
+    setSearchPerformed(false);
+    setUserResults([]);
+    setPostResults([]);
+  }, [navigate]);
 
   const handleNotificationClick = async () => {
     setShowNotifications(!showNotifications);
@@ -102,7 +99,7 @@ const Header = () => {
 
   const handleSupportNavigation = () => {
     if (isAdmin) {
-      navigate('/admin/ticketsupport');
+      navigate('/admin/ticket');
     } else {
       navigate('/ticketsupport');
     }
@@ -131,23 +128,28 @@ const Header = () => {
       console.error('Error during search:', error);
     }
   };
-
-  const handleFetchPostId = async(commentId) => {
-    try{
+  const handleFetchPostId = async (commentId) => {
+    try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${BASE_URL}/interact/get-postId-of-comment/${commentId}`,{
+      const response = await fetch(`${BASE_URL}/interact/get-postId-of-comment/${commentId}`, {
         method: 'GET',
-        headers:{
+        headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      const data = await response.text();
-      setTmpPostId(data);
-    }catch(error){
-      console.error(error);
+  
+      if (response.ok) {
+        const postId = await response.text(); 
+        return postId; 
+      } else {
+        console.error('Failed to fetch post ID:', response.statusText);
+        return null; 
+      }
+    } catch (error) {
+      console.error('Error fetching post ID:', error);
+      return null; 
     }
-  }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -160,15 +162,20 @@ const Header = () => {
     }
     navigate('/login');
   };
-  const handleNotificationNavigation = (notification) => {
+  const handleNotificationNavigation = async (notification) => {
     if (notification.type === 'post') {
       navigate(`/userprofile/${notification.userId}`, { state: { scrollToPostId: notification.relatedId } });
     } else if (notification.type === 'comment') {
-      handleFetchPostId(notification.relatedId);
-      navigate(`/userprofile/${notification.userId}`, { state: { scrollToPostId: tmpPostId } });
+      const postId = await handleFetchPostId(notification.relatedId); 
+      navigate(`/userprofile/${notification.userId}`, { state: { scrollToPostId: postId } });
     }
   };
   
+  const handleSearchNavigation = (userId, postId) => {
+    console.log(userId, postId);
+    navigate(`/userprofile/${userId}`, { state: { scrollToPostId: postId } });
+  }
+
   const handleCloseSearchResult = () => {
     setSearchPerformed(false);
     setUserResults([]);
@@ -262,7 +269,7 @@ const Header = () => {
       </header>
       {searchPerformed && (
         <SearchResult
-          handleNotificationNavigation={handleNotificationNavigation}
+          handleSearchNavigation={handleSearchNavigation}
           userResults={userResults}
           postResults={postResults}
           onClose={handleCloseSearchResult}

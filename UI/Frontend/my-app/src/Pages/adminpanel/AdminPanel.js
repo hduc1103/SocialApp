@@ -20,7 +20,6 @@ const AdminPanel = () => {
   const [isPostsModalOpen, setIsPostsModalOpen] = useState(false);
   const [isDataFetched, setIsDataFetched] = useState(false);
   const navigate = useNavigate();
-
   const [newUser, setNewUser] = useState({
     username: '',
     name: '',
@@ -49,10 +48,14 @@ const AdminPanel = () => {
   };
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
     if (!token) {
       navigate('/login');
       showRedNotification('You must log in to view your dashboard');
       return;
+    } else if(token && role !== 'ADMIN') {
+      navigate('/');
+      showRedNotification('You must be an admin to view this page');
     }
   }, [navigate]);
 
@@ -74,7 +77,6 @@ const AdminPanel = () => {
       }
 
       const data = await response.json();
-      console.log(data)
       setUsers(data);
       setIsDataFetched(true);
       setIsUserListVisible(true);
@@ -235,6 +237,7 @@ const AdminPanel = () => {
       }
 
       const posts = await response.json();
+      console.log(posts);
       return await fetchPostLikeCounts(posts);
     } catch (error) {
       console.error('Error fetching user posts:', error);

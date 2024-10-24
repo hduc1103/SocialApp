@@ -8,7 +8,7 @@ const ViewPostsModal = ({ isOpen, onClose, userId, fetchUserPosts }) => {
     if (userId) {
       fetchUserPosts(userId).then(setPosts);
     }
-  }, [userId]);
+  }, [userId, fetchUserPosts]);
 
   if (!isOpen) return null;
 

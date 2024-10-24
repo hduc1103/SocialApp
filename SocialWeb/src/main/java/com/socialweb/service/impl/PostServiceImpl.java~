@@ -37,6 +37,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostResponse> getUserPosts(long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND + userId));
+
         List<PostEntity> postEntities = postRepository.findByUserAndNotDeleted(userId);
         return postEntities.stream()
                 .map(postEntity -> PostResponse.builder()

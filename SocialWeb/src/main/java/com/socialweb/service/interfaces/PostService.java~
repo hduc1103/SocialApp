@@ -27,6 +27,4 @@ public interface PostService {
     List<PostResponse> retrieveFriendsPosts(Long userId);
 
     void deleteAllUserPost(long userId);
-
-    Long getUserIdByPostId(long postId);
 }

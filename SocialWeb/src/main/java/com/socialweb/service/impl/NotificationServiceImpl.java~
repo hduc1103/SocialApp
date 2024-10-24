@@ -161,7 +161,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .collect(Collectors.toList());
     }
 
-    public void removeNotification(Long relatedId, Long userId) {
+    public <T> void removeNotification(Long relatedId, Long userId) {
         NotificationEntity notification = notificationRepository
                 .findNotificationByRelatedIdAndSenderId(relatedId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("No notification found for relatedId " + relatedId + " and senderId " + userId));

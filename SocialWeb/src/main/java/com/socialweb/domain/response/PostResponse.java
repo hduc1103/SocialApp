@@ -16,6 +16,7 @@ public class PostResponse {
 
     private Date updatedAt;
     private Long userId;
+
     private boolean isDeleted;
 
     private String author;
@@ -48,6 +49,4 @@ public class PostResponse {
         this.id = id;
         this.content = content;
     }
-
-
 }

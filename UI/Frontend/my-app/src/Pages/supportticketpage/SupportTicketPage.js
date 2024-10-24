@@ -11,7 +11,7 @@ const SupportTicketPage = ({ userId }) => {
   const [showCommentBox, setShowCommentBox] = useState({});
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
-  
+  const role = localStorage.getItem('role');
   const ticketOptions = [
     'Cannot Change Password',
     'Delete My Account',
@@ -21,8 +21,13 @@ const SupportTicketPage = ({ userId }) => {
   ];
 
   useEffect(() => {
+    console.log(role);
     if (!token) {
       navigate('/login');
+      return;
+    }else if(token && role !== 'USER'){
+      navigate('/adminpanel');
+      showRedNotification('You are not authorized to access this page');
       return;
     }
     getAllUserTicket();

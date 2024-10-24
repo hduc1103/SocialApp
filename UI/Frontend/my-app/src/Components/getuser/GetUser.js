@@ -20,7 +20,7 @@ const GetUser = ({ userId, setUserId, getOneUser, userDetails, onEditUser, onDel
         <p>Email: {userDetails.email}</p>
         <p>Bio: {userDetails.bio}</p>
         <p>Address: {userDetails.address}</p>
-
+        <p>{userDetails.deleted === true ? 'Deleted' : 'Available'}</p>
         <div className="user-actions">
           <button onClick={() => onEditUser(userDetails)}><MdOutlineEdit size={15} /></button>
           <button onClick={() => onDeleteUser(userDetails.id)}><RiDeleteBin6Line size={15} /></button>

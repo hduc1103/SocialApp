@@ -13,6 +13,16 @@ const AdminTicketPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    else if (token && role !== 'ADMIN') {
+      navigate('/');
+      showRedNotification('You are not authorized to access this page');
+      return;
+    }
     fetchTickets();
   }, []);
 
@@ -64,6 +74,7 @@ const fetchTickets = async () => {
       }
       return;
     }
+    setIsModalOpen(false);
     fetchTickets(); 
   } catch (error) {
     console.error('Error adding comment:', error);

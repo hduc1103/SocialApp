@@ -71,7 +71,7 @@ const ConversationsPage = () => {
 
       fetchConversations();
     }
-  }, [userId, token]);
+  }, [userId, token, navigate]);
 
   const openChat = (receiverId) => {
     navigate(`/chat/${receiverId}`);

@@ -1,17 +1,40 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TiDeleteOutline } from "react-icons/ti";
+import { BASE_URL } from '../../config';
 import './searchresult.scss';
 
-const SearchResult = ({ userResults, postResults, onClose, handleNotificationNavigation }) => {
+const SearchResult = ({ userResults, postResults, onClose, handleSearchNavigation }) => {
   const navigate = useNavigate();
-
   const handleUserClick = (userId) => {
     navigate(`/userprofile/${userId}`);
   };
-
-  const handlePostClick = (postId) => {
-    handleNotificationNavigation(postId); 
+  const handleFetchUserId = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BASE_URL}/post/get-userId-by-postId?postId=${postId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (response.ok) {
+        const userId = await response.text(); 
+        return userId; 
+      } else {
+        console.error('Failed to fetch post ID:', response.statusText);
+        return null; 
+      }
+    } catch (error) {
+      console.error('Error fetching post ID:', error);
+      return null; 
+    }
+  };
+  
+  const handlePostClick = async(postId) => {
+    const userId = await handleFetchUserId(postId);
+    handleSearchNavigation(userId, postId); 
   };
 
   return (

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {showRedNotification } from '../../config';
 import './changepasswordmodal.scss';
 
 const ChangePasswordModal = ({ isOpen, onClose, onSubmit }) => {
@@ -8,16 +9,12 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit }) => {
     confirm_password: '',
   });
 
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (passwordDetails.new_password !== passwordDetails.confirm_password) {
-      setErrorMessage('New passwords do not match.');
+      showRedNotification('New passwords do not match.');
       return;
     }
-    setErrorMessage('');
     onSubmit(passwordDetails); 
   };
 
@@ -49,9 +46,6 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit }) => {
             onChange={(e) => setPasswordDetails({ ...passwordDetails, confirm_password: e.target.value })}
             required
           />
-
-          {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-          {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
 
           <button type="submit">Change Password</button>
           <button type="button" onClick={onClose}>Cancel</button>

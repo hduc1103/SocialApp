@@ -20,7 +20,7 @@ const App = () => {
         <Route path="/adminpanel" element={<AdminPanel/>}/>
         <Route path="/userprofile/:userId" element={<UserProfile />} />
         <Route path="/ticketsupport" element={<SupportTicketPage/>} />
-        <Route path="/admin/ticketsupport" element={<AdminSupportTicketPage/>}/>
+        <Route path="/admin/ticket" element={<AdminSupportTicketPage/>}/>
         <Route path="/chat/:receiverId" element={<ChatPage/>}/>
         <Route path="/conversation" element={<ConversationsPage/>}/>
       </Routes>

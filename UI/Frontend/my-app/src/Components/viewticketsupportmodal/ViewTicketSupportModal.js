@@ -9,6 +9,7 @@ const ViewTicketSupportModal = ({ isOpen, onClose, ticket, onCommentSubmit }) =>
   }
 
   const handleSubmit = (e) => {
+    console.log(ticket);
     e.preventDefault();
     if (ticket.status.toLowerCase() !== 'closed') {
       onCommentSubmit(ticket.id, comment);
