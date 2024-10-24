@@ -170,11 +170,11 @@ const UserProfile = () => {
     })
       .then(async (response) => {
         if (!response.ok) {
-          const errorData = await response.json();
+          const errorData = await response;
           if (response.status === 401) {
             showRedNotification('Invalid old password');
           } else {
-            showRedNotification(errorData.message || 'Failed to change password');
+            showRedNotification(errorData.text() || 'Failed to change password');
           }
           return;
         }

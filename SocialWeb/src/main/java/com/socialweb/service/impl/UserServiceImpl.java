@@ -18,8 +18,10 @@ import com.socialweb.service.interfaces.UserService;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,18 +66,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthResponse authenticate(AuthRequest authRequest) throws Exception {
-        UserEntity user = userRepository.findByUsername(authRequest.getUsername()).orElseThrow();
+        Optional<UserEntity> optionalUser = userRepository.findByUsername(authRequest.getUsername());
+        if (optionalUser.isEmpty()) {
+            throw new UsernameNotFoundException("Invalid username");
+        }
+
+        UserEntity user = optionalUser.get();
+
         if (user.isDeleted()) {
             throw new Exception("User account is disabled");
         }
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        } catch (BadCredentialsException e) {
+            throw new BadCredentialsException("Invalid password");
+        }
         final UserDetails userDetails = userDetail.loadUserByUsername(authRequest.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
 
         return new AuthResponse(jwt);
     }
+
 
     @Override
     public Long getUserIdByToken(String token) {
